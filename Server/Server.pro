@@ -1,22 +1,37 @@
-QT       += core gui
+QT += core gui network serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
+TARGET = RemoteSupportServer
+CONFIG += console
+CONFIG -= app_bundle
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    clientsession.cpp \
+    deviceproxy.cpp \
     main.cpp \
-    mainwindow.cpp
+    mediarelay.cpp \
+    messagerouter.cpp \
+    servercore.cpp \
+    workorder.cpp \
+    workordermanager.cpp
 
 HEADERS += \
-    mainwindow.h
+    clientsession.h \
+    common.h \
+    deviceproxy.h \
+    mediarelay.h \
+    messagerouter.h \
+    servercore.h \
+    workorder.h \
+    workordermanager.h
 
-FORMS += \
-    mainwindow.ui
+FORMS +=
 
 TRANSLATIONS += \
     Server_zh_CN.ts
