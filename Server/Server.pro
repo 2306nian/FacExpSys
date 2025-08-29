@@ -1,4 +1,4 @@
-QT += core gui network
+QT += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -13,6 +13,7 @@ CONFIG -= app_bundle
 
 SOURCES += \
     clientsession.cpp \
+    database.cpp \
     deviceproxy.cpp \
     filerouter.cpp \
     main.cpp \
@@ -20,17 +21,20 @@ SOURCES += \
     messagerouter.cpp \
     servercore.cpp \
     workorder.cpp \
+    workorderdao.cpp \
     workordermanager.cpp
 
 HEADERS += \
     clientsession.h \
     common.h \
+    database.h \
     deviceproxy.h \
     filerouter.h \
     mediarelay.h \
     messagerouter.h \
     servercore.h \
     workorder.h \
+    workorderdao.h \
     workordermanager.h
 
 FORMS +=

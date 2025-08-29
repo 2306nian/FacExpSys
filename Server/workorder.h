@@ -12,11 +12,13 @@ class WorkOrder
 public:
     QString ticketId;
     QList<ClientSession*> clients;
-    QString deviceId;
+    QStringList deviceIds;
     QDateTime createdAt;
     bool isActive;
 
-    explicit WorkOrder(const QString &devId);
+    QString status; // 工单状态
+
+    explicit WorkOrder(const QStringList &devIds);
     void addClient(ClientSession *client);
     void removeClient(ClientSession *client);
     bool isEmpty() const;

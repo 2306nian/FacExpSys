@@ -1,10 +1,12 @@
 #include "workorder.h"
 #include "clientsession.h"
+#include "common.h"
 
-WorkOrder::WorkOrder(const QString &devId)
-    : deviceId(devId)
+WorkOrder::WorkOrder(const QStringList &devIds)
+    : deviceIds(devIds)
     , createdAt(QDateTime::currentDateTime())
     , isActive(true)
+    , status(WORK_ORDER_PENDING)
 {
     ticketId = "T" + createdAt.toString("yyyyMMddhhmmss");
 }

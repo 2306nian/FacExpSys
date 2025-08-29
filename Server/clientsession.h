@@ -19,7 +19,8 @@ public:
     WorkOrder *currentTicket() const;
     void setCurrentTicket(WorkOrder *ticket);
     void sendMessage(const QByteArray &data);
-    //void sendMessage(const QJsonObject &message);
+    QString clientIp() const;
+    int clientPort() const;
 
 signals:
     void disconnected(ClientSession *session);
@@ -41,6 +42,8 @@ private:
     QTcpSocket *m_socket;
     WorkOrder *m_currentTicket;
     QByteArray m_buffer;
+    QString m_clientIp;
+    int m_clientPort;
 };
 
 #endif // CLIENTSESSION_H

@@ -1,10 +1,17 @@
 #include <QCoreApplication>
 #include "servercore.h"
+#include "database.h"
 #include <QDebug>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+
+    // 初始化数据库
+    if (!Database::instance()->initialize("./data/server.db")) {
+        qCritical() << "Cannot initialize database. Exiting.";
+        return -1;
+    }
 
     quint16 port = 8888;
     if (argc > 1) {
@@ -12,7 +19,6 @@ int main(int argc, char *argv[])
     }
 
     ServerCore server(port);
-
     qDebug() << "Remote Support Server started on port" << port;
 
     return app.exec();
