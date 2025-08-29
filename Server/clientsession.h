@@ -29,7 +29,12 @@ signals:
     void mediaDataReceived(ClientSession *sender, const QByteArray &data);
     void deviceDataRequest(ClientSession *sender, const QJsonObject &request);
     void controlCommandReceived(const QJsonObject &command);
-    void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
+
+    // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
+    void fileUploadStart(ClientSession*, const QJsonObject&);
+    void fileUploadChunk(ClientSession*, const QJsonObject&);
+    void fileUploadEnd(ClientSession*, const QJsonObject&);
+
     void fileDownloadRequest(ClientSession* requester, const QJsonObject& downlodaRequest); // 文件下载请求
 
 private slots:

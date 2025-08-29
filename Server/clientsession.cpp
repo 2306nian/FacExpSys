@@ -2,6 +2,7 @@
 #include "qhostaddress.h"
 #include "qjsonarray.h"
 #include "workordermanager.h"
+#include "workorder.h"
 #include "common.h"
 #include "mediarelay.h"
 #include "messagerouter.h"
@@ -32,14 +33,31 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
                 DeviceProxy::instance()->requestData(sender, req);
             });
 
-    connect(this, &ClientSession::fileUploadRequest,
-            FileRouter::instance(), &FileRouter::handleFileUploadRequest);
+    // connect(this, &ClientSession::fileUploadRequest,
+    //         FileRouter::instance(), &FileRouter::handleFileUploadRequest);
+
+    connect(this, &ClientSession::fileUploadStart,
+            FileRouter::instance(), &FileRouter::handleFileUploadStart);
+
+    connect(this, &ClientSession::fileUploadChunk,
+            FileRouter::instance(), &FileRouter::handleFileUploadChunk);
+
+    // connect(this, &ClientSession::fileUploadEnd,
+    //         FileRouter::instance(), &FileRouter::handleFileUploadEnd);
+
+    connect(FileRouter::instance(), &FileRouter::fileUploaded,
+            this, [this](const QString &ticketId, const QJsonObject &info) {
+                // 只有订阅了该工单才推送
+                if (m_currentTicket->ticketId == ticketId){
+                    sendMessage(QJsonDocument(info).toJson(QJsonDocument::Compact));
+                }
+            });// 你有新文件可下载广播
 
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
 }
 
-ClientSession::~ClientSession()
+ClientSession::~ClientSession() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
 {
     if (m_socket) {
         m_socket->deleteLater();
@@ -115,7 +133,7 @@ void ClientSession::handleMessage(const QByteArray &data)
 
         QJsonObject response{
             {"type", "ticket_created"},
-            {"data", QJsonObject{{"ticket_id", ticketId}}}
+            {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
     }
@@ -142,12 +160,23 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
     }
-    else if (type == "file_upload") {
-        emit fileUploadRequest(this, obj["data"].toObject()); // 客户端发送文件
+
+    // else if (type == "file_upload") {
+    //     emit fileUploadRequest(this, obj["data"].toObject()); // 客户端发送文件
+    // }
+    else if (type == "file_upload_start") {
+        emit fileUploadStart(this, obj["data"].toObject());
+    }
+    else if (type == "file_upload_chunk") {
+        emit fileUploadChunk(this, obj["data"].toObject());
+    }
+    else if (type == "file_upload_end") {
+        emit fileUploadEnd(this, obj["data"].toObject());
     }
     else if (type == "file_download") {
         emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
     }
+
     else if (type == "accept_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
@@ -164,6 +193,9 @@ void ClientSession::handleMessage(const QByteArray &data)
         QString solution = dataObj["solution"].toString();
 
         WorkOrderManager::instance()->completeTicket(ticketId, description, solution);
+    }
+    else {
+        qWarning() << "Unknown message type:" << type;
     }
 }
 
