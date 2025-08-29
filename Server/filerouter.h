@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QFile>
 #include <QHash>
+#include <QDateTime>
 
 class ClientSession; // 前向声明ClientSession 减少编译时间
 
@@ -18,6 +19,7 @@ struct UploadContext {
     qint64 receivedBytes;
     // QFile* file;
     ClientSession* client;
+    QDateTime uploadTime;
 };
 
 class FileRouter : public QObject

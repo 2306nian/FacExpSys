@@ -37,7 +37,7 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
 {
     QString fileName = data["file_name"].toString();
     qint64 fileSize = data["file_size"].toVariant().toLongLong(); // qt版本过旧 没有toInteger()方法
-    QString ticketId = data["ticket_id"].toString();
+    QString ticketId = data["ticket_id"].toString(); // 创建工单后将工单号返回给客户端了吗？
 
     if (fileName.isEmpty() || fileSize <= 0 || ticketId.isEmpty()) {
         qWarning() << "Invalid upload start request from client";
@@ -63,6 +63,7 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
     ctx.filePath = filePath;
     ctx.receivedBytes = 0;
     ctx.client = sender;
+    ctx.uploadTime = QDateTime::currentDateTime();
 
     m_uploads[sender] = ctx;
 
@@ -225,6 +226,6 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
 
     file.close();
 
-    qDebug() << "✅ Successfully streamed file:" << ctx.fileName
+    qDebug() << "Successfully streamed file:" << ctx.fileName
              << "Total sent:" << totalSent << "bytes";
 }

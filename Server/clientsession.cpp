@@ -171,9 +171,9 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "file_upload_chunk") {
         emit fileUploadChunk(this, obj["data"].toObject());
     }
-    else if (type == "file_upload_end") {
-        emit fileUploadEnd(this, obj["data"].toObject());
-    }
+    // else if (type == "file_upload_end") {
+    //     emit fileUploadEnd(this, obj["data"].toObject());
+    // }
     else if (type == "file_download") {
         emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
     }
