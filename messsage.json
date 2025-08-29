@@ -1,0 +1,81 @@
+[
+    {
+        "type": "register",
+        "data":{
+            "username": "...",
+            "password": "...",
+            "registerAt": "YYMMDD"
+        }
+    },
+    {
+        "type": "login",
+        "data":{
+            "username": "...",
+            "password": "..."
+        }
+    },
+    {
+        "type": "create_ticket",
+        "data":{
+            "device_ids": ["...", "..."],
+            "username": "..."
+        }
+    },
+    {
+        "type": "join_ticket",
+        "data":{
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "accept_ticket",
+        "data": {
+            "expert_username": "...",
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "complete_ticket",
+        "data": {
+            "description": "...",
+            "solution": "..."
+        }
+    },
+    {
+        "type": "file_upload",
+        "data":{
+            "ticketId": "...",
+            "filename": "...",
+            "fileType": "...",
+            "fileSize": "...",
+            "uploadTime": "YYMMDD",
+            "file_data": "..."
+        }
+    },
+    {
+        "type": "file_available",
+        "data":{
+            "file_id": "...",
+            "file_name": "...",
+            "file_size": "...",
+            "file_type": "...",
+            "upload_time": "..."
+        }
+    },
+    {
+        "type": "file_download_response",
+        "data":{
+            "file_id": "...",
+            "file_name": "...",
+            "file_size": "...",
+            "file_type": "...",
+            "file_data": "..."
+        }
+    },
+    {
+        "type": "file_download",
+        "data":{
+            "file_id": "..."
+        }
+    }
+]

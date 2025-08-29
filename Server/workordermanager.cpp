@@ -1,6 +1,8 @@
 #include "workordermanager.h"
 #include "clientsession.h"
+#include "common.h"
 #include "workorder.h"
+#include "workorderdao.h"
 #include <QDebug>
 
 WorkOrderManager *WorkOrderManager::m_instance = nullptr;

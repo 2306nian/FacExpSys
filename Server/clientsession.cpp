@@ -1,4 +1,6 @@
 #include "clientsession.h"
+#include "qhostaddress.h"
+#include "qjsonarray.h"
 #include "workordermanager.h"
 #include "common.h"
 #include "mediarelay.h"
@@ -134,6 +136,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         emit controlCommandReceived(obj["data"].toObject());
     }
     else if (type == "accept_ticket") {
+        QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
         QString expertUsername = dataObj["expert_username"].toString();
         QString expertIp = m_socket->peerAddress().toString();
@@ -142,6 +145,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         WorkOrderManager::instance()->acceptTicket(ticketId, expertUsername, expertIp, expertPort);
     }
     else if (type == "complete_ticket") {
+        QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
         QString description = dataObj["description"].toString();
         QString solution = dataObj["solution"].toString();

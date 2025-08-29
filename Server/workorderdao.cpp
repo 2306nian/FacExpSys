@@ -2,6 +2,7 @@
 #include "workorderdao.h"
 #include "database.h"
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QVariant>
 #include <QDebug>
 

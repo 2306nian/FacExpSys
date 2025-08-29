@@ -1,5 +1,6 @@
 #include "workorder.h"
 #include "clientsession.h"
+#include "common.h"
 
 WorkOrder::WorkOrder(const QStringList &devIds)
     : deviceIds(devIds)

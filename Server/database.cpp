@@ -1,6 +1,7 @@
 // database.cpp
 #include "database.h"
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QDebug>
 
 Database *Database::m_instance = nullptr;
@@ -30,7 +31,7 @@ bool Database::initialize(const QString &dbPath)
 
     // 创建工单表
     QSqlQuery query(m_db);
-    bool ok = query.exec(R"(
+    bool work_order_ok = query.exec(R"(
         CREATE TABLE IF NOT EXISTS work_orders (
             ticket_id TEXT PRIMARY KEY,
             client_username TEXT NOT NULL,
@@ -50,7 +51,7 @@ bool Database::initialize(const QString &dbPath)
 
     // 设备工单关联表
     QSqlQuery devQuery(m_db);
-    bool ok = devQuery.exec(R"(
+    bool work_order_devices_ok = devQuery.exec(R"(
         CREATE TABLE IF NOT EXISTS work_order_devices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ticket_id TEXT NOT NULL,
@@ -60,11 +61,11 @@ bool Database::initialize(const QString &dbPath)
         )
     )");
 
-    if (!ok) {
+    if (!(work_order_ok && work_order_devices_ok)) {
         qCritical() << "Failed to create work_orders table:" << query.lastError().text();
     } else {
         qDebug() << "work_orders table ready.";
     }
 
-    return ok;
+    return work_order_devices_ok && work_order_ok;
 }

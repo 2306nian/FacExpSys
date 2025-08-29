@@ -1,7 +1,6 @@
 #include <QCoreApplication>
 #include "servercore.h"
 #include "database.h"
-#include "workorderdao.h"
 #include <QDebug>
 
 int main(int argc, char *argv[])
