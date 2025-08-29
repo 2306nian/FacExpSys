@@ -19,6 +19,7 @@ SOURCES += \
     mediarelay.cpp \
     messagerouter.cpp \
     servercore.cpp \
+    userdao.cpp \
     workorder.cpp \
     workorderdao.cpp \
     workordermanager.cpp
@@ -31,6 +32,7 @@ HEADERS += \
     mediarelay.h \
     messagerouter.h \
     servercore.h \
+    userdao.h \
     workorder.h \
     workorderdao.h \
     workordermanager.h

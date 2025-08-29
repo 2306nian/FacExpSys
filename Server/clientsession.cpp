@@ -6,6 +6,7 @@
 #include "mediarelay.h"
 #include "messagerouter.h"
 #include "deviceproxy.h"
+#include "userdao.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -135,6 +136,8 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
     }
+
+    // 专家接单
     else if (type == "accept_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
@@ -144,6 +147,8 @@ void ClientSession::handleMessage(const QByteArray &data)
 
         WorkOrderManager::instance()->acceptTicket(ticketId, expertUsername, expertIp, expertPort);
     }
+
+    // 工单完成
     else if (type == "complete_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
@@ -151,6 +156,83 @@ void ClientSession::handleMessage(const QByteArray &data)
         QString solution = dataObj["solution"].toString();
 
         WorkOrderManager::instance()->completeTicket(ticketId, description, solution);
+    }
+
+    // 注册
+    else if (type == "register") {
+        QJsonObject dataObj = obj["data"].toObject();
+        QString username = dataObj["username"].toString();
+        QString password = dataObj["password"].toString();
+        QString userType = dataObj["user_type"].toString();  // "client" 或 "expert"
+        QDateTime createdAt = QDateTime::currentDateTime();
+
+        // 调用 UserDAO 注册
+        bool success = UserDAO::instance()->registerUser(username, password, userType, createdAt);
+
+        // 回复客户端
+        QJsonObject response{
+            {"type", "register_result"},
+            {"success", success}
+        };
+        if (!success) {
+            response["message"] = "Registration failed. Username may already exist.";
+        }
+        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+    }
+
+    // 登陆——验证
+    else if (type == "login") {
+        QJsonObject dataObj = obj["data"].toObject();
+        QString username = dataObj["username"].toString();
+        QString password = dataObj["password"].toString();
+
+        // 参数检查
+        if (username.isEmpty() || password.isEmpty()) {
+            QJsonObject response{
+                {"type", "login_result"},
+                {"success", false},
+                {"message", "Username or password cannot be empty"}
+            };
+            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        // 查询用户是否存在
+        if (!UserDAO::instance()->userExists(username)) {
+            QJsonObject response{
+                {"type", "login_result"},
+                {"success", false},
+                {"message", "User does not exist"}
+            };
+            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        // 验证密码
+        bool isValid = UserDAO::instance()->verifyUser(username, password);
+        if (!isValid) {
+            QJsonObject response{
+                {"type", "login_result"},
+                {"success", false},
+                {"message", "Incorrect password"}
+            };
+            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        // ✅ 登录成功
+        QString userType = UserDAO::instance()->getUserType(username);
+
+        QJsonObject response{
+            {"type", "login_result"},
+            {"success", true},
+            {"user_type", userType},  // 告诉客户端你是 client 还是 expert
+            {"message", "Login successful"}
+        };
+        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+
+        // 可选：记录登录时间（进阶）
+        // 可以在 UserDAO 中添加 updateLastLogin(username)
     }
 }
 
