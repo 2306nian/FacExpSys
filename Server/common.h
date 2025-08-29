@@ -5,6 +5,11 @@
 #include <QByteArray>
 #include <QDataStream>
 
+// 工单状态：待接收，进行中，已完成
+#define WORK_ORDER_PENDING      "pending"
+#define WORK_ORDER_IN_PROGRESS  "in_progress"
+#define WORK_ORDER_COMPLETED    "completed"
+
 // 消息前缀：4字节长度 + JSON数据
 inline QByteArray packMessage(const QByteArray& data) {
     QByteArray packet;

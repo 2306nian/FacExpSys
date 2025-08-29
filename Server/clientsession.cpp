@@ -12,6 +12,8 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     : QObject(parent)
     , m_socket(socket)
     , m_currentTicket(nullptr)
+    , m_clientIp(socket->peerAddress().toString())
+    , m_clientPort(socket->peerPort())
 {
     connect(m_socket, &QTcpSocket::readyRead, this, &ClientSession::onReadyRead);
     connect(m_socket, &QTcpSocket::disconnected, this, &ClientSession::onDisconnected);
@@ -86,8 +88,21 @@ void ClientSession::handleMessage(const QByteArray &data)
     QString type = obj["type"].toString();
 
     if (type == "create_ticket") {
-        QString deviceId = obj["data"].toObject()["device_id"].toString();
-        QString ticketId = WorkOrderManager::instance()->createTicket(deviceId);
+        QJsonObject dataObj = obj["data"].toObject();
+        QString username = dataObj["username"].toString();
+        QJsonArray deviceArray = dataObj["device_ids"].toArray();
+
+        QStringList deviceIds;
+        for (const QJsonValue &val : deviceArray) {
+            deviceIds << val.toString();
+        }
+
+        // 使用当前 session 的真实连接信息
+        QString ticketId = WorkOrderManager::instance()->createTicket(
+            this,           // ← 传入当前 session
+            deviceIds,
+            username
+            );
 
         QJsonObject response{
             {"type", "ticket_created"},
@@ -118,4 +133,29 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
     }
+    else if (type == "accept_ticket") {
+        QString ticketId = dataObj["ticket_id"].toString();
+        QString expertUsername = dataObj["expert_username"].toString();
+        QString expertIp = m_socket->peerAddress().toString();
+        int expertPort = m_socket->peerPort();
+
+        WorkOrderManager::instance()->acceptTicket(ticketId, expertUsername, expertIp, expertPort);
+    }
+    else if (type == "complete_ticket") {
+        QString ticketId = dataObj["ticket_id"].toString();
+        QString description = dataObj["description"].toString();
+        QString solution = dataObj["solution"].toString();
+
+        WorkOrderManager::instance()->completeTicket(ticketId, description, solution);
+    }
+}
+
+QString ClientSession::clientIp() const
+{
+    return m_clientIp;
+}
+
+int ClientSession::clientPort() const
+{
+    return m_clientPort;
 }

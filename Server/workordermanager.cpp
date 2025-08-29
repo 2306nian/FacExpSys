@@ -21,14 +21,35 @@ WorkOrderManager::WorkOrderManager(QObject *parent)
 {
 }
 
-QString WorkOrderManager::createTicket(const QString &deviceId)
+QString WorkOrderManager::createTicket(ClientSession *creator,
+                                       const QStringList &deviceIds,
+                                       const QString &clientUsername)
 {
     QMutexLocker locker(&m_mutex);
 
-    WorkOrder *order = new WorkOrder(deviceId);
+    // 从 session 获取真实 IP 和 Port
+    QString clientIp = creator->clientIp();
+    int clientPort = creator->clientPort();
+
+    WorkOrder *order = new WorkOrder(deviceIds);
     m_tickets[order->ticketId] = order;
 
-    emit ticketCreated(order->ticketId, deviceId);
+    // 调用 DAO，传真实连接信息
+    bool ok = WorkOrderDAO::instance()->insertWorkOrder(
+        order->ticketId,
+        clientUsername,
+        clientIp,
+        clientPort,
+        order->createdAt,
+        deviceIds
+        );
+
+    if (!ok) {
+        delete order;
+        return QString();
+    }
+
+    emit ticketCreated(order->ticketId, deviceIds.join(","));
     return order->ticketId;
 }
 
@@ -74,4 +95,74 @@ WorkOrder *WorkOrderManager::getWorkOrder(const QString &ticketId)
 {
     QMutexLocker locker(&m_mutex);
     return m_tickets.value(ticketId);
+}
+
+void WorkOrderManager::acceptTicket(const QString &ticketId,
+                                    const QString &expertUsername,
+                                    const QString &expertIp,
+                                    int expertPort)
+{
+    QMutexLocker locker(&m_mutex);
+
+    WorkOrder *order = m_tickets.value(ticketId);
+    if (!order) {
+        qWarning() << "acceptTicket failed: ticket not found" << ticketId;
+        return;
+    }
+
+    // 状态判断：只能从 pending → in_progress
+    if (order->status != WORK_ORDER_PENDING) {
+        qWarning() << "Ticket already handled:" << ticketId << "status:" << order->status;
+        return;
+    }
+
+    // 更新内存状态
+    order->status = WORK_ORDER_IN_PROGRESS;
+
+    // 记录到数据库
+    WorkOrderDAO::instance()->acceptWorkOrder(
+        ticketId,
+        expertUsername,
+        expertIp,
+        expertPort,
+        QDateTime::currentDateTime()
+        );
+
+    qDebug() << "Ticket accepted:" << ticketId << "by" << expertUsername;
+}
+
+void WorkOrderManager::completeTicket(const QString &ticketId,
+                                      const QString &description,
+                                      const QString &solution)
+{
+    QMutexLocker locker(&m_mutex);
+
+    WorkOrder *order = m_tickets.value(ticketId);
+    if (!order) {
+        qWarning() << "completeTicket failed: ticket not found" << ticketId;
+        return;
+    }
+
+    // 状态判断：只能从 in_progress → completed
+    if (order->status != WORK_ORDER_IN_PROGRESS) {
+        qWarning() << "Cannot complete ticket: invalid state" << order->status;
+        return;
+    }
+
+    order->status = WORK_ORDER_COMPLETED;
+
+    // 记录到数据库
+    WorkOrderDAO::instance()->completeWorkOrder(
+        ticketId,
+        description,
+        solution,
+        QDateTime::currentDateTime()
+        );
+
+    // 可选：自动销毁工单（或等所有人离开再销毁）
+    m_tickets.remove(ticketId);
+    delete order;
+    emit ticketClosed(ticketId);
+
+    qDebug() << "Ticket completed:" << ticketId;
 }
