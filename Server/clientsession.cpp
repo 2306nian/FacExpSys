@@ -1,6 +1,9 @@
 #include "clientsession.h"
 #include "workordermanager.h"
 #include "common.h"
+#include "mediarelay.h"
+#include "messagerouter.h"
+#include "deviceproxy.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -12,6 +15,17 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
 {
     connect(m_socket, &QTcpSocket::readyRead, this, &ClientSession::onReadyRead);
     connect(m_socket, &QTcpSocket::disconnected, this, &ClientSession::onDisconnected);
+    connect(this, &ClientSession::textMessageReceived,
+            MessageRouter::instance(), &MessageRouter::routeTextMessage);
+
+    connect(this, &ClientSession::mediaDataReceived,
+            MediaRelay::instance(), &MediaRelay::relayMedia);
+
+    connect(this, &ClientSession::deviceDataRequest,
+            DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
+                DeviceProxy::instance()->requestData(sender, req);
+            });
+
 }
 
 ClientSession::~ClientSession()

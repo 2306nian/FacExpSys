@@ -1,5 +1,6 @@
 #include "messagerouter.h"
 #include "clientsession.h"
+#include "workorder.h"
 #include "workordermanager.h"
 
 MessageRouter *MessageRouter::m_instance = nullptr;
