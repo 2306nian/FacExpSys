@@ -5,6 +5,7 @@
 #include "common.h"
 #include "mediarelay.h"
 #include "messagerouter.h"
+#include "filerouter.h"
 #include "deviceproxy.h"
 #include "userdao.h"
 #include <QJsonDocument>
@@ -20,6 +21,7 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
 {
     connect(m_socket, &QTcpSocket::readyRead, this, &ClientSession::onReadyRead);
     connect(m_socket, &QTcpSocket::disconnected, this, &ClientSession::onDisconnected);
+
     connect(this, &ClientSession::textMessageReceived,
             MessageRouter::instance(), &MessageRouter::routeTextMessage);
 
@@ -31,6 +33,11 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
                 DeviceProxy::instance()->requestData(sender, req);
             });
 
+    connect(this, &ClientSession::fileUploadRequest,
+            FileRouter::instance(), &FileRouter::handleFileUploadRequest);
+
+    connect(this, &ClientSession::fileDownloadRequest,
+            FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
 }
 
 ClientSession::~ClientSession()
@@ -125,7 +132,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
     }
     else if (type == "text_msg") {
-        emit textMessageReceived(this, data);
+        emit textMessageReceived(this, data); // 文字传输功能已实现
     }
     else if (type == "video_frame" || type == "audio_chunk") {
         emit mediaDataReceived(this, data);
@@ -135,6 +142,12 @@ void ClientSession::handleMessage(const QByteArray &data)
     }
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
+    }
+    else if (type == "file_upload") {
+        emit fileUploadRequest(this, obj["data"].toObject()); // 客户端发送文件
+    }
+    else if (type == "file_download") {
+        emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
     }
 
     // 专家接单

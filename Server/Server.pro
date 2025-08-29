@@ -15,6 +15,7 @@ SOURCES += \
     clientsession.cpp \
     database.cpp \
     deviceproxy.cpp \
+    filerouter.cpp \
     main.cpp \
     mediarelay.cpp \
     messagerouter.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     common.h \
     database.h \
     deviceproxy.h \
+    filerouter.h \
     mediarelay.h \
     messagerouter.h \
     servercore.h \
