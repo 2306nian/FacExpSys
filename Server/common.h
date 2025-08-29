@@ -10,8 +10,10 @@ inline QByteArray packMessage(const QByteArray& data) {
     QByteArray packet;
     QDataStream stream(&packet, QIODevice::WriteOnly);
     stream.setByteOrder(QDataStream::BigEndian);
-    stream << quint32(data.size());
-    packet.append(data);
+    // 写入长度头
+    stream << static_cast<quint32>(data.size());
+    // 全部使用 QDataStream 写入数据体
+    stream.writeRawData(data.constData(), data.size()); // 此处之前混合使用了stream和append进行打包 可能出现问题
     return packet;
 }
 

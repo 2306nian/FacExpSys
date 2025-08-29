@@ -14,6 +14,7 @@ CONFIG -= app_bundle
 SOURCES += \
     clientsession.cpp \
     deviceproxy.cpp \
+    filerouter.cpp \
     main.cpp \
     mediarelay.cpp \
     messagerouter.cpp \
@@ -25,6 +26,7 @@ HEADERS += \
     clientsession.h \
     common.h \
     deviceproxy.h \
+    filerouter.h \
     mediarelay.h \
     messagerouter.h \
     servercore.h \

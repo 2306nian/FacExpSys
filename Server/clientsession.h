@@ -19,6 +19,7 @@ public:
     WorkOrder *currentTicket() const;
     void setCurrentTicket(WorkOrder *ticket);
     void sendMessage(const QByteArray &data);
+    //void sendMessage(const QJsonObject &message);
 
 signals:
     void disconnected(ClientSession *session);
@@ -27,6 +28,8 @@ signals:
     void mediaDataReceived(ClientSession *sender, const QByteArray &data);
     void deviceDataRequest(ClientSession *sender, const QJsonObject &request);
     void controlCommandReceived(const QJsonObject &command);
+    void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
+    void fileDownloadRequest(ClientSession* requester, const QJsonObject& downlodaRequest); // 文件下载请求
 
 private slots:
     void onReadyRead();
