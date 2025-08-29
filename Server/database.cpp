@@ -22,7 +22,7 @@ Database::Database(QObject *parent)
 bool Database::initialize(const QString &dbPath)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE", "server_conn");
-    m_db.setDatabaseName(dbPath); // 建议传入 "./data/server.db"
+    m_db.setDatabaseName(dbPath+"server.db");
 
     if (!m_db.open()) {
         qCritical() << "Failed to open database:" << m_db.lastError().text();
@@ -45,7 +45,7 @@ bool Database::initialize(const QString &dbPath)
             accepted_at DATETIME,
             feedback_description TEXT,
             feedback_solution TEXT,
-            completed_at DATETIME,
+            completed_at DATETIME
         )
     )");
 
@@ -61,11 +61,24 @@ bool Database::initialize(const QString &dbPath)
         )
     )");
 
-    if (!(work_order_ok && work_order_devices_ok)) {
-        qCritical() << "Failed to create work_orders table:" << query.lastError().text();
+    // 用户信息表
+    QSqlQuery userQuery(m_db);
+    bool users_ok = userQuery.exec(R"(
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,           -- 用户名唯一
+        password_hash TEXT NOT NULL,             -- 密码哈希（不要存明文！）
+        user_type TEXT NOT NULL CHECK(user_type IN ('client', 'expert')),  -- 类型
+        created_at DATETIME NOT NULL,            -- 注册时间
+        last_login DATETIME                      -- 最后登录时间
+        )
+    )");
+
+    if (!(work_order_ok && work_order_devices_ok && users_ok)) {
+        qCritical() << "Failed to create table:" << query.lastError().text();
     } else {
         qDebug() << "work_orders table ready.";
     }
 
-    return work_order_devices_ok && work_order_ok;
+    return work_order_devices_ok && work_order_ok && users_ok;
 }

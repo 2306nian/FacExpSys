@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QDateTime>
 #include <QDebug>
+#include <QRandomGenerator>
 
 DeviceProxy *DeviceProxy::m_instance = nullptr;
 
@@ -66,4 +67,10 @@ void DeviceProxy::onUpdateTimer()
     };
 
     emit deviceDataUpdated("PLC_1001", data);
+}
+
+int DeviceProxy::qrand()
+{
+    // 使用 Qt5.10+ 推荐的随机数生成器
+    return QRandomGenerator::global()->bounded(1, 101);  // [1, 100]
 }

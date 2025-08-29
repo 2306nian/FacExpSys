@@ -26,6 +26,7 @@ private:
     explicit DeviceProxy(QObject *parent = nullptr);
     static DeviceProxy *m_instance;
     QTimer *m_updateTimer;
+    int qrand();
 };
 
 #endif // DEVICEPROXY_H
