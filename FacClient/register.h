@@ -32,6 +32,8 @@ private slots:
     // 如果有返回按钮，添加对应的槽
     void on_pushButton_back_clicked();
 
+    void on_toolButton_clicked();
+
 private:
     Ui::Register *ui;
     ClientCore *m_core;  // 持有ClientCore的引用

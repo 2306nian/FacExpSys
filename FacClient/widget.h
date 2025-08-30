@@ -28,6 +28,8 @@ private slots:
     void checkInputs();
     void on_pushButton_more_clicked();
 
+    void on_toolButton_close_clicked();
+
 private:
     Ui::Widget *ui;
 };
