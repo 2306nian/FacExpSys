@@ -6,7 +6,6 @@
 #include <QMap>
 #include <QTcpSocket>
 #include <QJsonObject>
-#include "common.h"
 #include "MainWindow_main.h"
 #include "register.h"
 #include "widget.h"
@@ -32,6 +31,7 @@ public:
 
     // 发送注册请求
     void sendRegisterRequest(const QString &username, const QString &password);
+
 
 public slots:
     // 切换到指定页面

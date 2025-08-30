@@ -23,6 +23,7 @@ ServerCore::ServerCore(quint16 port, QObject *parent)
 
 void ServerCore::incomingConnection(qintptr handle)
 {
+    qDebug() << "Incoming Connection...";
     QTcpSocket *socket = new QTcpSocket(this);
     socket->setSocketDescriptor(handle);
 

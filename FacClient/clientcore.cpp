@@ -1,4 +1,5 @@
 #include "clientcore.h"
+#include "common.h"
 #include "ui_clientcore.h"
 #include <QDebug>
 #include <QJsonDocument>
@@ -13,9 +14,7 @@ ClientCore::ClientCore(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // 初始化网络连接
     initializeNetwork();
-
     // 创建堆栈部件作为中央窗口部件
     qsw = new QStackedWidget(this);
     setCentralWidget(qsw);
@@ -43,15 +42,22 @@ ClientCore::~ClientCore()
 void ClientCore::initializeNetwork()
 {
     tcp = new QTcpSocket(this);
+
+    connect(tcp, &QTcpSocket::connected, [](){
+        qDebug() << "连接成功！";
+    });
+    // 连接失败信号（会触发多次，注意去重或只处理一次）
+    connect(tcp, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
+            [this](QAbstractSocket::SocketError error){
+                qDebug() << "连接失败，错误代码：" << error;
+                qDebug() << "错误信息：" << tcp->errorString();
+            });
+
+    tcp->connectToHost("127.0.0.1", 8888);
 }
 
 void ClientCore::sendRegisterRequest(const QString &username, const QString &password)
 {
-    tcp->connectToHost("127.0.0.1", 8888);
-    if(tcp->state() == QAbstractSocket::ConnectedState){
-        qDebug() << "连接成功";
-    }
-
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "register";
