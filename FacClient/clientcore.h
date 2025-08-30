@@ -9,6 +9,7 @@
 #include "MainWindow_main.h"
 #include "register.h"
 #include "widget.h"
+#include "session.h"
 #include<QJsonDocument>
 
 namespace Ui {
@@ -44,7 +45,6 @@ private slots:
     void onRegisterRequest();
     void onRegisterSuccess();
     void onLogout();
-    void onReadyRead();
 
 private:
     Ui::ClientCore *ui;
@@ -61,7 +61,7 @@ private:
     QByteArray receiver;
 
     // TCP Socket
-    QTcpSocket *tcp;
+    Session *m_session;
 
     // 初始化所有页面
     void initializePages();
@@ -70,7 +70,7 @@ private:
     void connectPageSignals();
 
     // 初始化网络连接
-    void initializeNetwork();
+    Session* initializeNetwork();
 };
 
 #endif // CLIENTCORE_H

@@ -6,22 +6,31 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QDateTime>
-
-// 自定义代理类用于绘制消息气泡
-class MessageDelegate : public QStyledItemDelegate
-{
-    Q_OBJECT
-public:
-    explicit MessageDelegate(QObject *parent = nullptr);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const override;
-    QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const override;
-};
+#include <QTimer>
 
 namespace Ui {
 class ChatRoom;
 }
+
+// 消息结构体
+struct ChatMessage {
+    QString content;      // 消息内容
+    bool isSelf;          // 是否是自己发送的
+    QDateTime timestamp;  // 时间戳
+};
+
+// 自定义委托来绘制微信风格的气泡
+class MessageDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+public:
+    MessageDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const override;
+
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override;
+};
 
 class ChatRoom : public QMainWindow
 {
@@ -31,29 +40,19 @@ public:
     explicit ChatRoom(QWidget *parent = nullptr);
     ~ChatRoom();
 
-public slots:
-    // 添加消息到聊天区域
-    void addMessage(const QString &text, bool isSent, const QString &sender = QString());
-
 private slots:
-    // 发送按钮点击事件
-    void on_sendButton_clicked();
+    void on_pushButton_emission_clicked();
 
-    bool eventFilter(QObject *obj, QEvent *event);
+    void on_toolButton_clicked();
 
 private:
     Ui::ChatRoom *ui;
-    QStandardItemModel *m_messageModel;
-    QString m_username;  // 当前用户名
+    QStandardItemModel *model;
+    MessageDelegate *messageDelegate;
 
-    // 初始化UI
-    void initUI();
-
-    // 初始化信号槽连接
-    void setupConnections();
-
-    // 格式化时间
-    QString formatTime(const QDateTime &time) const;
+    void appendMessage(const QString &text, bool isSelf);
 };
 
 #endif // CHATROOM_H
+
+

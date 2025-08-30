@@ -1,5 +1,4 @@
 #include "clientcore.h"
-#include "common.h"
 #include "ui_clientcore.h"
 #include <QDebug>
 #include <QJsonDocument>
@@ -10,11 +9,10 @@ ClientCore::ClientCore(QWidget *parent)
     , wid(nullptr)
     , reg(nullptr)
     , m_main(nullptr)
-    , tcp(nullptr)
 {
     ui->setupUi(this);
 
-    initializeNetwork();
+    m_session = initializeNetwork();
     // 创建堆栈部件作为中央窗口部件
     qsw = new QStackedWidget(this);
     setCentralWidget(qsw);
@@ -27,11 +25,26 @@ ClientCore::ClientCore(QWidget *parent)
 
     // 默认显示登录页面
     switchToPage(PAGE_LOGIN);
-    connect(tcp,&QTcpSocket::readyRead,this,&ClientCore::onReadyRead);
+    this->resize(480,672);
 
     // 设置窗口标题和大小
     setWindowTitle("客户端");
-    resize(800, 600);
+
+    connect(m_session, &Session::loginResult, this, [this](bool result){
+        if(result){
+            switchToPage(PAGE_MAIN);
+            resize(1300,900);
+        }else{
+            //TODO:登陆失败处理
+        }
+    });
+    connect(m_session, &Session::registerResult, this, [this](bool result){
+        if (result){
+            //TODO：注册成功处理
+        }else{
+            //TODO:注册失败处理
+        }
+    });
 }
 
 ClientCore::~ClientCore()
@@ -40,47 +53,22 @@ ClientCore::~ClientCore()
     // 不需要显式删除页面，因为它们作为子部件会被自动删除
 }
 
-void ClientCore::onReadyRead(){
-    receiver.append(tcp->readAll());
-    QByteArray message;
-    if(unpackMessage(receiver,message)){
-        qDebug()<<"unpacked success";
-    }
-   //此处可能后续需要修改
-    QJsonDocument doc=QJsonDocument::fromJson(message);
-    if (doc["type"] == "register_result"){
-        QJsonObject dataObj = doc["data"].toObject();
-        if(doc["success"].toBool()){
-            //TODO:注册成功显示
-        }
-        else{
-            //TODO:注册失败显示
-        }
-    }
-    else if(doc["type"] == "login_result"){
-        QJsonObject dataObj = doc["data"].toObject();
-        if(dataObj["success"].toBool()){
-            switchToPage(PAGE_MAIN);
-        }
-        //TODO:登陆失败处理
-    }
-    //TODO:RTMP处理
-}
-void ClientCore::initializeNetwork()
+Session* ClientCore::initializeNetwork()
 {
-    tcp = new QTcpSocket(this);
+    QTcpSocket* tcp = new QTcpSocket(this);
 
     connect(tcp, &QTcpSocket::connected, [](){
         qDebug() << "连接成功！";
     });
     // 连接失败信号（会触发多次，注意去重或只处理一次）
     connect(tcp, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
-            [this](QAbstractSocket::SocketError error){
+            [tcp](QAbstractSocket::SocketError error){
                 qDebug() << "连接失败，错误代码：" << error;
                 qDebug() << "错误信息：" << tcp->errorString();
             });
 
     tcp->connectToHost("127.0.0.1", 8888);
+    return new Session(tcp);
 }
 
 void ClientCore::sendRegisterRequest(const QString &username, const QString &password)
@@ -91,10 +79,10 @@ void ClientCore::sendRegisterRequest(const QString &username, const QString &pas
         QJsonObject Qdata;
         Qdata["username"] = username;
         Qdata["password"] = password;
-        Qdata["userType"]="client";
+        Qdata["user_type"]="client";
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
-        tcp->write(packMessage(sender));
+        m_session->sendMessage(sender);
     }
 }
 
@@ -147,10 +135,6 @@ void ClientCore::switchToPage(PageType pageType)
 // 处理来自子页面的信号
 void ClientCore::onLoginSuccess(const QString &username,const QString &password)
 {
-    if(tcp->state() == QAbstractSocket::ConnectedState){
-        qDebug() << "连接成功";
-    }
-
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "login";
@@ -159,7 +143,7 @@ void ClientCore::onLoginSuccess(const QString &username,const QString &password)
         Qdata["password"] = password;
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
-        tcp->write(packMessage(sender));
+        m_session->sendMessage(sender);
         qDebug()<<username<<password;
     }
 }
@@ -168,17 +152,20 @@ void ClientCore::onRegisterRequest()
 {
     qDebug() << "请求注册，切换到注册页面";
     switchToPage(PAGE_REGISTER);
+    resize(480,672);
 }
 
 void ClientCore::onRegisterSuccess()
 {
     qDebug() << "注册成功，切换到登录页面";
     switchToPage(PAGE_LOGIN);
+    resize(480,672);
 }
 
 void ClientCore::onLogout()
 {
     qDebug() << "用户登出，切换到登录页面";
     switchToPage(PAGE_LOGIN);
+    resize(480,672);
 }
 
