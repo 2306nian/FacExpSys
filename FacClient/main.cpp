@@ -1,5 +1,3 @@
-#include "widget.h"
-#include"MainWindow_main.h"
 #include <QApplication>
 #include<pageorder.h>
 #include<clientcore.h>

@@ -20,7 +20,7 @@ public:
 
 signals:
     // 添加与ClientCore交互所需的基本信号
-    void loginSuccess();      // 登录成功信号
+    void loginSuccess(const QString &username,const QString &password);      // 登录成功信号
     void registerRequest();   // 请求注册信号
 
 private slots:

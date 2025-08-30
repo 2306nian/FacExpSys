@@ -1,4 +1,5 @@
 #include "clientcore.h"
+#include "common.h"
 #include "ui_clientcore.h"
 #include <QDebug>
 #include <QJsonDocument>
@@ -13,9 +14,7 @@ ClientCore::ClientCore(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // 初始化网络连接
     initializeNetwork();
-
     // 创建堆栈部件作为中央窗口部件
     qsw = new QStackedWidget(this);
     setCentralWidget(qsw);
@@ -28,6 +27,7 @@ ClientCore::ClientCore(QWidget *parent)
 
     // 默认显示登录页面
     switchToPage(PAGE_LOGIN);
+    connect(tcp,&QTcpSocket::readyRead(),this,&ClientCore::onReadyRead);
 
     // 设置窗口标题和大小
     setWindowTitle("客户端");
@@ -40,24 +40,50 @@ ClientCore::~ClientCore()
     // 不需要显式删除页面，因为它们作为子部件会被自动删除
 }
 
+void ClientCore::onReadyRead(){
+    receiver.append(tcp->readAll());
+    QByteArray message;
+    while(unpackMessage(receiver,message)){
+        qDebug()<<"unpacked success";
+    }
+   //此处可能后续需要修改
+    if(message["data"]["message"]=="Login successful"){
+        switchToPage(PAGE_MAIN);
+    }
+}
 void ClientCore::initializeNetwork()
 {
     tcp = new QTcpSocket(this);
+
+    connect(tcp, &QTcpSocket::connected, [](){
+        qDebug() << "连接成功！";
+    });
+    // 连接失败信号（会触发多次，注意去重或只处理一次）
+    connect(tcp, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
+            [this](QAbstractSocket::SocketError error){
+                qDebug() << "连接失败，错误代码：" << error;
+                qDebug() << "错误信息：" << tcp->errorString();
+            });
+
+    tcp->connectToHost("127.0.0.1", 8888);
 }
 
 void ClientCore::sendRegisterRequest(const QString &username, const QString &password)
 {
-    tcp->connectToHost("127.0.0.1", 8888);
+<<<<<<< HEAD
     if(tcp->state() == QAbstractSocket::ConnectedState){
         qDebug() << "连接成功";
     }
 
+=======
+>>>>>>> 10fde08fa12d492ff65fefc1783b82b1eb1d6e09
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "register";
         QJsonObject Qdata;
         Qdata["username"] = username;
         Qdata["password"] = password;
+        Qdata["userType"]="client";
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
         tcp->write(packMessage(sender));
@@ -111,10 +137,23 @@ void ClientCore::switchToPage(PageType pageType)
 }
 
 // 处理来自子页面的信号
-void ClientCore::onLoginSuccess()
+void ClientCore::onLoginSuccess(const QString &username,const QString &password)
 {
-    qDebug() << "登录成功，切换到主界面";
-    switchToPage(PAGE_MAIN);
+    if(tcp->state() == QAbstractSocket::ConnectedState){
+        qDebug() << "连接成功";
+    }
+
+    if(!username.isEmpty() && !password.isEmpty()){
+        QJsonObject json;
+        json["type"] = "login";
+        QJsonObject Qdata;
+        Qdata["username"] = username;
+        Qdata["password"] = password;
+        json["data"] = Qdata;
+        QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
+        tcp->write(packMessage(sender));
+        qDebug()<<username<<password;
+    }
 }
 
 void ClientCore::onRegisterRequest()
