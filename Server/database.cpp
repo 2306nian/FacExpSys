@@ -103,6 +103,7 @@ bool Database::initialize(const QString &dbPath)
         humidity REAL,
         vibration REAL,
         power_status TEXT,
+        control_count INTEGER DEFAULT 0,
         last_update DATETIME NOT NULL,
         FOREIGN KEY (device_id) REFERENCES devices (device_id) ON DELETE CASCADE
     )

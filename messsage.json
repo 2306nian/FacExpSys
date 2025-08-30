@@ -4,7 +4,7 @@
         "data":{
             "username": "...",
             "password": "...",
-            "registerAt": "YYMMDD"
+            "user_type": "..."
         }
     },
     {
@@ -13,6 +13,9 @@
             "username": "...",
             "password": "..."
         }
+    },
+    {
+        "type": "get_device_list"
     },
     {
         "type": "create_ticket",
@@ -42,6 +45,12 @@
         }
     },
     {
+        "type":"text_msg",
+        "data":{
+            "message":"..."
+        }
+    },
+    {
         "type": "file_upload_start",
         "data":{
             "file_name":"...",
@@ -50,42 +59,10 @@
         }
     },
     {
-        "type":"upload_started",
-        "data":{
-            "file_id":"...",
-            "message":"...",
-        }
-    },
-    {
-        "type":"file_uploaded",
-        "data":{
-            "file_id":"...",
-            "file_name":"...",
-            "file_size":"...",
-            "ticket_id":"...",
-        }
-    },
-    {
         "type":"file_upload_chunk",
         "data":{
             "file_id":"...",
             "chunk_data":"...",
-            "is_last":"..."
-        }
-    },
-    {
-        "type":"file_meta",
-        "data":{
-            "file_id":"...",
-            "file_name":"...",
-            "file_size":"...",
-            "ticket_id":"...",
-        }
-    },
-    {
-        "type":"file_chunk",
-        "data":{
-            "data":"...",
             "is_last":"..."
         }
     },
@@ -115,8 +92,66 @@
             "ticket_id": "...",
             "stream_data": "..."
         }
+    }
+
+]
+
+
+
+
+
+[    
+    {
+        "type": "register_result",
+        "data":{
+            "success": true,
+            "message": "..."
+        }
     },
     {
+        "type": "login_register",
+        "data": {
+            "success": true,
+            "message": "..."
+        }
+    },
+    {
+        "type": "device_list",
+        "data":{
+            "device_id": "...",
+            "name": "...",
+            "type": "...",
+            "location": "...",
+            "online_status": "...",
+            "pressure": "85.5",
+            "temperature": "62.3",
+            "status": "normal"
+        }
+    },
+    {
+        "type": "ticket_create",
+        "data":{
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "joined_ticket",
+        "data":{
+            "ticket_id":"..."
+        }
+    },
+    {
+        "type":"device_realtime_update",
+        "data":{
+            "device_id":"...",
+            "pressure":"...",
+            "temperature":"...",
+            "status":"normal",
+            "control_count":"...",
+            "timestamp":"..."
+        }
+    },
+        {
         "type": "rtmp_stream_started",
         "data":{
             "ticket_id": "...",
@@ -148,5 +183,38 @@
             "stream_data": "...",
             "timestamp": "..."
         }
-    }
+    },
+    {
+        "type":"file_meta",
+        "data":{
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"..."
+        }
+    },
+    {
+        "type":"file_chunk",
+        "data":{
+            "data":"...",
+            "is_last":"..."
+        }
+    },
+    {
+        "type":"upload_started",
+        "data":{
+            "file_id":"...",
+            "message":"..."
+        }
+    },
+    {
+        "type":"file_uploaded",
+        "data":{
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"..."
+        }
+    },
 ]
+

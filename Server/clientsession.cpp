@@ -32,9 +32,10 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
             MediaRelay::instance(), &MediaRelay::relayMedia);
 
     connect(this, &ClientSession::deviceDataRequest,
-            DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
-                DeviceProxy::instance()->requestData(sender, req);
-            });
+            DeviceProxy::instance(), &DeviceProxy::requestData);
+
+    connect(this, &ClientSession::controlCommandReceived,
+            DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
 
     // connect(this, &ClientSession::fileUploadRequest,
     //         FileRouter::instance(), &FileRouter::handleFileUploadRequest);
@@ -185,9 +186,6 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "text_msg") {
         emit textMessageReceived(this, data); // 文字传输功能已实现
     }
-    else if (type == "video_frame" || type == "audio_chunk") {
-        emit mediaDataReceived(this, data);
-    }
     else if (type == "request_device_data") {
         emit deviceDataRequest(this, obj["data"].toObject());
     }
@@ -247,11 +245,11 @@ void ClientSession::handleMessage(const QByteArray &data)
         // 回复客户端
         QJsonObject response{
             {"type", "register_result"},
-            {"success", success}
+            {"data", QJsonObject{
+                         {"success", success},
+                         {"message", success ? "Registration successful" : "Registration failed. Username may already exist."}
+                     }}
         };
-        if (!success) {
-            response["message"] = "Registration failed. Username may already exist.";
-        }
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
     }
 
@@ -265,8 +263,10 @@ void ClientSession::handleMessage(const QByteArray &data)
         if (username.isEmpty() || password.isEmpty()) {
             QJsonObject response{
                 {"type", "login_result"},
-                {"success", false},
-                {"message", "Username or password cannot be empty"}
+                {"data", QJsonObject{
+                             {"success", false},
+                             {"message", "Username or password cannot be empty"}
+                         }}
             };
             sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
             return;
@@ -276,8 +276,10 @@ void ClientSession::handleMessage(const QByteArray &data)
         if (!UserDAO::instance()->userExists(username)) {
             QJsonObject response{
                 {"type", "login_result"},
-                {"success", false},
-                {"message", "User does not exist"}
+                {"data", QJsonObject{
+                             {"success", false},
+                             {"message", "User does not exist"}
+                         }}
             };
             sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
             return;
@@ -288,8 +290,10 @@ void ClientSession::handleMessage(const QByteArray &data)
         if (!isValid) {
             QJsonObject response{
                 {"type", "login_result"},
-                {"success", false},
-                {"message", "Incorrect password"}
+                {"data", QJsonObject{
+                             {"success", false},
+                             {"message", "Incorrect password"}
+                         }}
             };
             sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
             return;
@@ -300,8 +304,11 @@ void ClientSession::handleMessage(const QByteArray &data)
 
         QJsonObject response{
             {"type", "login_result"},
-            {"success", true},
-            {"message", "Login successful"}
+            {"data", QJsonObject{
+                         {"success", true},
+                         {"message", "Login successful"},
+                         {"user_type", userType}
+                     }}
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
     }
@@ -328,7 +335,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
         QJsonObject response{
             {"type", "device_list"},
-            {"data", arr}
+            {"data", QJsonObject{{"devices", arr}}}
         };
         sendMessage(QJsonDocument(response).toJson());
     }

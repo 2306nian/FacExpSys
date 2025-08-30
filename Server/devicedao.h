@@ -10,15 +10,15 @@
 
 // 设备基本信息
 struct DeviceBasicInfo {
-    QString deviceId;
-    QString name;
-    QString type;
-    QString location;
-    QString manufacturer;
-    QString model;
-    QString onlineStatus;
-    QDateTime lastHeartbeat;
-    QDateTime createdAt;
+    QString deviceId;           //设备Id
+    QString name;               //设备名字
+    QString type;               //设备类型
+    QString location;           //设备位置
+    QString manufacturer;       //出厂商
+    QString model;              //设备型号
+    QString onlineStatus;       //在线状态
+    QDateTime lastHeartbeat;    //最后心跳时间
+    QDateTime createdAt;        //注册时间
 };
 
 class DeviceDAO : public QObject

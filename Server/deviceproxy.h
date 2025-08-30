@@ -14,8 +14,8 @@ class DeviceProxy : public QObject
 public:
     static DeviceProxy *instance();
     void requestData(ClientSession *requester, const QJsonObject &request);
-    void sendControlCommand(const QJsonObject &command);
-
+    void receiveControlCommand(const QJsonObject &command);
+    int getControlCount(const QString &deviceId);
 signals:
     void deviceDataUpdated(const QString &deviceId, const QJsonObject &data);
 

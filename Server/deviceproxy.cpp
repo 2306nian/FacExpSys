@@ -8,6 +8,7 @@
 #include "database.h"
 #include <QSqlQuery>
 #include <QVariant>
+#include <QSqlError>
 
 DeviceProxy *DeviceProxy::m_instance = nullptr;
 
@@ -82,13 +83,30 @@ void DeviceProxy::requestData(ClientSession *requester, const QJsonObject &reque
     requester->sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
 }
 
-void DeviceProxy::sendControlCommand(const QJsonObject &command)
+void DeviceProxy::receiveControlCommand(const QJsonObject &command)
 {
     QString deviceId = command["device_id"].toString();
     QString action = command["action"].toString();
 
     qDebug() << "Control command sent to device" << deviceId << ":" << action;
-    // 这里可以添加实际的串口或网络控制代码
+
+    // 更新数据库：增加控制次数
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("UPDATE devices SET control_count = control_count + 1 WHERE device_id = ?");
+    query.addBindValue(deviceId);
+    if (!query.exec()) {
+        qWarning() << "Failed to update control count:" << query.lastError().text();
+    }
+
+    // 触发一次设备数据更新，推动客户端刷新
+    // 模拟一次实时数据更新并广播
+    QJsonObject data{
+        {"device_id", deviceId},
+        {"action", action},
+        {"control_count", getControlCount(deviceId)}, // 自定义函数获取当前次数
+        {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)}
+    };
+    emit deviceDataUpdated(deviceId, data);
 }
 
 
@@ -147,6 +165,7 @@ void DeviceProxy::onUpdateTimer()
             {"device_id", deviceId},
             {"pressure", pressure},
             {"temperature", temperature},
+            {"control_count", getControlCount(deviceId)},
             {"status", status},
             {"timestamp", now.toString(Qt::ISODate)}
         };
@@ -160,4 +179,15 @@ int DeviceProxy::qrand()
 {
     // 使用 Qt5.10+ 推荐的随机数生成器
     return QRandomGenerator::global()->bounded(1, 101);  // [1, 100]
+}
+
+int DeviceProxy::getControlCount(const QString &deviceId)
+{
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT control_count FROM devices WHERE device_id = ?");
+    query.addBindValue(deviceId);
+    if (query.exec() && query.next()) {
+        return query.value(0).toInt();
+    }
+    return 0;
 }
