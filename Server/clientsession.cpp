@@ -36,7 +36,8 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
                 DeviceProxy::instance()->requestData(sender, req);
             });
 
-    connect(this, &ClientSession::controlCommandReceived, DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
+    connect(this, &ClientSession::controlCommandReceived, DeviceProxy::instance(),
+            &DeviceProxy::receiveControlCommand);
 
     connect(this, &ClientSession::fileUploadStart,
             FileRouter::instance(), &FileRouter::handleFileUploadStart);
