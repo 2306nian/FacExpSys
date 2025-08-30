@@ -185,7 +185,7 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
     // 获取分块大小
     int chunkSize = qBound(1024, CHUNK_SIZE, 1024 * 1024);     // 限制在 1KB ~ 1MB 之间
 
-    // 4. 发送文件元信息（file_meta）
+    // 发送文件元信息（file_meta）
     QJsonObject meta;
     meta["type"] = "file_meta";
     QJsonObject mData;
