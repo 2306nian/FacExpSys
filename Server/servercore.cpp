@@ -2,6 +2,7 @@
 #include "clientsession.h"
 #include "deviceproxy.h"
 #include "common.h"
+#include "qjsondocument.h"
 #include <QDebug>
 
 ServerCore::ServerCore(quint16 port, QObject *parent)

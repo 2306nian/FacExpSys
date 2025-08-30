@@ -6,12 +6,6 @@ CONFIG += c++17
 
 TARGET = RemoteSupportServer
 
-#RTMP Module路径配置
-LIBRTMP_PATH = $$PWD/librtmp
-
-INCLUDEPATH += $$LIBRTMP_PATH/include
-LIBS += -L$$LIBRTMP_PATH/lib -lrtmp
-
 CONFIG += console
 CONFIG -= app_bundle
 # You can make your code fail to compile if it uses deprecated APIs.

@@ -1,7 +1,70 @@
-# 忽略所有.user文件
+# Qt项目相关
 **/*.pro.user
 **/*.user
 **/*.user.*
+
+# 编译输出目录
 **/build/
-# 忽略数据库文件
+**/release/
+**/debug/
+**/Makefile
+**/*.make
+**/Makefile.*
+
+# Qt Creator相关
+*.qmlproject.user
+*.qbs.user
+*.pro.user.*
+
+# 编译生成的文件
+**/*.o
+**/*.obj
+**/*.lo
+**/*.la
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.a
+**/*.lib
+
+# Qt moc和uic生成的文件
+**/moc_*
+**/ui_*
+**/qrc_*
+
+# Qt资源编译文件
+**/*.rcc
+
+# 调试文件
+**/*.pdb
+**/*.ilk
+**/*.idb
+
+# 数据库文件
 /Db/
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# 日志文件
+**/*.log
+**/logs/
+
+# 临时文件
+**/*.tmp
+**/*.temp
+**/tmp/
+
+# IDE相关
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+
+# macOS相关
+**/.DS_Store
+**/Thumbs.db
+
+# Windows相关
+**/Desktop.ini
