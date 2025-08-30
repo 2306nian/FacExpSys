@@ -27,11 +27,11 @@ ClientCore::ClientCore(QWidget *parent)
 
     // 默认显示登录页面
     switchToPage(PAGE_LOGIN);
+    this->resize(480,672);
     connect(tcp,&QTcpSocket::readyRead,this,&ClientCore::onReadyRead);
 
     // 设置窗口标题和大小
     setWindowTitle("客户端");
-    resize(800, 600);
 }
 
 ClientCore::~ClientCore()
@@ -43,12 +43,12 @@ ClientCore::~ClientCore()
 void ClientCore::onReadyRead(){
     receiver.append(tcp->readAll());
     QByteArray message;
-    while(unpackMessage(receiver,message)){
+    if(unpackMessage(receiver,message)){
         qDebug()<<"unpacked success";
     }
    //此处可能后续需要修改
     QJsonDocument doc=QJsonDocument::fromJson(message);
-    if(doc["message"]=="Login successful"){
+    if(doc["data"]["message"]=="Login successful"){
         switchToPage(PAGE_MAIN);
     }
 }
@@ -77,7 +77,7 @@ void ClientCore::sendRegisterRequest(const QString &username, const QString &pas
         QJsonObject Qdata;
         Qdata["username"] = username;
         Qdata["password"] = password;
-        Qdata["userType"]="client";
+        Qdata["user_type"]="client";
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
         tcp->write(packMessage(sender));
@@ -148,23 +148,28 @@ void ClientCore::onLoginSuccess(const QString &username,const QString &password)
         tcp->write(packMessage(sender));
         qDebug()<<username<<password;
     }
+    switchToPage(PAGE_MAIN);
+    resize(1300,900);
 }
 
 void ClientCore::onRegisterRequest()
 {
     qDebug() << "请求注册，切换到注册页面";
     switchToPage(PAGE_REGISTER);
+    resize(480,672);
 }
 
 void ClientCore::onRegisterSuccess()
 {
     qDebug() << "注册成功，切换到登录页面";
     switchToPage(PAGE_LOGIN);
+    resize(480,672);
 }
 
 void ClientCore::onLogout()
 {
     qDebug() << "用户登出，切换到登录页面";
     switchToPage(PAGE_LOGIN);
+    resize(480,672);
 }
 

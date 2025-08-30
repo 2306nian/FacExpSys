@@ -6,31 +6,202 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>585</width>
+    <height>402</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">/* QPushButton - 发送按钮 */
+QPushButton, QToolButton {
+    background: #E8E8E8;
+    border: none;
+    color: 	#000000;
+    font-size: 14px;
+    padding: 4px 8px;
+    outline: none;
+}
+
+QPushButton:hover, QToolButton:hover {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+QPushButton:pressed, QToolButton:pressed {
+    background: #dcdcdc;
+}
+
+/* QListView - 消息列表 */
+QListView {
+    background: #ffffff;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #222222;
+    padding: 5px;
+}
+
+/* QTextEdit - 聊天输入框 */
+QTextEdit {
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    background: #fafafa;
+    font-size: 14px;
+    color: #333333;
+    padding: 4px;
+    outline: none;
+}
+
+QTextEdit:focus {
+    border: 1px solid #999999;
+    background: #ffffff;
+}
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QListView" name="messageListView"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit"/>
-    </item>
-    <item>
-     <widget class="QPushButton" name="sendButton">
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-       </font>
+     <widget class="QToolButton" name="toolButton">
+      <property name="maximumSize">
+       <size>
+        <width>40</width>
+        <height>16</height>
+       </size>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::RightToLeft</enum>
       </property>
       <property name="text">
-       <string>发送</string>
+       <string>...</string>
       </property>
+      <property name="icon">
+       <iconset resource="icons.qrc">
+        <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QListView" name="listView"/>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>140</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QToolButton" name="toolButton_file">
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonFollowStyle</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_video">
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_share">
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_emission">
+           <property name="text">
+            <string>发送</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEdit_chat">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>400</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -40,13 +211,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>585</width>
      <height>18</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>
