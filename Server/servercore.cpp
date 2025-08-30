@@ -4,6 +4,7 @@
 #include "common.h"
 #include "qjsondocument.h"
 #include <QDebug>
+#include <QJsonDocument>
 
 ServerCore::ServerCore(quint16 port, QObject *parent)
     : QTcpServer(parent)

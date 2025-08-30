@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>739</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>44</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* 全局样式 - 现代科技字体 */
+* {
+    font-family: &quot;Bahnschrift&quot;, &quot;Segoe UI&quot;, &quot;Arial&quot;, sans-serif;
+    outline: none;
+}
+
+/* 主窗口 - 暗色科技背景 */
+QMainWindow {
+    background-color: #0f111a;
+    color: #e0e0e0;
+    border: none;
+}
+
+/* 中央窗口 - 高级渐变背景 */
+QWidget#centralwidget {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                               stop:0 #0f111a, 
+                               stop:0.4 #141824, 
+                               stop:1 #0f111a);
+}
+
+/* 菜单栏 - 现代工业头部 */
+QMenuBar {
+    background-color: #1a1d2d;
+    border-bottom: 1px solid #303550;
+    padding: 3px;
+    min-height: 32px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    color: #bdc7d8;
+    padding: 6px 15px;
+    margin: 1px 4px;
+    border-radius: 3px;
+}
+
+QMenuBar::item:selected {
+    background-color: rgba(71, 117, 229, 0.2);
+    color: #4775e5;
+}
+
+/* 菜单 - 现代下拉面板 */
+QMenu {
+    background-color: #1a1d2d;
+    border: 1px solid #303550;
+    border-radius: 4px;
+    padding: 5px 0;
+}
+
+QMenu::item {
+    padding: 6px 32px 6px 20px;
+    color: #bdc7d8;
+}
+
+QMenu::item:selected {
+    background-color: rgba(71, 117, 229, 0.2);
+    color: #4775e5;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #303550;
+    margin: 4px 12px;
+}
+
+/* 状态栏 - 工业信息条 */
+QStatusBar {
+    background-color: #1a1d2d;
+    color: #bdc7d8;
+    border-top: 1px solid #303550;
+    min-height: 28px;
+}
+
+/* 按钮 - 工业控制按钮 */
+QPushButton {
+    background-color: #1e2235;
+    color: #bdc7d8;
+    border: 1px solid #303550;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 12pt;
+    font-weight: 500;
+    text-align: left;
+    min-height: 50px;
+    
+    /* 左侧高亮线 */
+    border-left: 3px solid #303550;
+}
+
+QPushButton:hover {
+    background-color: #272b40;
+    color: #ffffff;
+    border: 1px solid #3f466a;
+    border-left: 3px solid #4775e5;
+}
+
+QPushButton:pressed {
+    background-color: #1a1d2d;
+    border: 1px solid #303550;
+    border-left: 3px solid #4775e5;
+    padding-left: 18px;
+    padding-top: 12px;
+}
+
+QPushButton:checked {
+    background-color: #23273c;
+    color: #4775e5;
+    border: 1px solid #303550;
+    border-left: 3px solid #4775e5;
+}
+
+/* 辅助元素 */
+QFrame[frameShape=&quot;4&quot;], /* VLine */
+QFrame[frameShape=&quot;5&quot;] { /* HLine */
+    background-color: #303550;
+}
+
+/* 提示工具 */
+QToolTip {
+    background-color: #1a1d2d;
+    color: #bdc7d8;
+    border: 1px solid #303550;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* 滚动条 - 现代滚动条 */
+QScrollBar:vertical {
+    background: #1a1d2d;
+    width: 8px;
+    margin: 0px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #303550;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #4775e5;
+}
+
+QScrollBar::add-line:vertical, 
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, 
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* 标签 */
+QLabel {
+    color: #bdc7d8;
+}
+
+/* 水平布局和垂直布局 */
+QHBoxLayout, QVBoxLayout {
+    padding: 0;
+    margin: 0;
+    spacing: 10px;
+}
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>140</number>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>72</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>TO_ORDER</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>72</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>TO_DEVICE</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>72</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>TO_MINE</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <widget class="QWidget" name="page_3"/>
+      <widget class="QWidget" name="page_4"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>52</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

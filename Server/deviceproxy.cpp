@@ -82,7 +82,7 @@ void DeviceProxy::requestData(ClientSession *requester, const QJsonObject &reque
     requester->sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
 }
 
-void DeviceProxy::sendControlCommand(const QJsonObject &command)
+void DeviceProxy::receiveControlCommand(const QJsonObject &command)
 {
     QString deviceId = command["device_id"].toString();
     QString action = command["action"].toString();

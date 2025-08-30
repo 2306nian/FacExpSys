@@ -34,6 +34,7 @@ signals:
     void textMessageReceived(ClientSession *sender, const QByteArray &message);
     void mediaDataReceived(ClientSession *sender, const QByteArray &data);
     void deviceDataRequest(ClientSession *sender, const QJsonObject &request);
+    void deviceControlRequest(ClientSession* sender, const QJsonObject &command);
     void controlCommandReceived(const QJsonObject &command);
 
     // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
