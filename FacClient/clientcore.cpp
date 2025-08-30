@@ -47,7 +47,8 @@ void ClientCore::onReadyRead(){
         qDebug()<<"unpacked success";
     }
    //此处可能后续需要修改
-    if(message["data"]["message"]=="Login successful"){
+    QJsonDocument doc=QJsonDocument::fromJson(message);
+    if(doc["message"]=="Login successful"){
         switchToPage(PAGE_MAIN);
     }
 }
@@ -70,13 +71,6 @@ void ClientCore::initializeNetwork()
 
 void ClientCore::sendRegisterRequest(const QString &username, const QString &password)
 {
-<<<<<<< HEAD
-    if(tcp->state() == QAbstractSocket::ConnectedState){
-        qDebug() << "连接成功";
-    }
-
-=======
->>>>>>> 10fde08fa12d492ff65fefc1783b82b1eb1d6e09
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "register";
