@@ -29,10 +29,10 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::mediaDataReceived,
             MediaRelay::instance(), &MediaRelay::relayMedia);
 
-    connect(this, &ClientSession::deviceDataRequest,
-            DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
-                DeviceProxy::instance()->requestData(sender, req);
-            });
+    // connect(this, &ClientSession::deviceDataRequest,
+    //         DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
+    //             DeviceProxy::instance()->requestData(sender, req);
+    //         });
 
     // connect(this, &ClientSession::fileUploadRequest,
     //         FileRouter::instance(), &FileRouter::handleFileUploadRequest);
@@ -46,13 +46,8 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     // connect(this, &ClientSession::fileUploadEnd,
     //         FileRouter::instance(), &FileRouter::handleFileUploadEnd);
 
-    connect(FileRouter::instance(), &FileRouter::fileUploaded,
-            this, [this](const QString &ticketId, const QJsonObject &info) {
-                // 只有订阅了该工单才推送
-                if (m_currentTicket->ticketId == ticketId){
-                    sendMessage(QJsonDocument(info).toJson(QJsonDocument::Compact));
-                }
-            });// 你有新文件可下载广播
+    // connect(FileRouter::instance(), &FileRouter::fileUploaded,
+    //         FileRouter::instance(), &FileRouter::newFileUploaded);// 你有新文件可下载广播
 
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);

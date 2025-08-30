@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QRandomGenerator>
+#include "workorder.h"
 
 DeviceProxy *DeviceProxy::m_instance = nullptr;
 
@@ -21,52 +22,50 @@ DeviceProxy::DeviceProxy(QObject *parent)
 {
     m_updateTimer = new QTimer(this);
     connect(m_updateTimer, &QTimer::timeout, this, &DeviceProxy::onUpdateTimer);
+    connect(this,&DeviceProxy::deviceDataUpdated, this, &DeviceProxy::sendDeviceData);
     m_updateTimer->start(3000); // 每3秒更新一次
 }
 
-void DeviceProxy::requestData(ClientSession *requester, const QJsonObject &request)
+void DeviceProxy::sendDeviceData(const QJsonObject &deviceData)
 {
-    QString deviceId = request["device_id"].toString();
+    // WorkOrder *order = sender->currentTicket();
+    // if (!order){
+    //     qDebug() << "order not found!";
+    //     return;
+    // }
 
-    // 模拟设备数据
-    QJsonObject data{
-        {"pressure", 85.5 + (qrand() % 10 - 5)},
-        {"temperature", 62.3 + (qrand() % 10 - 5)},
-        {"status", "normal"},
-        {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)},
-        {"logs", QJsonArray{"System started", "No errors detected"}},
-        {"faults", QJsonArray{}}
-    };
-
-    QJsonObject response{
-        {"type", "device_data"},
-        {"data", data}
-    };
-
-    requester->sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+    // for (ClientSession *client : order->clients) {
+    //     client->sendMessage(QJsonDocument(deviceData).toJson(QJsonDocument::Compact));
+    // }
 }
 
-void DeviceProxy::sendControlCommand(const QJsonObject &command)
-{
-    QString deviceId = command["device_id"].toString();
-    QString action = command["action"].toString();
+// void DeviceProxy::sendControlCommand(const QJsonObject &command)
+// {
+//     QString deviceId = command["device_id"].toString();
+//     QString action = command["action"].toString();
 
-    qDebug() << "Control command sent to device" << deviceId << ":" << action;
-    // 这里可以添加实际的串口或网络控制代码
-}
+
+
+//     qDebug() << "Control command sent to device" << deviceId << ":" << action;
+//     // 这里可以添加实际的串口或网络控制代码
+// }
 
 void DeviceProxy::onUpdateTimer()
 {
     static int counter = 0;
 
-    QJsonObject data{
+    QJsonObject deviceData;
+    deviceData["type"] = "device_data";
+    QJsonObject device_data{
+        {"device_id","PLC_1001"},
         {"pressure", 80 + (qrand() % 20)},
         {"temperature", 50 + (qrand() % 20)},
         {"status", (counter++ % 5 == 0) ? "warning" : "normal"},
         {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)}
     };
+    deviceData["data"] = device_data;
 
-    emit deviceDataUpdated("PLC_1001", data);
+    emit deviceDataUpdated(deviceData);
 }
 
 int DeviceProxy::qrand()

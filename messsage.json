@@ -42,6 +42,12 @@
         }
     },
     {
+        "type":"text_msg",
+        "data":{
+            "message":"...",
+        }
+    },
+    {
         "type": "file_upload_start",
         "data":{
             "file_name":"...",
