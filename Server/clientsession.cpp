@@ -285,14 +285,11 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
 
         // 登录成功
-        QString userType = UserDAO::instance()->getUserType(username);
-
         QJsonObject response{
             {"type", "login_result"},
             {"data", QJsonObject{
                          {"success", true},
                          {"message", "Login successful"},
-                         {"user_type", userType}
                      }}
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));

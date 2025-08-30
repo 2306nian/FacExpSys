@@ -43,14 +43,28 @@ ClientCore::~ClientCore()
 void ClientCore::onReadyRead(){
     receiver.append(tcp->readAll());
     QByteArray message;
-    while(unpackMessage(receiver,message)){
+    if(unpackMessage(receiver,message)){
         qDebug()<<"unpacked success";
     }
    //此处可能后续需要修改
     QJsonDocument doc=QJsonDocument::fromJson(message);
-    if(doc["message"]=="Login successful"){
-        switchToPage(PAGE_MAIN);
+    if (doc["type"] == "register_result"){
+        QJsonObject dataObj = doc["data"].toObject();
+        if(doc["success"].toBool()){
+            //TODO:注册成功显示
+        }
+        else{
+            //TODO:注册失败显示
+        }
     }
+    else if(doc["type"] == "login_result"){
+        QJsonObject dataObj = doc["data"].toObject();
+        if(dataObj["success"].toBool()){
+            switchToPage(PAGE_MAIN);
+        }
+        //TODO:登陆失败处理
+    }
+    //TODO:RTMP处理
 }
 void ClientCore::initializeNetwork()
 {
