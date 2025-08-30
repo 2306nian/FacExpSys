@@ -42,40 +42,58 @@
         }
     },
     {
-        "type": "file_upload",
+        "type": "file_upload_start",
         "data":{
-            "ticketId": "...",
-            "filename": "...",
-            "fileType": "...",
-            "fileSize": "...",
-            "uploadTime": "YYMMDD",
-            "file_data": "..."
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"..."
         }
     },
     {
-        "type": "file_available",
+        "type":"upload_started",
         "data":{
-            "file_id": "...",
-            "file_name": "...",
-            "file_size": "...",
-            "file_type": "...",
-            "upload_time": "..."
+            "file_id":"...",
+            "message":"...",
+        },
+    },
+    {
+        "type":"file_uploaded",
+        "data":{
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"...",
+        },
+    },
+    {
+        "type":"file_upload_chunk",
+        "data":{
+            "file_id":"...",
+            "chunk_data":"...",
+            "is_last":"..."
         }
     },
     {
-        "type": "file_download_response",
+        "type":"file_meta",
         "data":{
-            "file_id": "...",
-            "file_name": "...",
-            "file_size": "...",
-            "file_type": "...",
-            "file_data": "..."
-        }
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"...",
+        },
+    },
+    {
+        "type":"file_chunk",
+        "data":{
+            "data":"...",
+            "is_last":"...",
+        },
     },
     {
         "type": "file_download",
         "data":{
-            "file_id": "..."
+            "file_id": "...",
+            "ticketId":"..."
         }
     }
 ]
