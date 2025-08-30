@@ -9,6 +9,7 @@
 #include "MainWindow_main.h"
 #include "register.h"
 #include "widget.h"
+#include<QJsonDocument>
 
 namespace Ui {
 class ClientCore;
@@ -43,7 +44,7 @@ private slots:
     void onRegisterRequest();
     void onRegisterSuccess();
     void onLogout();
-
+    void onReadyRead();
 
 private:
     Ui::ClientCore *ui;
@@ -57,6 +58,7 @@ private:
 
     // 页面映射表，用于方便页面切换
     QMap<PageType, QWidget*> pages;
+    QByteArray receiver;
 
     // TCP Socket
     QTcpSocket *tcp;
