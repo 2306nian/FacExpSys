@@ -26,8 +26,10 @@ Widget::~Widget()
 
 void Widget::on_pushButton_login_clicked()
 {
+    QString username = ui->lineEdit_account->text();
+    QString password= ui->lineEdit_password->text();
     // 发出登录成功信号
-    emit loginSuccess();
+    emit loginSuccess(username,password);
 }
 
 void Widget::on_pushButton_more_clicked()

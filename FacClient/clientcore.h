@@ -33,16 +33,18 @@ public:
     // 发送注册请求
     void sendRegisterRequest(const QString &username, const QString &password);
 
+
 public slots:
     // 切换到指定页面
     void switchToPage(PageType pageType);
 
 private slots:
     // 处理来自子页面的信号
-    void onLoginSuccess();
+    void onLoginSuccess(const QString &username,const QString &password);
     void onRegisterRequest();
     void onRegisterSuccess();
     void onLogout();
+
 
 private:
     Ui::ClientCore *ui;
