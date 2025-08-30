@@ -2,6 +2,11 @@
 #define SERVERCORE_H
 
 #include <QTcpServer>
+#include <QList>
+#include <QJsonObject>
+
+class ClientSession;
+class DeviceProxy;
 
 class ServerCore : public QTcpServer
 {
@@ -10,8 +15,18 @@ class ServerCore : public QTcpServer
 public:
     explicit ServerCore(quint16 port, QObject *parent = nullptr);
 
+    // 获取所有客户端（用于广播）
+    QList<ClientSession*> clients() const { return m_clients; }
+
 protected:
     void incomingConnection(qintptr handle) override;
+
+private slots:
+    // 处理设备数据更新并广播
+    void broadcastDeviceData(const QString &deviceId, const QJsonObject &data);
+
+private:
+    QList<ClientSession*> m_clients;
 };
 
 #endif // SERVERCORE_H

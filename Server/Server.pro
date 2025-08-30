@@ -1,10 +1,11 @@
-QT += core gui network sql
+QT += core gui network sql widgets multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
 TARGET = RemoteSupportServer
+
 CONFIG += console
 CONFIG -= app_bundle
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -14,11 +15,13 @@ CONFIG -= app_bundle
 SOURCES += \
     clientsession.cpp \
     database.cpp \
+    devicedao.cpp \
     deviceproxy.cpp \
     filerouter.cpp \
     main.cpp \
     mediarelay.cpp \
     messagerouter.cpp \
+    rtmpmanager.cpp \
     servercore.cpp \
     userdao.cpp \
     workorder.cpp \
@@ -29,10 +32,12 @@ HEADERS += \
     clientsession.h \
     common.h \
     database.h \
+    devicedao.h \
     deviceproxy.h \
     filerouter.h \
     mediarelay.h \
     messagerouter.h \
+    rtmpmanager.h \
     servercore.h \
     userdao.h \
     workorder.h \
@@ -45,6 +50,11 @@ TRANSLATIONS += \
     Server_zh_CN.ts
 CONFIG += lrelease
 CONFIG += embed_translations
+
+# Windows平台特殊处理
+win32 {
+    LIBS += -lws2_32 -lSecur32
+}
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

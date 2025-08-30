@@ -13,11 +13,11 @@ class DeviceProxy : public QObject
 
 public:
     static DeviceProxy *instance();
-    void sendDeviceData(const QJsonObject &deviceData);
-    void sendControlCommand(const QJsonObject &command);
+    void requestData(ClientSession *requester, const QJsonObject &request);
+    void receiveControlCommand(const QJsonObject &command);
 
 signals:
-    void deviceDataUpdated(const QJsonObject &data);
+    void deviceDataUpdated(const QString &deviceId, const QJsonObject &data);
 
 private slots:
     void onUpdateTimer();

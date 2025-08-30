@@ -9,6 +9,8 @@
 #include "filerouter.h"
 #include "deviceproxy.h"
 #include "userdao.h"
+#include "devicedao.h"
+#include "rtmpmanager.h" // 新增RTMP管理器
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -29,13 +31,12 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::mediaDataReceived,
             MediaRelay::instance(), &MediaRelay::relayMedia);
 
-    // connect(this, &ClientSession::deviceDataRequest,
-    //         DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
-    //             DeviceProxy::instance()->requestData(sender, req);
-    //         });
+    connect(this, &ClientSession::deviceDataRequest,
+            DeviceProxy::instance(), [](ClientSession* sender, const QJsonObject& req) {
+                DeviceProxy::instance()->requestData(sender, req);
+            });
 
-    // connect(this, &ClientSession::fileUploadRequest,
-    //         FileRouter::instance(), &FileRouter::handleFileUploadRequest);
+    connect(this, &ClientSession::controlCommandReceived, DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
 
     connect(this, &ClientSession::fileUploadStart,
             FileRouter::instance(), &FileRouter::handleFileUploadStart);
@@ -43,14 +44,18 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::fileUploadChunk,
             FileRouter::instance(), &FileRouter::handleFileUploadChunk);
 
-    // connect(this, &ClientSession::fileUploadEnd,
-    //         FileRouter::instance(), &FileRouter::handleFileUploadEnd);
-
-    // connect(FileRouter::instance(), &FileRouter::fileUploaded,
-    //         FileRouter::instance(), &FileRouter::newFileUploaded);// 你有新文件可下载广播
-
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
+
+    // RTMP流信号连接
+    connect(this, &ClientSession::rtmpStreamStarted,
+            RTMPManager::instance(), &RTMPManager::onStreamStarted);
+
+    connect(this, &ClientSession::rtmpStreamStopped,
+            RTMPManager::instance(), &RTMPManager::onStreamStopped);
+
+    connect(this, &ClientSession::rtmpStreamDataReceived,
+            RTMPManager::instance(), &RTMPManager::relayStreamData);
 }
 
 ClientSession::~ClientSession() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
@@ -58,6 +63,27 @@ ClientSession::~ClientSession() // 应该在析构函数中添加一个清理函
     if (m_socket) {
         m_socket->deleteLater();
     }
+
+    // 如果正在推流，通知停止
+    if (m_isStreaming && m_currentTicket) {
+        emit rtmpStreamStopped(this, m_currentTicket->ticketId);
+    }
+}
+
+//RTMP
+void ClientSession::setRtmpStreamUrl(const QString &url)
+{
+    m_rtmpStreamUrl = url;
+}
+
+QString ClientSession::rtmpStreamUrl() const
+{
+    return m_rtmpStreamUrl;
+}
+
+bool ClientSession::isStreaming() const
+{
+    return m_isStreaming;
 }
 
 QTcpSocket *ClientSession::socket() const
@@ -153,22 +179,18 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "request_device_data") {
         emit deviceDataRequest(this, obj["data"].toObject());
     }
+    else if (type == "deviceControl"){
+        emit deviceControlRequest(this, obj["data"].toObject());
+    }
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
     }
-
-    // else if (type == "file_upload") {
-    //     emit fileUploadRequest(this, obj["data"].toObject()); // 客户端发送文件
-    // }
     else if (type == "file_upload_start") {
         emit fileUploadStart(this, obj["data"].toObject());
     }
     else if (type == "file_upload_chunk") {
         emit fileUploadChunk(this, obj["data"].toObject());
     }
-    // else if (type == "file_upload_end") {
-    //     emit fileUploadEnd(this, obj["data"].toObject());
-    // }
     else if (type == "file_download") {
         emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
     }
@@ -257,20 +279,113 @@ void ClientSession::handleMessage(const QByteArray &data)
             return;
         }
 
-        // ✅ 登录成功
+        // 登录成功
         QString userType = UserDAO::instance()->getUserType(username);
 
         QJsonObject response{
             {"type", "login_result"},
             {"success", true},
-            {"user_type", userType},  // 告诉客户端你是 client 还是 expert
             {"message", "Login successful"}
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-
-        // 可选：记录登录时间（进阶）
-        // 可以在 UserDAO 中添加 updateLastLogin(username)
     }
+
+
+    // 客户端登陆时需要获取设备基础信息，实时数据由另一边转发
+    else if (type == "get_device_list") {
+        QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
+        QJsonArray arr;
+        for (const auto &dev : devices) {
+            // 获取该设备的实时数据
+            QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
+
+            arr.append(QJsonObject{
+                {"device_id", dev.deviceId},
+                {"name", dev.name},
+                {"type", dev.type},
+                {"location", dev.location},
+                {"online_status", dev.onlineStatus},
+                {"pressure", realtime["pressure"]},      // 加入实时数据
+                {"temperature", realtime["temperature"]},
+                {"status", realtime["status"]}
+            });
+        }
+        QJsonObject response{
+            {"type", "device_list"},
+            {"data", arr}
+        };
+        sendMessage(QJsonDocument(response).toJson());
+    }
+
+    //RTMP
+    else if (type == "rtmp_stream_start") {
+        QJsonObject dataObj = obj["data"].toObject();
+        QString ticketId = dataObj["ticket_id"].toString();
+        QString streamName = dataObj["stream_name"].toString();
+
+        // 验证客户端是否在正确的工单中
+        if (m_currentTicket && m_currentTicket->ticketId == ticketId) {
+            // 生成RTMP流URL
+            QString streamUrl = QString("rtmp://localhost/live/%1_%2")
+                                    .arg(ticketId)
+                                    .arg(streamName);
+
+            m_rtmpStreamUrl = streamUrl;
+            m_isStreaming = true;
+            m_streamStartTime = QDateTime::currentDateTime();
+
+            // 通知RTMP管理器开始流
+            emit rtmpStreamStarted(this, ticketId, streamUrl);
+
+            // 回复客户端确认
+            QJsonObject response{
+                {"type", "rtmp_stream_started"},
+                {"data", QJsonObject{
+                             {"ticket_id", ticketId},
+                             {"stream_url", streamUrl},
+                             {"message", "Stream started successfully"}
+                         }}
+            };
+            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+
+            qDebug() << "RTMP stream started for ticket:" << ticketId
+                     << "by client:" << m_clientIp;
+        }
+    }
+    else if (type == "rtmp_stream_stop") {
+        QJsonObject dataObj = obj["data"].toObject();
+        QString ticketId = dataObj["ticket_id"].toString();
+
+        if (m_currentTicket && m_currentTicket->ticketId == ticketId && m_isStreaming) {
+            m_isStreaming = false;
+            emit rtmpStreamStopped(this, ticketId);
+
+            // 回复客户端确认
+            QJsonObject response{
+                {"type", "rtmp_stream_stopped"},
+                {"data", QJsonObject{
+                             {"ticket_id", ticketId},
+                             {"message", "Stream stopped successfully"}
+                         }}
+            };
+            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+
+            qDebug() << "RTMP stream stopped for ticket:" << ticketId
+                     << "by client:" << m_clientIp;
+        }
+    }
+    else if (type == "rtmp_stream_data") {
+        // 处理RTMP流数据（如果通过TCP传输）
+        QJsonObject dataObj = obj["data"].toObject();
+        QString ticketId = dataObj["ticket_id"].toString();
+        QByteArray streamData = QByteArray::fromBase64(dataObj["stream_data"].toString().toUtf8());
+
+        if (m_currentTicket && m_currentTicket->ticketId == ticketId && m_isStreaming) {
+            // 转发流数据给同工单的其他客户端
+            emit rtmpStreamDataReceived(this, streamData);
+        }
+    }
+
     else {
         qWarning() << "Unknown message type:" << type;
     }

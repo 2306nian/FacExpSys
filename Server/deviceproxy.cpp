@@ -5,7 +5,9 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QRandomGenerator>
-#include "workorder.h"
+#include "database.h"
+#include <QSqlQuery>
+#include <QVariant>
 
 DeviceProxy *DeviceProxy::m_instance = nullptr;
 
@@ -22,50 +24,136 @@ DeviceProxy::DeviceProxy(QObject *parent)
 {
     m_updateTimer = new QTimer(this);
     connect(m_updateTimer, &QTimer::timeout, this, &DeviceProxy::onUpdateTimer);
-    connect(this,&DeviceProxy::deviceDataUpdated, this, &DeviceProxy::sendDeviceData);
     m_updateTimer->start(3000); // 每3秒更新一次
+
+    // 注册模拟设备（只执行一次）
+    QSqlQuery query(Database::instance()->db());
+
+    // 清空旧数据（测试用）
+    query.exec("DELETE FROM devices WHERE device_id LIKE 'SIM_%'");
+    query.exec("DELETE FROM device_realtime WHERE device_id LIKE 'SIM_%'");
+    query.exec("DELETE FROM device_history WHERE device_id LIKE 'SIM_%'");
+
+    // 注册3个模拟设备
+    QList<QJsonObject> simDevices = {
+        {{"id", "SIM_PLC_1001"}, {"name", "主控PLC"}, {"type", "PLC"}, {"loc", "车间A-1楼"}},
+        {{"id", "SIM_SENSOR_2002"}, {"name", "温度传感器"}, {"type", "Sensor"}, {"loc", "车间A-2楼"}},
+        {{"id", "SIM_MOTOR_3003"}, {"name", "主轴电机"}, {"type", "Motor"}, {"loc", "车间B-流水线1"}}
+    };
+
+    QDateTime now = QDateTime::currentDateTime();
+    for (const auto &dev : simDevices) {
+        QString id = dev["id"].toString();
+        query.prepare(R"(
+        INSERT OR IGNORE INTO devices (
+            device_id, name, type, location, manufacturer, model, created_at, online_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'online')
+    )");
+        query.addBindValue(id);
+        query.addBindValue(dev["name"].toString());
+        query.addBindValue(dev["type"].toString());
+        query.addBindValue(dev["loc"].toString());
+        query.addBindValue("Simulated");
+        query.addBindValue("SIM-2025");
+        query.addBindValue(now);
+        query.exec();
+    }
 }
 
-void DeviceProxy::sendDeviceData(const QJsonObject &deviceData)
+void DeviceProxy::requestData(ClientSession *requester, const QJsonObject &request)
 {
-    // WorkOrder *order = sender->currentTicket();
-    // if (!order){
-    //     qDebug() << "order not found!";
-    //     return;
-    // }
+    QString deviceId = request["device_id"].toString();
 
-    // for (ClientSession *client : order->clients) {
-    //     client->sendMessage(QJsonDocument(deviceData).toJson(QJsonDocument::Compact));
-    // }
+    // 模拟设备数据
+    QJsonObject data{
+        {"pressure", 85.5 + (qrand() % 10 - 5)},
+        {"temperature", 62.3 + (qrand() % 10 - 5)},
+        {"status", "normal"},
+        {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)},
+        {"logs", QJsonArray{"System started", "No errors detected"}},
+        {"faults", QJsonArray{}}
+    };
+
+    QJsonObject response{
+        {"type", "device_data"},
+        {"data", data}
+    };
+
+    requester->sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
 }
 
-// void DeviceProxy::sendControlCommand(const QJsonObject &command)
-// {
-//     QString deviceId = command["device_id"].toString();
-//     QString action = command["action"].toString();
+void DeviceProxy::receiveControlCommand(const QJsonObject &command)
+{
+    QString deviceId = command["device_id"].toString();
+    QString action = command["action"].toString();
 
+    qDebug() << "Control command sent to device" << deviceId << ":" << action;
+    // 这里可以添加实际的串口或网络控制代码
+}
 
-
-//     qDebug() << "Control command sent to device" << deviceId << ":" << action;
-//     // 这里可以添加实际的串口或网络控制代码
-// }
 
 void DeviceProxy::onUpdateTimer()
 {
     static int counter = 0;
+    QSqlDatabase db = Database::instance()->db();
+    QSqlQuery query(db);
 
-    QJsonObject deviceData;
-    deviceData["type"] = "device_data";
-    QJsonObject device_data{
-        {"device_id","PLC_1001"},
-        {"pressure", 80 + (qrand() % 20)},
-        {"temperature", 50 + (qrand() % 20)},
-        {"status", (counter++ % 5 == 0) ? "warning" : "normal"},
-        {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)}
-    };
-    deviceData["data"] = device_data;
+    QStringList deviceIds = {"SIM_PLC_1001", "SIM_SENSOR_2002", "SIM_MOTOR_3003"};
+    QDateTime now = QDateTime::currentDateTime();
 
-    emit deviceDataUpdated(deviceData);
+    for (const QString &deviceId : deviceIds) {
+        double pressure = 80 + QRandomGenerator::global()->bounded(20);  // 80~100
+        double temperature = 50 + QRandomGenerator::global()->bounded(20); // 50~70
+        QString status = (counter % 5 == 0) ? "warning" : "normal";
+
+        // 写入实时表（UPSERT）
+        query.prepare(R"(
+        INSERT OR REPLACE INTO device_realtime (
+            device_id, pressure, temperature, status, last_update
+        ) VALUES (?, ?, ?, ?, ?)
+    )");
+        query.addBindValue(deviceId);
+        query.addBindValue(pressure);
+        query.addBindValue(temperature);
+        query.addBindValue(status);
+        query.addBindValue(now);
+        query.exec();
+
+        // 写入历史表
+        query.prepare(R"(
+        INSERT INTO device_history (device_id, pressure, temperature, status, timestamp)
+        VALUES (?, ?, ?, ?, ?)
+    )");
+        query.addBindValue(deviceId);
+        query.addBindValue(pressure);
+        query.addBindValue(temperature);
+        query.addBindValue(status);
+        query.addBindValue(now);
+        query.exec();
+
+        // 模拟日志（偶尔写一条）
+        if (QRandomGenerator::global()->bounded(100) < 5) {
+            query.prepare(R"(
+            INSERT INTO device_logs (device_id, level, message, timestamp)
+            VALUES (?, 'WARN', 'High temperature detected', ?)
+        )");
+            query.addBindValue(deviceId);
+            query.addBindValue(now);
+            query.exec();
+        }
+
+        // emit 给客户端
+        QJsonObject data{
+            {"device_id", deviceId},
+            {"pressure", pressure},
+            {"temperature", temperature},
+            {"status", status},
+            {"timestamp", now.toString(Qt::ISODate)}
+        };
+        emit deviceDataUpdated(deviceId, data);
+    }
+
+    counter++;
 }
 
 int DeviceProxy::qrand()
