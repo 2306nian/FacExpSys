@@ -74,11 +74,73 @@ bool Database::initialize(const QString &dbPath)
         )
     )");
 
-    if (!(work_order_ok && work_order_devices_ok && users_ok)) {
+
+    // 1. 设备基本信息
+    bool devices_ok = query.exec(R"(
+    CREATE TABLE IF NOT EXISTS devices (
+        device_id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        location TEXT,
+        manufacturer TEXT,
+        model TEXT,
+        ip_address TEXT,
+        port INTEGER,
+        protocol TEXT,
+        online_status TEXT DEFAULT 'offline',
+        last_heartbeat DATETIME,
+        created_at DATETIME NOT NULL
+    )
+)");
+
+    // 2. 实时数据（最新值）
+    bool device_realtime_ok = query.exec(R"(
+    CREATE TABLE IF NOT EXISTS device_realtime (
+        device_id TEXT PRIMARY KEY,
+        pressure REAL,
+        temperature REAL,
+        status TEXT,
+        humidity REAL,
+        vibration REAL,
+        power_status TEXT,
+        last_update DATETIME NOT NULL,
+        FOREIGN KEY (device_id) REFERENCES devices (device_id) ON DELETE CASCADE
+    )
+)");
+
+    // 3. 历史数据（用于曲线）
+    bool device_history_ok = query.exec(R"(
+    CREATE TABLE IF NOT EXISTS device_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT NOT NULL,
+        pressure REAL,
+        temperature REAL,
+        status TEXT,
+        timestamp DATETIME NOT NULL,
+        fault_code TEXT,
+        FOREIGN KEY (device_id) REFERENCES devices (device_id) ON DELETE CASCADE
+    )
+)");
+
+    // 4. 设备日志
+    bool device_logs_ok = query.exec(R"(
+    CREATE TABLE IF NOT EXISTS device_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT NOT NULL,
+        level TEXT NOT NULL,
+        message TEXT NOT NULL,
+        timestamp DATETIME NOT NULL,
+        FOREIGN KEY (device_id) REFERENCES devices (device_id) ON DELETE CASCADE
+    )
+)");
+
+    if (!(work_order_ok && work_order_devices_ok && users_ok && devices_ok
+            && device_history_ok && device_logs_ok && device_realtime_ok)) {
         qCritical() << "Failed to create table:" << query.lastError().text();
     } else {
-        qDebug() << "work_orders table ready.";
+        qDebug() << "All the tables ready.";
     }
 
-    return work_order_devices_ok && work_order_ok && users_ok;
+    return work_order_devices_ok && work_order_ok && users_ok && devices_ok
+           && device_history_ok && device_logs_ok && device_realtime_ok;
 }

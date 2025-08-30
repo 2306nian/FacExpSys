@@ -9,6 +9,7 @@
 #include "filerouter.h"
 #include "deviceproxy.h"
 #include "userdao.h"
+#include "devicedao.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -262,20 +263,43 @@ void ClientSession::handleMessage(const QByteArray &data)
             return;
         }
 
-        // ✅ 登录成功
+        // 登录成功
         QString userType = UserDAO::instance()->getUserType(username);
 
         QJsonObject response{
             {"type", "login_result"},
             {"success", true},
-            {"user_type", userType},  // 告诉客户端你是 client 还是 expert
             {"message", "Login successful"}
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-
-        // 可选：记录登录时间（进阶）
-        // 可以在 UserDAO 中添加 updateLastLogin(username)
     }
+
+    // 客户端登陆时需要获取设备基础信息，实时数据由另一边转发
+    else if (type == "get_device_list") {
+        QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
+        QJsonArray arr;
+        for (const auto &dev : devices) {
+            // 获取该设备的实时数据
+            QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
+
+            arr.append(QJsonObject{
+                {"device_id", dev.deviceId},
+                {"name", dev.name},
+                {"type", dev.type},
+                {"location", dev.location},
+                {"online_status", dev.onlineStatus},
+                {"pressure", realtime["pressure"]},      // 加入实时数据
+                {"temperature", realtime["temperature"]},
+                {"status", realtime["status"]}
+            });
+        }
+        QJsonObject response{
+            {"type", "device_list"},
+            {"data", arr}
+        };
+        sendMessage(QJsonDocument(response).toJson());
+    }
+
     else {
         qWarning() << "Unknown message type:" << type;
     }
