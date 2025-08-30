@@ -1,10 +1,17 @@
-QT += core gui network sql
+QT += core gui network sql widgets multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
 TARGET = RemoteSupportServer
+
+#RTMP Module路径配置
+LIBRTMP_PATH = $$PWD/librtmp
+
+INCLUDEPATH += $$LIBRTMP_PATH/include
+LIBS += -L$$LIBRTMP_PATH/lib -lrtmp
+
 CONFIG += console
 CONFIG -= app_bundle
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -20,6 +27,7 @@ SOURCES += \
     main.cpp \
     mediarelay.cpp \
     messagerouter.cpp \
+    rtmpmanager.cpp \
     servercore.cpp \
     userdao.cpp \
     workorder.cpp \
@@ -35,6 +43,7 @@ HEADERS += \
     filerouter.h \
     mediarelay.h \
     messagerouter.h \
+    rtmpmanager.h \
     servercore.h \
     userdao.h \
     workorder.h \
@@ -47,6 +56,11 @@ TRANSLATIONS += \
     Server_zh_CN.ts
 CONFIG += lrelease
 CONFIG += embed_translations
+
+# Windows平台特殊处理
+win32 {
+    LIBS += -lws2_32 -lSecur32
+}
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

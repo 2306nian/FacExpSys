@@ -54,7 +54,7 @@
         "data":{
             "file_id":"...",
             "message":"...",
-        },
+        }
     },
     {
         "type":"file_uploaded",
@@ -63,7 +63,7 @@
             "file_name":"...",
             "file_size":"...",
             "ticket_id":"...",
-        },
+        }
     },
     {
         "type":"file_upload_chunk",
@@ -80,20 +80,73 @@
             "file_name":"...",
             "file_size":"...",
             "ticket_id":"...",
-        },
+        }
     },
     {
         "type":"file_chunk",
         "data":{
             "data":"...",
-            "is_last":"...",
-        },
+            "is_last":"..."
+        }
     },
     {
         "type": "file_download",
         "data":{
             "file_id": "...",
             "ticketId":"..."
+        }
+    },
+    {
+        "type": "rtmp_stream_start",
+        "data":{
+            "ticket_id": "...",
+            "stream_name": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_stop",
+        "data":{
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_data",
+        "data":{
+            "ticket_id": "...",
+            "stream_data": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_started",
+        "data":{
+            "ticket_id": "...",
+            "stream_url": "...",
+            "message": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_available",
+        "data":{
+            "ticket_id": "...",
+            "stream_url": "...",
+            "publisher_ip": "...",
+            "publisher_port": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_ended",
+        "data":{
+            "ticket_id": "...",
+            "message": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_data",
+        "data":{
+            "ticket_id": "...",
+            "data_size": "...",
+            "stream_data": "...",
+            "timestamp": "..."
         }
     }
 ]
