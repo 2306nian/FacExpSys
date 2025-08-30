@@ -17,9 +17,9 @@ struct UploadContext {
     QString ticketId;
     QString filePath;
     qint64 receivedBytes;
-    // QFile* file;
     ClientSession* client;
     QDateTime uploadTime;
+    QFile *file = nullptr;
 };
 
 class FileRouter : public QObject
@@ -34,11 +34,11 @@ public:
     void handleFileUploadChunk(ClientSession *sender, const QJsonObject &data);
     void handleFileUploadEnd(ClientSession *sender, const QJsonObject &data);
     void handleFileDownloadRequest(ClientSession *sender, const QJsonObject &request);
-
+    void newFileUploaded(ClientSession *sender, const QJsonObject &notify);
     QString generateFileId();
 
 signals:
-    void fileUploaded(const QString &ticketId, const QJsonObject &notification); // 文件上传成功后 进行工单内部广播
+    void fileUploaded(ClientSession *sender, const QJsonObject &notification); // 文件上传成功后 进行工单内部广播
 
 private:
     explicit FileRouter(QObject *parent = nullptr); // 单例实现

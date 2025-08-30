@@ -1,0 +1,78 @@
+#ifndef CLIENTCORE_H
+#define CLIENTCORE_H
+
+#include <QMainWindow>
+#include <QStackedWidget>
+#include <QMap>
+#include <QTcpSocket>
+#include <QJsonObject>
+#include "MainWindow_main.h"
+#include "register.h"
+#include "widget.h"
+#include<QJsonDocument>
+
+namespace Ui {
+class ClientCore;
+}
+
+class ClientCore : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    // 定义页面类型枚举
+    enum PageType {
+        PAGE_LOGIN,      // 登录页面
+        PAGE_REGISTER,   // 注册页面
+        PAGE_MAIN        // 主界面
+    };
+
+    explicit ClientCore(QWidget *parent = nullptr);
+    ~ClientCore();
+
+    // 发送注册请求
+    void sendRegisterRequest(const QString &username, const QString &password);
+
+
+public slots:
+    // 切换到指定页面
+    void switchToPage(PageType pageType);
+
+private slots:
+    // 处理来自子页面的信号
+    void onLoginSuccess(const QString &username,const QString &password);
+    void onRegisterRequest();
+    void onRegisterSuccess();
+    void onLogout();
+    void onReadyRead();
+
+private:
+    Ui::ClientCore *ui;
+
+    // 页面实例
+    Widget *wid;            // 登录页面
+    Register *reg;          // 注册页面
+    MainWindow_main *m_main; // 主界面
+
+    QStackedWidget *qsw;    // 堆栈窗口部件
+
+    // 页面映射表，用于方便页面切换
+    QMap<PageType, QWidget*> pages;
+    QByteArray receiver;
+
+    // TCP Socket
+    QTcpSocket *tcp;
+
+    // 初始化所有页面
+    void initializePages();
+
+    // 连接页面信号
+    void connectPageSignals();
+
+    // 初始化网络连接
+    void initializeNetwork();
+};
+
+#endif // CLIENTCORE_H
+
+

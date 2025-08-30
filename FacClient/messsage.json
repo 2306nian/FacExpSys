@@ -1,0 +1,158 @@
+[
+    {
+        "type": "register",
+        "data":{
+            "username": "...",
+            "password": "...",
+            "registerAt": "YYMMDD"
+        }
+    },
+    {
+        "type": "login",
+        "data":{
+            "username": "...",
+            "password": "..."
+        }
+    },
+    {
+        "type": "create_ticket",
+        "data":{
+            "device_ids": ["...", "..."],
+            "username": "..."
+        }
+    },
+    {
+        "type": "join_ticket",
+        "data":{
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "accept_ticket",
+        "data": {
+            "expert_username": "...",
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "complete_ticket",
+        "data": {
+            "description": "...",
+            "solution": "..."
+        }
+    },
+    {
+        "type":"text_msg",
+        "data":{
+            "message":"...",
+        }
+    },
+    {
+        "type": "file_upload_start",
+        "data":{
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"..."
+        }
+    },
+    {
+        "type":"upload_started",
+        "data":{
+            "file_id":"...",
+            "message":"...",
+        }
+    },
+    {
+        "type":"file_uploaded",
+        "data":{
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"...",
+        }
+    },
+    {
+        "type":"file_upload_chunk",
+        "data":{
+            "file_id":"...",
+            "chunk_data":"...",
+            "is_last":"..."
+        }
+    },
+    {
+        "type":"file_meta",
+        "data":{
+            "file_id":"...",
+            "file_name":"...",
+            "file_size":"...",
+            "ticket_id":"...",
+        }
+    },
+    {
+        "type":"file_chunk",
+        "data":{
+            "data":"...",
+            "is_last":"..."
+        }
+    },
+    {
+        "type": "file_download",
+        "data":{
+            "file_id": "...",
+            "ticketId":"..."
+        }
+    },
+    {
+        "type": "rtmp_stream_start",
+        "data":{
+            "ticket_id": "...",
+            "stream_name": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_stop",
+        "data":{
+            "ticket_id": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_data",
+        "data":{
+            "ticket_id": "...",
+            "stream_data": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_started",
+        "data":{
+            "ticket_id": "...",
+            "stream_url": "...",
+            "message": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_available",
+        "data":{
+            "ticket_id": "...",
+            "stream_url": "...",
+            "publisher_ip": "...",
+            "publisher_port": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_ended",
+        "data":{
+            "ticket_id": "...",
+            "message": "..."
+        }
+    },
+    {
+        "type": "rtmp_stream_data",
+        "data":{
+            "ticket_id": "...",
+            "data_size": "...",
+            "stream_data": "...",
+            "timestamp": "..."
+        }
+    }
+]

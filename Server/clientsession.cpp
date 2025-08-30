@@ -37,25 +37,14 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::controlCommandReceived,
             DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
 
-    // connect(this, &ClientSession::fileUploadRequest,
-    //         FileRouter::instance(), &FileRouter::handleFileUploadRequest);
+    connect(this, &ClientSession::controlCommandReceived, DeviceProxy::instance(),
+            &DeviceProxy::receiveControlCommand);
 
     connect(this, &ClientSession::fileUploadStart,
             FileRouter::instance(), &FileRouter::handleFileUploadStart);
 
     connect(this, &ClientSession::fileUploadChunk,
             FileRouter::instance(), &FileRouter::handleFileUploadChunk);
-
-    // connect(this, &ClientSession::fileUploadEnd,
-    //         FileRouter::instance(), &FileRouter::handleFileUploadEnd);
-
-    connect(FileRouter::instance(), &FileRouter::fileUploaded,
-            this, [this](const QString &ticketId, const QJsonObject &info) {
-                // 只有订阅了该工单才推送
-                if (m_currentTicket->ticketId == ticketId){
-                    sendMessage(QJsonDocument(info).toJson(QJsonDocument::Compact));
-                }
-            });// 你有新文件可下载广播
 
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
@@ -189,22 +178,18 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "request_device_data") {
         emit deviceDataRequest(this, obj["data"].toObject());
     }
+    else if (type == "deviceControl"){
+        emit deviceControlRequest(this, obj["data"].toObject());
+    }
     else if (type == "control_command") {
         emit controlCommandReceived(obj["data"].toObject());
     }
-
-    // else if (type == "file_upload") {
-    //     emit fileUploadRequest(this, obj["data"].toObject()); // 客户端发送文件
-    // }
     else if (type == "file_upload_start") {
         emit fileUploadStart(this, obj["data"].toObject());
     }
     else if (type == "file_upload_chunk") {
         emit fileUploadChunk(this, obj["data"].toObject());
     }
-    // else if (type == "file_upload_end") {
-    //     emit fileUploadEnd(this, obj["data"].toObject());
-    // }
     else if (type == "file_download") {
         emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
     }

@@ -26,6 +26,8 @@ FileRouter *FileRouter::instance()
 FileRouter::FileRouter(QObject *parent)
     : QObject(parent)
 {
+    connect(this, &FileRouter::fileUploaded,
+            this, &FileRouter::newFileUploaded);// 你有新文件可下载广播
 }
 
 QString FileRouter::generateFileId()
@@ -52,7 +54,7 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
     QDir().mkpath(dirPath);
 
     // 存储路径：使用 fileId 避免冲突
-    QString filePath = dirPath + "/" + fileId;
+    QString filePath = dirPath + "/" + fileName;
 
     // 创建上传上下文
     UploadContext ctx;
@@ -64,6 +66,12 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
     ctx.receivedBytes = 0;
     ctx.client = sender;
     ctx.uploadTime = QDateTime::currentDateTime();
+    ctx.file = new QFile(ctx.filePath);
+    if (!ctx.file->open(QIODevice::WriteOnly)) {
+        qWarning() << "Cannot create file:" << ctx.filePath;
+        delete ctx.file;
+        return;
+    }
 
     m_uploads[sender] = ctx;
 
@@ -93,11 +101,8 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
 
     UploadContext &ctx = m_uploads[sender];
 
-    // 创建文件
-    QFile *file = new QFile(ctx.filePath);
-    if (!file->open(QIODevice::WriteOnly)) {
-        qWarning() << "Cannot create file:" << ctx.filePath;
-        delete file;
+    if (!ctx.file || !ctx.file->isOpen()) {
+        qWarning() << "File not open for writing.";
         return;
     }
 
@@ -114,7 +119,7 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         return;
     }
 
-    if (file->write(chunkData) == -1) {
+    if (ctx.file->write(chunkData) == -1) {
         qWarning() << "Failed to write chunk to file:" << ctx.filePath;
         return;
     }
@@ -125,13 +130,15 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
     bool isLast = data["is_last"].toBool(); // 传输过程中需要带一个bool变量用来标识是否是最后一块
 
     if (isLast) {
-        file->close();
-        delete file;
-        m_uploads.remove(sender); // 移除会话
-
         // 记录文件信息映射（用于下载）
         QString key = ctx.ticketId + "/" + ctx.fileId;
-        m_fileContextMap[key] = ctx;
+        m_fileContextMap[key] = ctx; // 保存了一个空的file指针 不过没有影响
+
+        ctx.file->close();
+        delete ctx.file;
+        ctx.file = nullptr;
+
+        m_uploads.remove(sender); // 移除会话
 
         // 通知工单系统：文件已上传
         QJsonObject notify;
@@ -143,7 +150,7 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         nData["ticket_id"] = ctx.ticketId;
         notify["data"] = nData;
 
-        emit fileUploaded(ctx.ticketId, notify); // TODO:广播文件上传成功
+        emit fileUploaded(sender, notify); // TODO:广播文件上传成功
 
         qDebug() << "Upload completed:" << ctx.fileName << "saved as" << ctx.filePath;
     }
@@ -178,7 +185,7 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
     // 获取分块大小
     int chunkSize = qBound(1024, CHUNK_SIZE, 1024 * 1024);     // 限制在 1KB ~ 1MB 之间
 
-    // 4. 发送文件元信息（file_meta）
+    // 发送文件元信息（file_meta）
     QJsonObject meta;
     meta["type"] = "file_meta";
     QJsonObject mData;
@@ -228,4 +235,18 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
 
     qDebug() << "Successfully streamed file:" << ctx.fileName
              << "Total sent:" << totalSent << "bytes";
+}
+
+void FileRouter::newFileUploaded(ClientSession *sender, const QJsonObject &notify){
+    WorkOrder *order = sender->currentTicket();
+    if (!order){
+        qDebug() << "order not found!";
+        return;
+    }
+
+    for (ClientSession *client : order->clients) {
+        if (client != sender) {
+            client->sendMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+        }
+    }
 }
