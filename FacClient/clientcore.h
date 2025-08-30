@@ -6,7 +6,6 @@
 #include <QMap>
 #include <QTcpSocket>
 #include <QJsonObject>
-#include "common.h"
 #include "MainWindow_main.h"
 #include "register.h"
 #include "widget.h"

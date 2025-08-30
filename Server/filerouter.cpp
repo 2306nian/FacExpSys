@@ -26,8 +26,8 @@ FileRouter *FileRouter::instance()
 FileRouter::FileRouter(QObject *parent)
     : QObject(parent)
 {
-    connect(FileRouter::instance(), &FileRouter::fileUploaded,
-            FileRouter::instance(), &FileRouter::newFileUploaded);// 你有新文件可下载广播
+    connect(this, &FileRouter::fileUploaded,
+            this, &FileRouter::newFileUploaded);// 你有新文件可下载广播
 }
 
 QString FileRouter::generateFileId()

@@ -2,6 +2,7 @@
 #include "clientsession.h"
 #include "deviceproxy.h"
 #include "common.h"
+#include "qjsondocument.h"
 #include <QDebug>
 #include <QJsonDocument>
 
@@ -22,6 +23,7 @@ ServerCore::ServerCore(quint16 port, QObject *parent)
 
 void ServerCore::incomingConnection(qintptr handle)
 {
+    qDebug() << "Incoming Connection...";
     QTcpSocket *socket = new QTcpSocket(this);
     socket->setSocketDescriptor(handle);
 
