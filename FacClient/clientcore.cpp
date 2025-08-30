@@ -27,7 +27,7 @@ ClientCore::ClientCore(QWidget *parent)
 
     // 默认显示登录页面
     switchToPage(PAGE_LOGIN);
-    connect(tcp,&QTcpSocket::readyRead(),this,&ClientCore::onReadyRead);
+    connect(tcp,&QTcpSocket::readyRead,this,&ClientCore::onReadyRead);
 
     // 设置窗口标题和大小
     setWindowTitle("客户端");

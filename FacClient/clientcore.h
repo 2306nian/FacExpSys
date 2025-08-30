@@ -43,7 +43,7 @@ private slots:
     void onRegisterRequest();
     void onRegisterSuccess();
     void onLogout();
-
+    void onReadyRead();
 
 private:
     Ui::ClientCore *ui;
