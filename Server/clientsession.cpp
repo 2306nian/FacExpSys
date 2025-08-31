@@ -11,6 +11,7 @@
 #include "userdao.h"
 #include "devicedao.h"
 #include "rtmpmanager.h" // 新增RTMP管理器
+#include "workorderdao.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -150,18 +151,11 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
 
         // 使用当前 session 的真实连接信息
-        QString ticketId = WorkOrderManager::instance()->createTicket(
+        WorkOrderManager::instance()->createTicket(
             this,           // ← 传入当前 session
             deviceIds,
             username
-            );
-
-        QJsonObject response{
-            {"type", "ticket_created"},
-            {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
-        };
-        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-        emit newTicketCreated(this,ticketId); // TODO
+        );
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();
@@ -286,42 +280,88 @@ void ClientSession::handleMessage(const QByteArray &data)
             return;
         }
 
-        // 登录成功
-        QJsonObject response{
+        // 登录成功：保存用户信息
+        QString m_username = username;
+        QString m_userType = UserDAO::instance()->getUserType(username);
+
+        // 登录成功响应
+        QJsonObject loginResponse{
             {"type", "login_result"},
             {"data", QJsonObject{
                          {"success", true},
                          {"message", "Login successful"},
+                         {"user_type", m_userType}  // 告诉客户端角色
                      }}
         };
-        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-    }
+        sendMessage(QJsonDocument(loginResponse).toJson(QJsonDocument::Compact));
 
-
-    // 客户端登陆时需要获取设备基础信息，实时数据由另一边转发
-    else if (type == "get_device_list") {
-        QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
-        QJsonArray arr;
-        for (const auto &dev : devices) {
-            // 获取该设备的实时数据
-            QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
-
-            arr.append(QJsonObject{
-                {"device_id", dev.deviceId},
-                {"name", dev.name},
-                {"type", dev.type},
-                {"location", dev.location},
-                {"online_status", dev.onlineStatus},
-                {"pressure", realtime["pressure"]},      // 加入实时数据
-                {"temperature", realtime["temperature"]},
-                {"status", realtime["status"]}
-            });
+        // 获取并推送设备列表
+        {
+            QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
+            QJsonArray arr;
+            for (const auto &dev : devices) {
+                QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
+                arr.append(QJsonObject{
+                    {"device_id", dev.deviceId},
+                    {"name", dev.name},
+                    {"type", dev.type},
+                    {"location", dev.location},
+                    {"online_status", dev.onlineStatus},
+                    {"pressure", realtime["pressure"]},
+                    {"temperature", realtime["temperature"]},
+                    {"status", realtime["status"]}
+                });
+            }
+            QJsonObject deviceResponse{
+                {"type", "device_list"},
+                {"data", QJsonObject{{"devices", arr}}}
+            };
+            sendMessage(QJsonDocument(deviceResponse).toJson());
         }
-        QJsonObject response{
-            {"type", "device_list"},
-            {"data", QJsonObject{{"devices", arr}}}
-        };
-        sendMessage(QJsonDocument(response).toJson());
+
+        // 如果是工厂端，自动推送“已创建”工单列表
+        if (m_userType == "client") {
+            QList<WorkOrderRecord> allOrders = WorkOrderDAO::instance()->getClientWorkOrders(m_username);
+
+            QJsonArray arr;
+            for (const auto &r : allOrders) {
+                arr.append(QJsonObject{
+                    {"ticket_id", r.ticketId},
+                    {"status", r.status},
+                    {"created_at", r.createdAt.toString(Qt::ISODate)},
+                    {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+                });
+            }
+
+            QJsonObject workOrdersResponse{
+                {"type", "work_orders_initial"},
+                {"scope", "all"},
+                {"data", arr}
+            };
+            sendMessage(QJsonDocument(workOrdersResponse).toJson(QJsonDocument::Compact));
+        }
+
+        // 如果是专家端，可以推送“可承接”工单
+        if (m_userType == "expert") {
+            QList<WorkOrderRecord> pendingOrders = WorkOrderDAO::instance()->getPendingWorkOrders();
+
+            QJsonArray arr;
+            for (const auto &r : pendingOrders) {
+                arr.append(QJsonObject{
+                    {"ticket_id", r.ticketId},
+                    {"client_username", r.clientUsername},
+                    {"created_at", r.createdAt.toString(Qt::ISODate)},
+                    {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+                });
+            }
+
+            QJsonObject pendingResponse{
+                {"type", "work_orders"},
+                {"scope", "pending"},
+                {"data", arr}
+            };
+            sendMessage(QJsonDocument(pendingResponse).toJson(QJsonDocument::Compact));
+        }
     }
 
     //RTMP
@@ -392,6 +432,55 @@ void ClientSession::handleMessage(const QByteArray &data)
             emit rtmpStreamDataReceived(this, streamData);
         }
     }
+    else if (type == "get_work_orders") {
+
+        QJsonObject dataObj = obj["data"].toObject();
+        QString scope = dataObj["scope"].toString();
+        QString m_username = dataObj["username"].toString();
+        QList<WorkOrderRecord> records;
+
+        QString m_userType = UserDAO::instance()->getUserType(m_username);
+
+        if (m_userType == "client") {
+            if (scope == "all") {
+                records = WorkOrderDAO::instance()->getClientWorkOrders(m_username);
+            } else if (scope == "pending") {
+                records = WorkOrderDAO::instance()->getClientPendingWorkOrders(m_username);
+            } else if (scope == "in_progress") {
+                records = WorkOrderDAO::instance()->getClientInProgressWorkOrders(m_username);
+            } else if (scope == "completed") {
+                records = WorkOrderDAO::instance()->getClientCompletedWorkOrders(m_username);
+            }
+        } else if (m_userType == "expert") {
+            if (scope == "pending") {
+                records = WorkOrderDAO::instance()->getPendingWorkOrders();
+            } else if (scope == "in_progress") {
+                records = WorkOrderDAO::instance()->getExpertInProgressWorkOrders(m_username);
+            } else if (scope == "completed") {
+                records = WorkOrderDAO::instance()->getExpertCompletedWorkOrders(m_username);
+            }
+        }
+
+        QJsonArray arr;
+        for (const auto &r : records) {
+            arr.append(QJsonObject{
+                {"ticket_id", r.ticketId},
+                {"client_username", r.clientUsername},
+                {"status", r.status},
+                {"created_at", r.createdAt.toString(Qt::ISODate)},
+                {"accepted_at", r.acceptedAt.toString(Qt::ISODate)},
+                {"completed_at", r.completedAt.toString(Qt::ISODate)},
+                {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+            });
+        }
+
+        QJsonObject response{
+            {"type", "work_orders"},
+            {"scope", scope},
+            {"data", arr}
+        };
+        sendMessage(QJsonDocument(response).toJson());
+    }
 
     else {
         qWarning() << "Unknown message type:" << type;
@@ -407,3 +496,4 @@ int ClientSession::clientPort() const
 {
     return m_clientPort;
 }
+
