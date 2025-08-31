@@ -8,7 +8,7 @@ ScreenShareManager::ScreenShareManager(QObject *parent)
 {
 }
 
-ScreenShareManager* ScreenShareManager::instance() // 单例
+ScreenShareManager* ScreenShareManager::instance() // 单例实现
 {
     if (!m_instance) {
         m_instance = new ScreenShareManager;
@@ -16,30 +16,30 @@ ScreenShareManager* ScreenShareManager::instance() // 单例
     return m_instance;
 }
 
-bool ScreenShareManager::startScreenShare(ClientSession* sender, const QString& workOrderId)
+bool ScreenShareManager::startScreenShare(ClientSession* sender, const QString& ticketId)
 {
-    if (!sender || workOrderId.isEmpty()) {
+    if (!sender || ticketId.isEmpty()) {
         return false;
     }
 
     // 检查该工单是否已经在共享
-    if (m_activeSessions.contains(workOrderId)) {
-        qWarning() << "Work order already has active screen share:" << workOrderId;
+    if (m_activeSessions.contains(ticketId)) {
+        qWarning() << "Work order already has active screen share:" << ticketId;
         return false;
     }
 
     // 创建新的屏幕共享会话 方便管理共享进程（非必须）
     ScreenShareSession session;
     session.sender = sender;
-    session.workOrderId = workOrderId;
+    session.ticketId = ticketId;
     session.isPaused = false;
     session.frameCount = 0;
     session.startTime = QDateTime::currentDateTime();
 
-    m_activeSessions[workOrderId] = session;
-    m_sessionToWorkOrder[sender] = workOrderId;
+    m_activeSessions[ticketId] = session;
+    m_sessionToWorkOrder[sender] = ticketId;
 
-    qDebug() << "Screen share started for work order:" << workOrderId;
+    qDebug() << "Screen share started for work order:" << ticketId;
     return true;
 }
 
@@ -49,15 +49,15 @@ void ScreenShareManager::stopScreenShare(ClientSession* sender)
         return;
     }
 
-    QString workOrderId = m_sessionToWorkOrder[sender];
+    QString ticketId = m_sessionToWorkOrder[sender];
 
-    if (m_activeSessions.contains(workOrderId)) {
-        m_activeSessions.remove(workOrderId);
+    if (m_activeSessions.contains(ticketId)) {
+        m_activeSessions.remove(ticketId);
     }
 
     m_sessionToWorkOrder.remove(sender);
 
-    qDebug() << "Screen share stopped for work order:" << workOrderId;
+    qDebug() << "Screen share stopped for work order:" << ticketId;
 }
 
 void ScreenShareManager::pauseScreenShare(ClientSession* sender)
@@ -66,11 +66,11 @@ void ScreenShareManager::pauseScreenShare(ClientSession* sender)
         return;
     }
 
-    QString workOrderId = m_sessionToWorkOrder[sender];
+    QString ticketId = m_sessionToWorkOrder[sender];
 
-    if (m_activeSessions.contains(workOrderId)) {
-        m_activeSessions[workOrderId].isPaused = true;
-        qDebug() << "Screen share paused for work order:" << workOrderId;
+    if (m_activeSessions.contains(ticketId)) {
+        m_activeSessions[ticketId].isPaused = true;
+        qDebug() << "Screen share paused for work order:" << ticketId;
     }
 }
 
@@ -80,11 +80,11 @@ void ScreenShareManager::resumeScreenShare(ClientSession* sender)
         return;
     }
 
-    QString workOrderId = m_sessionToWorkOrder[sender];
+    QString ticketId = m_sessionToWorkOrder[sender];
 
-    if (m_activeSessions.contains(workOrderId)) {
-        m_activeSessions[workOrderId].isPaused = false;
-        qDebug() << "Screen share resumed for work order:" << workOrderId;
+    if (m_activeSessions.contains(ticketId)) {
+        m_activeSessions[ticketId].isPaused = false;
+        qDebug() << "Screen share resumed for work order:" << ticketId;
     }
 }
 
@@ -94,17 +94,17 @@ void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QJs
         return;
     }
 
-    QString workOrderId = m_sessionToWorkOrder[sender];
+    QString ticketId = m_sessionToWorkOrder[sender];
 
     // 如果是第一个数据帧，自动开始共享
     QString type = message["type"].toString();
-    if (type == "screensharedata" && !m_activeSessions.contains(workOrderId)) {
-        startScreenShare(sender, workOrderId);
+    if (type == "screensharedata" && !m_activeSessions.contains(ticketId)) {
+        startScreenShare(sender, ticketId);
     }
 
     // 更新帧计数
-    if (type == "screensharedata" && m_activeSessions.contains(workOrderId)) {
-        m_activeSessions[workOrderId].frameCount++;
+    if (type == "screensharedata" && m_activeSessions.contains(ticketId)) {
+        m_activeSessions[ticketId].frameCount++;
     }
 
     // 获取对应的工单
@@ -125,20 +125,20 @@ void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QJs
     }
 
     if (type == "screensharedata") {
-        qDebug() << "Forwarded screen share frame to" << forwardedCount << "clients in work order" << workOrderId;
+        qDebug() << "Forwarded screen share frame to" << forwardedCount << "clients in work order" << ticketId;
     }
 }
 
-bool ScreenShareManager::isScreenSharing(const QString& workOrderId) const
+bool ScreenShareManager::isScreenSharing(const QString& ticketId) const
 {
-    return m_activeSessions.contains(workOrderId) &&
-           !m_activeSessions[workOrderId].isPaused;
+    return m_activeSessions.contains(ticketId) &&
+           !m_activeSessions[ticketId].isPaused;
 }
 
-ClientSession* ScreenShareManager::getCurrentSender(const QString& workOrderId) const
+ClientSession* ScreenShareManager::getCurrentSender(const QString& ticketId) const
 {
-    if (m_activeSessions.contains(workOrderId)) {
-        return m_activeSessions[workOrderId].sender;
+    if (m_activeSessions.contains(ticketId)) {
+        return m_activeSessions[ticketId].sender;
     }
     return nullptr;
 }

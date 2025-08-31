@@ -59,8 +59,6 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::rtmpStreamDataReceived,
             RTMPManager::instance(), &RTMPManager::relayStreamData);
 
-    connect(this, &ClientSession::newTicketCreated,
-            WorkOrderManager::instance(), &WorkOrderManager::sendNewTicketCreated);
 }
 
 ClientSession::~ClientSession() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
@@ -153,7 +151,7 @@ void ClientSession::handleMessage(const QByteArray &data)
 
         // 使用当前 session 的真实连接信息
         QString ticketId = WorkOrderManager::instance()->createTicket(
-            this,
+            this,           // ← 传入当前 session
             deviceIds,
             username
             );
@@ -202,7 +200,7 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "accept_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
-        QString expertUsername = dataObj["username"].toString();
+        QString expertUsername = dataObj["expert_username"].toString();
         QString expertIp = m_socket->peerAddress().toString();
         int expertPort = m_socket->peerPort();
 

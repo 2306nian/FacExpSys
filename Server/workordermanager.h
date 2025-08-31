@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMap>
 #include <QMutex>
+#include <QJsonDocument>
 
 class WorkOrder;
 class ClientSession;
