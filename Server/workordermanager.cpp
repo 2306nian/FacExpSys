@@ -36,6 +36,9 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
 
     WorkOrder *order = new WorkOrder(deviceIds);
     m_tickets[order->ticketId] = order;
+    //
+    order->addClient(creator);
+    creator->setCurrentTicket(order);
 
     bool ok = WorkOrderDAO::instance()->insertWorkOrder(
         order->ticketId,
