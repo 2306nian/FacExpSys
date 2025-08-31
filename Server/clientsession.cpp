@@ -154,7 +154,7 @@ void ClientSession::handleMessage(const QByteArray &data)
             this,           // ← 传入当前 session
             deviceIds,
             username
-        );
+            );
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();
@@ -302,29 +302,27 @@ void ClientSession::handleMessage(const QByteArray &data)
         sendMessage(QJsonDocument(loginResponse).toJson(QJsonDocument::Compact));
 
         // 获取并推送设备列表
-        {
-            QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
-            QJsonArray arr;
-            for (const auto &dev : devices) {
-                QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
-                arr.append(QJsonObject{
-                    {"device_id", dev.deviceId},
-                    {"name", dev.name},
-                    {"type", dev.type},
-                    {"location", dev.location},
-                    {"online_status", dev.onlineStatus},
-                    {"pressure", realtime["pressure"]},
-                    {"temperature", realtime["temperature"]},
-                    {"status", realtime["status"]}
-                });
-            }
-            QJsonObject deviceResponse{
-                {"type", "device_list"},
-                {"data", QJsonObject{{"devices", arr}}}
-            };
-            sendMessage(QJsonDocument(deviceResponse).toJson());
-            qDebug()<<"成功发送设备初始化信息";
+        QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
+        QJsonArray arr;
+        for (const auto &dev : devices) {
+            QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
+            arr.append(QJsonObject{
+                {"device_id", dev.deviceId},
+                {"name", dev.name},
+                {"type", dev.type},
+                {"location", dev.location},
+                {"online_status", dev.onlineStatus},
+                {"pressure", realtime["pressure"]},
+                {"temperature", realtime["temperature"]},
+                {"status", realtime["status"]}
+            });
         }
+        QJsonObject deviceResponse{
+            {"type", "device_list"},
+            {"data", QJsonObject{{"devices", arr}}}
+        };
+        sendMessage(QJsonDocument(deviceResponse).toJson());
+        qDebug()<<"成功发送设备初始化信息";
 
         // 如果是工厂端，自动推送“已创建”工单列表
         if (m_userType == "client") {
