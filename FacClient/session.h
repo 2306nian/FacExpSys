@@ -40,7 +40,7 @@ signals:
     //收包
     void registerResultRecv(Session *client, QByteArray &data);
     void loginResultRecv(Session *client, QByteArray &data);
-    void ticketCreateRecv(Session *client, QJsonObject &data);
+    void ticketCreateRecv(Session *client, QJsonArray &data);
     void joinedTicketRecv(Session *client, QJsonObject &data);
 
     void fileMetaRecv(Session *client, QJsonObject &data);
@@ -55,6 +55,7 @@ signals:
 private slots:
     void onReadyRead();
     void onDisconnected();
+    void setTickedFromHandel(QString s1);
 
 private:
     void handleMessage(const QByteArray &data);
@@ -62,11 +63,8 @@ private:
 
     QTcpSocket *m_socket;
     QByteArray m_buffer;
-<<<<<<< HEAD
-    QString ticked_Id;
-=======
+
     QString ticketId;
->>>>>>> 3b8666c72bb436ebd9b68bd6685f469181549e98
 };
 
 #endif // SESSION_H

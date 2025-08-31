@@ -50,12 +50,15 @@ class TicketHandler: public QObject
         void handleCompleteTicket(Session *sender, const QJsonObject &data);
 
         //接收
-        void handleTicketCreate(Session *client, const QJsonObject &data);
+        void handleTicketCreate(Session *client, const QJsonArray &data);
         void handleTicketJoined(Session *client, const QJsonObject &data);
 
     private:
         explicit TicketHandler(QObject *parent = nullptr);
         static TicketHandler* m_instance;
+
+    signals:
+        void sendTicketToSession(QString s1);
 };
 
 #endif // HANDLERS_H

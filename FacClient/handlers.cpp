@@ -2,6 +2,7 @@
 #include <QObject>
 #include<QJsonDocument>
 #include<QJsonObject>
+#include<QJsonArray>
 
 MessageHandler* MessageHandler::m_instance = nullptr;
 FileHandler* FileHandler::m_instance = nullptr;
@@ -93,7 +94,10 @@ void TicketHandler::handleCompleteTicket(Session *sender, const QJsonObject &dat
 }
 
 //接收
-void TicketHandler::handleTicketCreate(Session *client, const QJsonObject &data){
+void TicketHandler::handleTicketCreate(Session *client, const QJsonArray &data){
+    QJsonObject firstOrder = data.first().toObject();
+    QString s2=firstOrder["ticket_id"].toString();
+    emit sendTicketToSession(s2);
 }
 
 void TicketHandler::handleTicketJoined(Session *client, const QJsonObject &data){
