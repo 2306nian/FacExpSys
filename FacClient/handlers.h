@@ -9,10 +9,12 @@ class MessageHandler: public QObject
     Q_OBJECT
     public:
         static MessageHandler* instance();
-        void handleTextMessage(Session* sender, QByteArray &data);
+        void handleTextMessage(Session* sender, QJsonObject &data);
     private:
         explicit MessageHandler(QObject *parent = nullptr);
         static MessageHandler* m_instance;
+    signals:
+        void sendMessageToChat(QString s1);
 };
 
 class FileHandler: public QObject

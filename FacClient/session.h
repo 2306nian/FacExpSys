@@ -14,11 +14,13 @@ public:
     QTcpSocket *socket() const;
     void sendMessage(const QByteArray &data);
     static Session* instance();
-
+    QString getTickedId();
+    void setTickedId(QString s1);
 signals:
     void disconnected(Session *session);
+    void textUpdate();
     //发包
-    void textMessageSend(Session *sender, QByteArray &message);
+    void textMessageSend(Session *sender, QJsonObject &message);
     void loginRequestSend(Session *sender, QByteArray &data);
     void regeisterRequestSend(Session *sender, QByteArray &data);
     void createTicketSend(Session *sender, QJsonObject &data);
@@ -42,7 +44,7 @@ signals:
     void fileChunkRecv(Session *client, QJsonObject &data);
     void uploadStartedRecv(Session *client, QJsonObject &data);
     void fileUploadedRecv(Session *client, QJsonObject &data);
-
+    void createChatRoom();
     //TODO:与ClientCore通信
     void registerResult(bool);
     void loginResult(bool);
@@ -57,6 +59,7 @@ private:
 
     QTcpSocket *m_socket;
     QByteArray m_buffer;
+    QString ticked_Id;
 };
 
 #endif // SESSION_H

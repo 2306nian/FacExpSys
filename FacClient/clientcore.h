@@ -12,6 +12,7 @@
 #include "session.h"
 #include<QJsonDocument>
 #include "globaldatas.h"
+#include "chatroom.h"
 
 namespace Ui {
 class ClientCore;
@@ -46,6 +47,7 @@ private slots:
     void onRegisterRequest();
     void onRegisterSuccess();
     void onLogout();
+    void onChatroomShow();
 
 private:
     Ui::ClientCore *ui;
@@ -54,7 +56,7 @@ private:
     Widget *wid;            // 登录页面
     Register *reg;          // 注册页面
     MainWindow_main *m_main; // 主界面
-
+    ChatRoom *chat;
     QStackedWidget *qsw;    // 堆栈窗口部件
 
     // 页面映射表，用于方便页面切换

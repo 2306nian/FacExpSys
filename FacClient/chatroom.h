@@ -45,11 +45,16 @@ private slots:
 
     void on_toolButton_clicked();
 
+    void messageUpdate();
+
+    void messageData(QString s1);
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
     MessageDelegate *messageDelegate;
     Session *sender;
+    QString receivedMsg;
 
     void appendMessage(const QString &text, bool isSelf);
 };

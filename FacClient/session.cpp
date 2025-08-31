@@ -4,6 +4,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
+#include<chatroom.h>
+#include"clientcore.h"
 
 Session::Session(QTcpSocket *socket, QObject *parent)
     : QObject(parent)
@@ -38,6 +40,13 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     // }
 }
 
+QString Session::getTickedId(){
+    return ticked_Id;
+}
+
+void Session::setTickedId(QString s1){
+    ticked_Id=s1;
+}
 
 void Session::sendMessage(const QByteArray &data)
 {
@@ -73,6 +82,17 @@ void Session::handleMessage(const QByteArray &data)
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
     }
+    else if(doc["type"]=="ticket_created"){
+        qDebug()<<"收到工单创建请求";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit createChatRoom();
+        emit ticketCreateRecv(g_session,dataObj);
+    }
+    else if(doc["type"]=="text_msg"){
+        qDebug()<<"收到传来的消息";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit textMessageSend(g_session,dataObj);
+        emit textUpdate();
+    }
     //TODO:RTMP处理
-
 }
