@@ -53,8 +53,7 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         return QString();
     }
 
-<<<<<<< HEAD
-=======
+
     QJsonObject ticketInfo{
         {"ticket_id", order->ticketId},
         {"username", clientUsername},
@@ -63,7 +62,6 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
     };
     emit ticketPending(order->ticketId, ticketInfo);
 
->>>>>>> df192aa06ee54b2e46e0cef2cd348f8fa429a953
     return order->ticketId;
 }
 
