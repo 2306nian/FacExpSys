@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QString>
+
 class Session : public QObject
 {
     Q_OBJECT
@@ -12,6 +14,7 @@ public:
 
     QTcpSocket *socket() const;
     void sendMessage(const QByteArray &data);
+    QString getTicketId();
     static Session* instance();
 
 signals:
@@ -56,6 +59,7 @@ private:
 
     QTcpSocket *m_socket;
     QByteArray m_buffer;
+    QString ticketId;
 };
 
 #endif // SESSION_H

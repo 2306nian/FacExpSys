@@ -11,6 +11,7 @@
 #include "userdao.h"
 #include "devicedao.h"
 #include "rtmpmanager.h" // 新增RTMP管理器
+#include "screensharemanager.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -48,6 +49,10 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
 
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
+
+    // 屏幕共享信号连接
+    connect(this, &ClientSession::newScreenShare,
+            ScreenShareManager::instance(), &ScreenShareManager::startScreenShare);
 
     // RTMP流信号连接
     connect(this, &ClientSession::rtmpStreamStarted,
@@ -161,7 +166,7 @@ void ClientSession::handleMessage(const QByteArray &data)
             {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-        emit newTicketCreated(this,ticketId); // TODO
+        emit newTicketCreated(this,ticketId);
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();
@@ -194,6 +199,10 @@ void ClientSession::handleMessage(const QByteArray &data)
     }
     else if (type == "file_download") {
         emit fileDownloadRequest(this, obj["data"].toObject()); // 发出接收文件请求信号
+    }
+    // 屏幕共享
+    else if (type == "screensharedata") {
+        emit newScreenShare(this, data);
     }
 
     // 专家接单
