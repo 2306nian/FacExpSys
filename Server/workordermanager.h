@@ -18,7 +18,7 @@ public:
     QString createTicket(ClientSession *creator,           // ← 新增：传入 session
                          const QStringList &deviceIds,
                          const QString &clientUsername);
-
+    void sendNewTicketCreated(ClientSession *client, const QString ticketId);
     bool joinTicket(const QString &ticketId, ClientSession *client);
     void leaveTicket(ClientSession *client);
     void destroyTicket(const QString &ticketId);

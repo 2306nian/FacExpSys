@@ -51,8 +51,11 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         return QString();
     }
 
-    emit ticketCreated(order->ticketId, deviceIds.join(","));
     return order->ticketId;
+}
+
+void sendNewTicketCreated(ClientSession *client, const QString ticketId){
+
 }
 
 bool WorkOrderManager::joinTicket(const QString &ticketId, ClientSession *client)

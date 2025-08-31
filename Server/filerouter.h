@@ -45,7 +45,7 @@ private:
     static FileRouter *m_instance;
 
     // 当前上传会话：以 ClientSession 为键
-    QHash<ClientSession*, UploadContext> m_uploads;
+    QHash<ClientSession*, UploadContext> m_uploads; // 未进行断开连接之后的清理 可能导致内存泄漏
 
     // 文件信息映射：ticketId/fileId -> 文件信息
     QHash<QString, UploadContext> m_fileContextMap;
