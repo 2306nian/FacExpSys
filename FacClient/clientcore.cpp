@@ -53,39 +53,53 @@ ClientCore::~ClientCore()
     // 不需要显式删除页面，因为它们作为子部件会被自动删除
 }
 
-// void ClientCore::onReadyRead(){
-//     receiver.append(tcp->readAll());
-//     QByteArray message;
-//     while(unpackMessage(receiver,message)){
-//         qDebug()<<"unpacked success";
-//     }
-//    //此处可能后续需要修改
-//     QJsonDocument doc=QJsonDocument::fromJson(message);
-//     if(doc["data"]["message"]=="Login successful"){
-//         switchToPage(PAGE_MAIN);
-//     }
-// }
+
 
 Session* ClientCore::initializeNetwork()
 {
     QTcpSocket* tcp = new QTcpSocket(this);
 
-    connect(tcp, &QTcpSocket::connected, [](){
-        qDebug() << "连接成功！";
+    // 添加连接超时处理
+    QTimer* connectionTimer = new QTimer(this);
+    connectionTimer->setSingleShot(true);
+    connect(connectionTimer, &QTimer::timeout, this, [this, tcp]() {
+        if (tcp->state() != QAbstractSocket::ConnectedState) {
+            qDebug() << "连接超时！尝试重新连接...";
+            tcp->abort();
+            tcp->connectToHost("127.0.0.1", 8888);
+        }
     });
-    // 连接失败信号（会触发多次，注意去重或只处理一次）
+
+    connect(tcp, &QTcpSocket::connected, [connectionTimer](){
+        qDebug() << "连接成功！";
+        connectionTimer->stop();
+    });
+
     connect(tcp, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
-            [tcp](QAbstractSocket::SocketError error){
+            [tcp, this, connectionTimer](QAbstractSocket::SocketError error){
                 qDebug() << "连接失败，错误代码：" << error;
                 qDebug() << "错误信息：" << tcp->errorString();
+
+                // 根据错误类型决定是否重连
+                if (error == QAbstractSocket::ConnectionRefusedError ||
+                    error == QAbstractSocket::NetworkError) {
+                    qDebug() << "尝试5秒后重新连接...";
+                    QTimer::singleShot(5000, this, [tcp]() {
+                        tcp->connectToHost("127.0.0.1", 8888);
+                    });
+                }
             });
 
     tcp->connectToHost("127.0.0.1", 8888);
+    connectionTimer->start(5000); // 5秒超时
+
     return new Session(tcp);
 }
 
+
 void ClientCore::sendRegisterRequest(const QString &username, const QString &password)
 {
+    qDebug()<<"注册成功";
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "register";
@@ -170,7 +184,7 @@ void ClientCore::onRegisterRequest()
 
 void ClientCore::onRegisterSuccess()
 {
-    qDebug() << "注册成功，切换到登录页面";
+    qDebug() << "请求返回登录";
     switchToPage(PAGE_LOGIN);
     resize(480,672);
 }
