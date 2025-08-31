@@ -3,6 +3,7 @@
 #include "deviceproxy.h"
 #include "common.h"
 #include "qjsondocument.h"
+#include "workordermanager.h"
 #include <QDebug>
 #include <QJsonDocument>
 

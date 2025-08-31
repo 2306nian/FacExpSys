@@ -233,5 +233,14 @@
     		"createAt":"..."
     	}
     }
+    {
+        "type": "ticket_completed",
+        "data": {
+             "ticket_id": "...",
+             "description": "...",
+             "solution": "...",
+             "completedAt": "..."
+        }
+    }
 ]
 

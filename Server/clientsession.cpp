@@ -150,7 +150,7 @@ void ClientSession::handleMessage(const QByteArray &data)
 
         // 使用当前 session 的真实连接信息
         QString ticketId = WorkOrderManager::instance()->createTicket(
-            this,           // ← 传入当前 session
+            this,
             deviceIds,
             username
             );
@@ -199,7 +199,7 @@ void ClientSession::handleMessage(const QByteArray &data)
     else if (type == "accept_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
-        QString expertUsername = dataObj["expert_username"].toString();
+        QString expertUsername = dataObj["username"].toString();
         QString expertIp = m_socket->peerAddress().toString();
         int expertPort = m_socket->peerPort();
 
