@@ -31,14 +31,15 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
 {
     QMutexLocker locker(&m_mutex);
 
-    // 从 session 获取真实 IP 和 Port
     QString clientIp = creator->clientIp();
     int clientPort = creator->clientPort();
 
     WorkOrder *order = new WorkOrder(deviceIds);
     m_tickets[order->ticketId] = order;
+    //
+    order->addClient(creator);
+    creator->setCurrentTicket(order);
 
-    // 调用 DAO，传真实连接信息
     bool ok = WorkOrderDAO::instance()->insertWorkOrder(
         order->ticketId,
         clientUsername,
@@ -53,14 +54,36 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         return QString();
     }
 
+    // 获取该用户的所有工单
+    QList<WorkOrderRecord> allOrders = WorkOrderDAO::instance()->getClientWorkOrders(clientUsername);
 
-    QJsonObject ticketInfo{
-        {"ticket_id", order->ticketId},
-        {"username", clientUsername},
-        {"device_ids", QJsonArray::fromStringList(deviceIds)},
-        {"createdAt", order->createdAt.toString(Qt::ISODate)}
+    // 构造完整响应
+    QJsonArray arr;
+    for (const auto &r : allOrders) {
+        arr.append(QJsonObject{
+            {"ticket_id", r.ticketId},
+            {"status", r.status},
+            {"created_at", r.createdAt.toString(Qt::ISODate)},
+            {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+        });
+    }
+
+    QJsonObject response{
+        {"type", "work_orders"},
+        {"scope", "all"},
+        {"data", arr}
     };
-    emit ticketPending(order->ticketId, ticketInfo);
+    QByteArray packet = QJsonDocument(response).toJson(QJsonDocument::Compact);
+    creator->sendMessage(packet);
+
+    // 依然 emit 信号（用于广播给专家端）
+    emit ticketPending(order->ticketId, QJsonObject{
+                                            {"ticket_id", order->ticketId},
+                                            {"username", clientUsername},
+                                            {"device_ids", QJsonArray::fromStringList(deviceIds)},
+                                            {"created_at", order->createdAt.toString(Qt::ISODate)}
+                                        });
+    qDebug()<<"工单创建成功";
 
     return order->ticketId;
 }

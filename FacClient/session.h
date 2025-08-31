@@ -4,6 +4,8 @@
 #include <QObject>
 #include "globaldatas.h"
 #include <QTcpSocket>
+#include <QString>
+
 class Session : public QObject
 {
     Q_OBJECT
@@ -13,12 +15,15 @@ public:
 
     QTcpSocket *socket() const;
     void sendMessage(const QByteArray &data);
+    QString getTicketId();
     static Session* instance();
-
+    QString getTickedId();
+    void setTickedId(QString s1);
 signals:
     void disconnected(Session *session);
+    void textUpdate();
     //发包
-    void textMessageSend(Session *sender, QByteArray &message);
+    void textMessageSend(Session *sender, QJsonObject &message);
     void loginRequestSend(Session *sender, QByteArray &data);
     void regeisterRequestSend(Session *sender, QByteArray &data);
     void createTicketSend(Session *sender, QJsonObject &data);
@@ -38,7 +43,7 @@ signals:
     //收包
     void registerResultRecv(QByteArray &data);
     void loginResultRecv(QByteArray &data);
-    void ticketCreateRecv(QJsonObject &data);
+    void ticketCreateRecv(QJsonArray &data);
     void joinedTicketRecv(QJsonObject &data);
 
     void fileMetaRecv(QJsonObject &data);
@@ -51,6 +56,8 @@ signals:
     void rtmpStreamEndedRecv(QByteArray &);
     void rtmpStreamDataRecv(QByteArray &);
 
+    void createChatRoom();
+
     //TODO:与ClientCore通信
     void registerResult(bool);
     void loginResult(bool);
@@ -58,6 +65,7 @@ signals:
 private slots:
     void onReadyRead();
     void onDisconnected();
+    void setTickedFromHandel(QString s1);
 
 private:
     void handleMessage(const QByteArray &data);
@@ -65,6 +73,8 @@ private:
 
     QTcpSocket *m_socket;
     QByteArray m_buffer;
+
+    QString ticketId;
 };
 
 #endif // SESSION_H

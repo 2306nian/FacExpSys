@@ -4,6 +4,7 @@
 #include <QtGlobal>
 #include <QByteArray>
 #include <QDataStream>
+#include <QIODevice>
 
 // 工单状态：待接收，进行中，已完成
 #define WORK_ORDER_PENDING      "pending"

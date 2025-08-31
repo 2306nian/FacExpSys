@@ -88,7 +88,10 @@ ClientCore::~ClientCore()
     // 不需要显式删除页面，因为它们作为子部件会被自动删除
 }
 
-
+void ClientCore::onChatroomShow(){
+    chat = new ChatRoom(this);
+    chat->show();
+}
 
 Session* ClientCore::initializeNetwork()
 {
@@ -172,6 +175,7 @@ void ClientCore::initializePages()
 void ClientCore::connectPageSignals()
 {
     // 连接登录页面信号
+    connect(g_session,&Session::createChatRoom,this, &ClientCore::onChatroomShow);
     connect(wid, &Widget::loginSuccess, this, &ClientCore::onLoginSuccess);
     connect(wid, &Widget::registerRequest, this, &ClientCore::onRegisterRequest);
 

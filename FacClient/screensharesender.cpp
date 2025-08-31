@@ -46,7 +46,7 @@ void ScreenCaptureWorker::captureScreen()
         pixmap = pixmap.scaled(maxWidth, maxHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
 
-    // 转换为 JPG 格式以减小数据量
+    // 转换为 JPG 格式
     QByteArray imageData;
     QBuffer buffer(&imageData);
     buffer.open(QIODevice::WriteOnly);

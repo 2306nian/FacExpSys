@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QDebug>
+#include<QJsonArray>
 
 MessageHandler* MessageHandler::m_instance = nullptr;
 FileHandler* FileHandler::m_instance = nullptr;
@@ -20,8 +21,12 @@ MessageHandler* MessageHandler::instance(){
 MessageHandler::MessageHandler(QObject *parent)
     : QObject(parent){}
 
-void MessageHandler::handleTextMessage(Session* sender, QByteArray &data){
-
+void MessageHandler::handleTextMessage(Session* sender, QJsonObject &data){
+    QString message=data["message"].toString();
+    if(!message.isEmpty()){
+        qDebug()<<"消息已经就绪，准备放入聊天框"<<message;
+    }
+    emit sendMessageToChat(message);
 }
 //==============FileHandler================
 FileHandler* FileHandler::instance(){
@@ -91,8 +96,10 @@ void TicketHandler::handleCompleteTicket(Session *sender, const QJsonObject &dat
 }
 
 //接收
-void TicketHandler::handleTicketCreate(const QJsonObject &data){
-
+void TicketHandler::handleTicketCreate(const QJsonArray &data){
+    QJsonObject firstOrder = data.first().toObject();
+    QString s2=firstOrder["ticket_id"].toString();
+    emit sendTicketToSession(s2);
 }
 
 void TicketHandler::handleTicketJoined(const QJsonObject &data){

@@ -1,11 +1,13 @@
 #include "chatroom.h"
 #include "ui_chatroom.h"
-
+#include"handlers.h"
 #include <QStandardItem>
 #include <QVariant>
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
 #include <QTextOption>
+#include<QJsonObject>
+#include <QJsonDocument>
 
 ChatRoom::ChatRoom(QWidget *parent) :
     QMainWindow(parent),
@@ -16,6 +18,8 @@ ChatRoom::ChatRoom(QWidget *parent) :
     // 设置窗口标题
     setWindowTitle("聊天室");
 
+    connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
+    connect(g_session,&Session::textUpdate,this,&ChatRoom::messageUpdate);
     // 初始化model，并绑定到listView
     model = new QStandardItemModel(this);
     ui->listView->setModel(model);
@@ -82,12 +86,24 @@ ChatRoom::~ChatRoom()
     delete ui;
 }
 
+void ChatRoom::messageData(QString s1){
+    receivedMsg=s1;
+}
+
 void ChatRoom::on_pushButton_emission_clicked()
 {
     QString text = ui->textEdit_chat->toPlainText().trimmed();
     if (text.isEmpty())
         return;
 
+    QJsonObject json_message{
+        {"type","text_msg"},
+        {"data",QJsonObject{
+                {"message",text},
+            }}
+    };
+    // 先将QJsonObject转换为QJsonDocument
+    g_session->sendMessage(QJsonDocument(json_message).toJson(QJsonDocument::Compact));
     // 添加自己的消息
     appendMessage(text, true);
 
@@ -252,9 +268,12 @@ QSize MessageDelegate::sizeHint(const QStyleOptionViewItem &option,
     return QSize(option.rect.width(), height);
 }
 
+
+void ChatRoom::messageUpdate(){
+    appendMessage(receivedMsg,false);
+}
+
 // 必须在CPP文件中注册自定义类型，以便QVariant能使用
-
-
 void ChatRoom::on_toolButton_clicked()
 {
     this->close();

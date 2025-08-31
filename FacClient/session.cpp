@@ -4,6 +4,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
+#include<chatroom.h>
+#include"clientcore.h"
 
 Session::Session(QTcpSocket *socket, QObject *parent)
     : QObject(parent)
@@ -25,6 +27,7 @@ Session::Session(QTcpSocket *socket, QObject *parent)
     connect(this, &Session::fileUploadStart, FileHandler::instance(), &FileHandler::handleFileUploadStart);
     connect(this, &Session::fileUploadedRecv, FileHandler::instance(), &FileHandler::handleFileUploaded);
     connect(this, &Session::fileDownloadRequest, FileHandler::instance(), &FileHandler::downloadFileRequest);
+    connect(TicketHandler::instance(),&TicketHandler::sendTicketToSession,this,&Session::setTickedFromHandel);
 }
 Session::~Session() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
 {
@@ -38,6 +41,17 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     // }
 }
 
+void Session::setTickedId(QString s1){
+    ticketId=s1;
+}
+QString Session::getTicketId(){
+    return ticketId;
+}
+
+
+void Session::setTickedFromHandel(QString s1){
+    setTickedId(s1);
+}
 
 void Session::sendMessage(const QByteArray &data)
 {
@@ -73,6 +87,20 @@ void Session::handleMessage(const QByteArray &data)
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
     }
-    //TODO:RTMP处理
+    else if(doc["type"]=="work_orders"){
+        qDebug() << "收到工单创建完成请求";
 
+        // 正确获取data数组
+        QJsonArray dataArray = doc["data"].toArray();
+
+        emit createChatRoom();
+        emit ticketCreateRecv(dataArray);
+    }
+    else if(doc["type"]=="text_msg"){
+        qDebug()<<"收到传来的消息";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit textMessageSend(g_session,dataObj);
+        emit textUpdate();
+    }
+    //TODO:RTMP处理
 }

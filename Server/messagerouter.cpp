@@ -28,8 +28,9 @@ void MessageRouter::routeTextMessage(ClientSession *sender, const QByteArray &me
     }
 
     for (ClientSession *client : order->clients) {
-        if (client != sender) {
+        if (client != sender) { // test:去掉if给所有client发送
             client->sendMessage(message);
+            qDebug()<< "new message received!";
         }
     }
 }

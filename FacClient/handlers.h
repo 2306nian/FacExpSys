@@ -9,10 +9,12 @@ class MessageHandler: public QObject
     Q_OBJECT
     public:
         static MessageHandler* instance();
-        void handleTextMessage(Session* sender, QByteArray &data);
+        void handleTextMessage(Session* sender, QJsonObject &data);
     private:
         explicit MessageHandler(QObject *parent = nullptr);
         static MessageHandler* m_instance;
+    signals:
+        void sendMessageToChat(QString s1);
 };
 
 class FileHandler: public QObject
@@ -48,12 +50,15 @@ class TicketHandler: public QObject
         void handleCompleteTicket(Session *sender, const QJsonObject &data);
 
         //接收
-        void handleTicketCreate(const QJsonObject &data);
+        void handleTicketCreate(const QJsonArray &data);
         void handleTicketJoined(const QJsonObject &data);
 
     private:
         explicit TicketHandler(QObject *parent = nullptr);
         static TicketHandler* m_instance;
+
+    signals:
+        void sendTicketToSession(QString s1);
 };
 
 class RTMPHandler: public QObject

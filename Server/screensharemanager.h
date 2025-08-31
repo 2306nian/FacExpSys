@@ -18,13 +18,13 @@ public:
     static ScreenShareManager* instance();
 
     // 屏幕共享控制
-    bool startScreenShare(ClientSession* sender, const QString& ticketId);
+    bool startScreenShare(ClientSession* sender, const QByteArray& data);
     void stopScreenShare(ClientSession* sender);
     void pauseScreenShare(ClientSession* sender);
     void resumeScreenShare(ClientSession* sender);
 
     // 数据转发
-    void forwardScreenShareData(ClientSession* sender, const QJsonObject& message);
+    void forwardScreenShareData(ClientSession* sender, const QByteArray& message);
 
     // 状态查询
     bool isScreenSharing(const QString& ticketId) const;
