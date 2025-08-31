@@ -34,6 +34,7 @@ void Register::on_pushButton_register_clicked()
     if(!s_a.isEmpty() && !s_p.isEmpty()){
         // 使用ClientCore发送注册请求
         if (m_core) {
+            qDebug()<<"成功发送注册请求";
             m_core->sendRegisterRequest(s_a, s_p);
         }
 

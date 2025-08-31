@@ -24,6 +24,8 @@ protected:
 private slots:
     // 处理设备数据更新并广播
     void broadcastDeviceData(const QString &deviceId, const QJsonObject &data);
+    // 广播工单创建
+    void broadcastTicketPending(const QString &ticketId, const QJsonObject &info);
 
 private:
     QList<ClientSession*> m_clients;

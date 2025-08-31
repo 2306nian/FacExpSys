@@ -216,5 +216,31 @@
             "ticket_id":"..."
         }
     },
+    {
+    	"type":"ticket_pending",
+    	"data":{
+		"ticket_id":"...",
+		"username":"...",
+		"device_ids":["...","..."],
+		"createAt":"..."
+    	}
+    },
+    {
+    	"type":"ticket_accepted",
+    	"data":{
+    		"ticket_id":"...",
+    		"username":"...",
+    		"createAt":"..."
+    	}
+    }
+    {
+        "type": "ticket_completed",
+        "data": {
+             "ticket_id": "...",
+             "description": "...",
+             "solution": "...",
+             "completedAt": "..."
+        }
+    }
 ]
 

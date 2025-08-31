@@ -236,3 +236,4 @@ QList<WorkOrderRecord> WorkOrderDAO::getPendingWorkOrders()
     }
     return list;
 }
+

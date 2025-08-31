@@ -26,7 +26,6 @@ Session::Session(QTcpSocket *socket, QObject *parent)
     connect(this, &Session::fileUploadedRecv, FileHandler::instance(), &FileHandler::handleFileUploaded);
     connect(this, &Session::fileDownloadRequest, FileHandler::instance(), &FileHandler::downloadFileRequest);
 }
-
 Session::~Session() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
 {
     if (m_socket) {
@@ -38,6 +37,8 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     //     emit rtmpStreamStopped(this, m_currentTicket->ticketId);
     // }
 }
+
+
 
 void Session::sendMessage(const QByteArray &data)
 {
@@ -64,7 +65,7 @@ void Session::onDisconnected()
 void Session::handleMessage(const QByteArray &data)
 {
     //此处可能后续需要修改
-    QJsonDocument doc=QJsonDocument::fromJson(data);
+    QJsonDocument doc= QJsonDocument::fromJson(data);
     if (doc["type"] == "register_result"){
         QJsonObject dataObj = doc["data"].toObject();
         emit registerResult(dataObj["success"].toBool());
@@ -72,6 +73,9 @@ void Session::handleMessage(const QByteArray &data)
     else if(doc["type"] == "login_result"){
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
+    }
+    else if(doc["type"]=="txt"){
+
     }
     //TODO:RTMP处理
 

@@ -3,6 +3,7 @@
 #include "deviceproxy.h"
 #include "common.h"
 #include "qjsondocument.h"
+#include "workordermanager.h"
 #include <QDebug>
 #include <QJsonDocument>
 
@@ -17,6 +18,10 @@ ServerCore::ServerCore(quint16 port, QObject *parent)
     // 连接 DeviceProxy 的信号到本类的槽函数
     connect(DeviceProxy::instance(), &DeviceProxy::deviceDataUpdated,
             this, &ServerCore::broadcastDeviceData);
+
+    // 连接工单创建成功的推送信号
+    connect(WorkOrderManager::instance(), &WorkOrderManager::ticketPending,
+            this, &ServerCore::broadcastTicketPending);
 
     qDebug() << "Server started on port" << port;
 }
@@ -61,4 +66,19 @@ void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject 
     }
 
     qDebug() << "Broadcasted device data:" << deviceId;
+}
+
+void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)
+{
+    QJsonObject msg{
+        {"type", "ticket_pending"},
+        {"data", info}
+    };
+    QByteArray packet = packMessage(QJsonDocument(msg).toJson(QJsonDocument::Compact));
+
+    for (ClientSession *client : qAsConst(m_clients)) {
+        if (client->socket()->state() == QAbstractSocket::ConnectedState) {
+            client->socket()->write(packet);
+        }
+    }
 }
