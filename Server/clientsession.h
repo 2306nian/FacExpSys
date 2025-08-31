@@ -44,6 +44,9 @@ signals:
 
     void fileDownloadRequest(ClientSession* requester, const QJsonObject& downlodaRequest); // 文件下载请求
 
+    // 屏幕共享信号
+    void newScreenShare(ClientSession* sneder, const QByteArray &data);
+
     // RTMP流信号
     void rtmpStreamStarted(ClientSession *sender, const QString &ticketId, const QString &streamUrl);
     void rtmpStreamStopped(ClientSession *sender, const QString &ticketId);

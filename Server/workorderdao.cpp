@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QVariant>
 #include <QDebug>
+#include <QJsonArray>
 
 WorkOrderDAO *WorkOrderDAO::m_instance = nullptr;
 
@@ -21,6 +22,35 @@ WorkOrderDAO::WorkOrderDAO(QObject *parent)
 {
 }
 
+WorkOrderRecord WorkOrderDAO::getWorkOrderFromQuery(const QSqlQuery &query)
+{
+    WorkOrderRecord r;
+    r.ticketId = query.value("ticket_id").toString();
+    r.clientUsername = query.value("client_username").toString();
+    r.clientIp = query.value("client_ip").toString();
+    r.clientPort = query.value("client_port").toInt();
+    r.createdAt = query.value("created_at").toDateTime();
+    r.status = query.value("status").toString();
+    r.expertUsername = query.value("expert_username").toString();
+    r.expertIp = query.value("expert_ip").toString();
+    r.expertPort = query.value("expert_port").toInt();
+    r.acceptedAt = query.value("accepted_at").toDateTime();
+    r.feedbackDescription = query.value("feedback_description").toString();
+    r.feedbackSolution = query.value("feedback_solution").toString();
+    r.completedAt = query.value("completed_at").toDateTime();
+
+    // 查询设备
+    QSqlQuery devQuery(Database::instance()->db());
+    devQuery.prepare("SELECT device_id FROM work_order_devices WHERE ticket_id = ?");
+    devQuery.addBindValue(r.ticketId);
+    if (devQuery.exec()) {
+        while (devQuery.next()) {
+            r.deviceIds.append(devQuery.value(0).toString());
+        }
+    }
+    return r;
+}
+
 bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
                                    const QString &clientUsername,
                                    const QString &clientIp,
@@ -30,11 +60,8 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
 {
     QSqlDatabase db = Database::instance()->db();
     QSqlQuery query(db);
-
-    // 开启事务（保证：工单和设备绑定要么全成功，要么全失败）
     db.transaction();
 
-    // 1. 插入工单主表
     query.prepare(R"(
         INSERT INTO work_orders (
             ticket_id, client_username, client_ip, client_port, created_at, status
@@ -52,20 +79,18 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
         return false;
     }
 
-    // 2. 插入关联表（每个设备一条记录）
     QSqlQuery devQuery(db);
     devQuery.prepare("INSERT OR IGNORE INTO work_order_devices (ticket_id, device_id) VALUES (?, ?)");
-    devQuery.addBindValue(ticketId);  // ticket_id 固定
+    devQuery.addBindValue(ticketId);
     for (const QString &devId : deviceIds) {
-        devQuery.bindValue(1, devId);  // 绑定 device_id
+        devQuery.bindValue(1, devId);
         if (!devQuery.exec()) {
-            qWarning() << "Failed to insert device:" << devId << devQuery.lastError().text();
+            qWarning() << "Failed to insert device:" << devId;
             db.rollback();
             return false;
         }
     }
 
-    // 提交事务
     db.commit();
     qDebug() << "Work order created with devices:" << deviceIds;
     return true;
@@ -144,32 +169,8 @@ WorkOrderRecord WorkOrderDAO::getWorkOrder(const QString &ticketId)
     query.addBindValue(ticketId);
 
     if (query.exec() && query.next()) {
-        // ... 原有字段赋值 ...
-        record.ticketId = query.value("ticket_id").toString();
-        record.clientUsername = query.value("client_username").toString();
-        record.clientIp = query.value("client_ip").toString();
-        record.clientPort = query.value("client_port").toInt();
-        record.createdAt = query.value("created_at").toDateTime();
-        record.status = query.value("status").toString();
-        record.expertUsername = query.value("expert_username").toString();
-        record.expertIp = query.value("expert_ip").toString();
-        record.expertPort = query.value("expert_port").toInt();
-        record.acceptedAt = query.value("accepted_at").toDateTime();
-        record.feedbackDescription = query.value("feedback_description").toString();
-        record.feedbackSolution = query.value("feedback_solution").toString();
-        record.completedAt = query.value("completed_at").toDateTime();
-
-        // 查询这个工单关联的所有设备
-        QSqlQuery devQuery(Database::instance()->db());
-        devQuery.prepare("SELECT device_id FROM work_order_devices WHERE ticket_id = ?");
-        devQuery.addBindValue(ticketId);
-        if (devQuery.exec()) {
-            while (devQuery.next()) {
-                record.deviceIds.append(devQuery.value(0).toString());
-            }
-        }
+        record = getWorkOrderFromQuery(query);
     }
-
     return record;
 }
 
@@ -177,46 +178,8 @@ QList<WorkOrderRecord> WorkOrderDAO::getAllWorkOrders()
 {
     QList<WorkOrderRecord> list;
     QSqlQuery query("SELECT * FROM work_orders ORDER BY created_at DESC", Database::instance()->db());
-
     while (query.next()) {
-        WorkOrderRecord r;
-        r.ticketId = query.value("ticket_id").toString();
-        r.clientUsername = query.value("client_username").toString();
-        r.clientIp = query.value("client_ip").toString();
-        r.clientPort = query.value("client_port").toInt();
-        r.createdAt = query.value("created_at").toDateTime();
-        r.status = query.value("status").toString();
-        r.expertUsername = query.value("expert_username").toString();
-        r.expertIp = query.value("expert_ip").toString();
-        r.expertPort = query.value("expert_port").toInt();
-        r.acceptedAt = query.value("accepted_at").toDateTime();
-        r.feedbackDescription = query.value("feedback_description").toString();
-        r.feedbackSolution = query.value("feedback_solution").toString();
-        r.completedAt = query.value("completed_at").toDateTime();
-        list.append(r);
-    }
-
-    return list;
-}
-
-QList<WorkOrderRecord> WorkOrderDAO::getInProgressWorkOrders()
-{
-    QList<WorkOrderRecord> list;
-    QSqlQuery query("SELECT * FROM work_orders WHERE status = 'in_progress'", Database::instance()->db());
-    while (query.next()) {
-        WorkOrderRecord r;
-        // ... 同上赋值
-        r.ticketId = query.value("ticket_id").toString();
-        r.clientUsername = query.value("client_username").toString();
-        r.clientIp = query.value("client_ip").toString();
-        r.clientPort = query.value("client_port").toInt();
-        r.createdAt = query.value("created_at").toDateTime();
-        r.status = query.value("status").toString();
-        r.expertUsername = query.value("expert_username").toString();
-        r.expertIp = query.value("expert_ip").toString();
-        r.expertPort = query.value("expert_port").toInt();
-        r.acceptedAt = query.value("accepted_at").toDateTime();
-        list.append(r);
+        list.append(getWorkOrderFromQuery(query));
     }
     return list;
 }
@@ -226,14 +189,80 @@ QList<WorkOrderRecord> WorkOrderDAO::getPendingWorkOrders()
     QList<WorkOrderRecord> list;
     QSqlQuery query("SELECT * FROM work_orders WHERE status = 'pending'", Database::instance()->db());
     while (query.next()) {
-        WorkOrderRecord r;
-        r.ticketId = query.value("ticket_id").toString();
-        r.clientUsername = query.value("client_username").toString();
-        r.clientIp = query.value("client_ip").toString();
-        r.clientPort = query.value("client_port").toInt();
-        r.createdAt = query.value("created_at").toDateTime();
-        list.append(r);
+        list.append(getWorkOrderFromQuery(query));
     }
     return list;
 }
 
+// 新增：工厂端查询
+QList<WorkOrderRecord> WorkOrderDAO::getClientWorkOrders(const QString &clientUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE client_username = ? ORDER BY created_at DESC");
+    query.addBindValue(clientUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}
+
+QList<WorkOrderRecord> WorkOrderDAO::getClientPendingWorkOrders(const QString &clientUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'pending' ORDER BY accepted_at DESC");
+    query.addBindValue(clientUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}
+
+QList<WorkOrderRecord> WorkOrderDAO::getClientInProgressWorkOrders(const QString &clientUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'in_progress' ORDER BY accepted_at DESC");
+    query.addBindValue(clientUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}
+
+QList<WorkOrderRecord> WorkOrderDAO::getClientCompletedWorkOrders(const QString &clientUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'completed' ORDER BY completed_at DESC");
+    query.addBindValue(clientUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}
+
+QList<WorkOrderRecord> WorkOrderDAO::getExpertInProgressWorkOrders(const QString &expertUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE expert_username = ? AND status = 'in_progress' ORDER BY accepted_at DESC");
+    query.addBindValue(expertUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}
+
+QList<WorkOrderRecord> WorkOrderDAO::getExpertCompletedWorkOrders(const QString &expertUsername)
+{
+    QList<WorkOrderRecord> list;
+    QSqlQuery query(Database::instance()->db());
+    query.prepare("SELECT * FROM work_orders WHERE expert_username = ? AND status = 'completed' ORDER BY completed_at DESC");
+    query.addBindValue(expertUsername);
+    while (query.next()) {
+        list.append(getWorkOrderFromQuery(query));
+    }
+    return list;
+}

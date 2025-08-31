@@ -16,10 +16,15 @@ ScreenShareManager* ScreenShareManager::instance() // 单例实现
     return m_instance;
 }
 
-bool ScreenShareManager::startScreenShare(ClientSession* sender, const QString& ticketId)
+bool ScreenShareManager::startScreenShare(ClientSession* sender, const QByteArray& screenShareData)
 {
+    // 查询ticketId
+    WorkOrder *order = sender->currentTicket();
+    QString ticketId = order->ticketId;
+
     if (!sender || ticketId.isEmpty()) {
         return false;
+        qDebug()<<"ticketId is Empty!";
     }
 
     // 检查该工单是否已经在共享
@@ -28,7 +33,7 @@ bool ScreenShareManager::startScreenShare(ClientSession* sender, const QString& 
         return false;
     }
 
-    // 创建新的屏幕共享会话 方便管理共享进程（非必须）
+    // 创建新的屏幕共享会话 方便管理共享进程
     ScreenShareSession session;
     session.sender = sender;
     session.ticketId = ticketId;
@@ -46,6 +51,7 @@ bool ScreenShareManager::startScreenShare(ClientSession* sender, const QString& 
 void ScreenShareManager::stopScreenShare(ClientSession* sender)
 {
     if (!sender || !m_sessionToWorkOrder.contains(sender)) {
+        qDebug()<<"No Screenshare Now!";
         return;
     }
 
@@ -63,6 +69,7 @@ void ScreenShareManager::stopScreenShare(ClientSession* sender)
 void ScreenShareManager::pauseScreenShare(ClientSession* sender)
 {
     if (!sender || !m_sessionToWorkOrder.contains(sender)) {
+        qDebug()<<"No Screenshare Now!";
         return;
     }
 
@@ -77,6 +84,7 @@ void ScreenShareManager::pauseScreenShare(ClientSession* sender)
 void ScreenShareManager::resumeScreenShare(ClientSession* sender)
 {
     if (!sender || !m_sessionToWorkOrder.contains(sender)) {
+        qDebug()<<"No Screenshare Now!";
         return;
     }
 
@@ -88,18 +96,21 @@ void ScreenShareManager::resumeScreenShare(ClientSession* sender)
     }
 }
 
-void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QJsonObject& message)
+void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QByteArray& messageData)
 {
     if (!sender || !m_sessionToWorkOrder.contains(sender)) {
         return;
     }
 
     QString ticketId = m_sessionToWorkOrder[sender];
+    QJsonDocument doc = QJsonDocument::fromJson(messageData);
+
+    QJsonObject message = doc.object();
 
     // 如果是第一个数据帧，自动开始共享
     QString type = message["type"].toString();
     if (type == "screensharedata" && !m_activeSessions.contains(ticketId)) {
-        startScreenShare(sender, ticketId);
+        startScreenShare(sender, messageData);
     }
 
     // 更新帧计数
@@ -108,7 +119,7 @@ void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QJs
     }
 
     // 获取对应的工单
-    WorkOrder* workOrder = sender->currentTicket();
+    WorkOrder* workOrder = sender->m_currentTicket;
     if (!workOrder) {
         qWarning() << "Sender not in any work order";
         return;
@@ -118,7 +129,6 @@ void ScreenShareManager::forwardScreenShareData(ClientSession* sender, const QJs
     int forwardedCount = 0;
     for (ClientSession* client : workOrder->clients) {
         if (client && client != sender) {
-            QJsonDocument doc(message);
             client->sendMessage(doc.toJson(QJsonDocument::Compact));
             forwardedCount++;
         }

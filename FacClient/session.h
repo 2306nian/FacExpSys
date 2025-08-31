@@ -4,6 +4,8 @@
 #include <QObject>
 #include "globaldatas.h"
 #include <QTcpSocket>
+#include <QString>
+
 class Session : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,7 @@ public:
 
     QTcpSocket *socket() const;
     void sendMessage(const QByteArray &data);
+    QString getTicketId();
     static Session* instance();
     QString getTickedId();
     void setTickedId(QString s1);
@@ -59,7 +62,11 @@ private:
 
     QTcpSocket *m_socket;
     QByteArray m_buffer;
+<<<<<<< HEAD
     QString ticked_Id;
+=======
+    QString ticketId;
+>>>>>>> 3b8666c72bb436ebd9b68bd6685f469181549e98
 };
 
 #endif // SESSION_H

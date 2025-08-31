@@ -22,7 +22,6 @@ SOURCES += \
     mediarelay.cpp \
     messagerouter.cpp \
     rtmpmanager.cpp \
-    screensharemanager.cpp \
     servercore.cpp \
     userdao.cpp \
     workorder.cpp \
@@ -39,7 +38,6 @@ HEADERS += \
     mediarelay.h \
     messagerouter.h \
     rtmpmanager.h \
-    screensharemanager.h \
     servercore.h \
     userdao.h \
     workorder.h \

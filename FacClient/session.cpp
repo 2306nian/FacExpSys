@@ -40,13 +40,13 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     // }
 }
 
-QString Session::getTickedId(){
-    return ticked_Id;
+QSrting Session::setTickedId(QString s1){
+    ticketId=s1;
+}
+QString Session::getTicketId(){
+    return ticketId;
 }
 
-void Session::setTickedId(QString s1){
-    ticked_Id=s1;
-}
 
 void Session::sendMessage(const QByteArray &data)
 {

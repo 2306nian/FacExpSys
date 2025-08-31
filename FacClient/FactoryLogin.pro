@@ -12,6 +12,8 @@ SOURCES += \
     MainWindow_main.cpp \
     chatroom.cpp \
     clientcore.cpp \
+    filereceiver.cpp \
+    filesender.cpp \
     globaldatas.cpp \
     handlers.cpp \
     main.cpp \
@@ -30,6 +32,8 @@ HEADERS += \
     chatroom.h \
     clientcore.h \
     common.h \
+    filereceiver.h \
+    filesender.h \
     globaldatas.h \
     handlers.h \
     page_mine.h \

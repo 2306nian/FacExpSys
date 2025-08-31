@@ -139,7 +139,7 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
 
         m_uploads.remove(sender); // 移除会话
 
-        // 通知工单系统：文件已上传
+        // 通知工单系统：文件已上传 TODO:客户端接收并处理此广播
         QJsonObject notify;
         notify["type"] = "file_uploaded";
         QJsonObject nData;
@@ -236,6 +236,7 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
              << "Total sent:" << totalSent << "bytes";
 }
 
+// 新文件上传广播
 void FileRouter::newFileUploaded(ClientSession *sender, const QJsonObject &notify){
     WorkOrder *order = sender->currentTicket();
     if (!order){
