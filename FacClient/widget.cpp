@@ -39,3 +39,9 @@ void Widget::on_pushButton_more_clicked()
 }
 
 
+
+void Widget::on_toolButton_close_clicked()
+{
+    this->close();
+}
+

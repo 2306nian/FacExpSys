@@ -16,12 +16,30 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
+  <property name="layoutDirection">
+   <enum>Qt::RightToLeft</enum>
+  </property>
   <property name="styleSheet">
    <string notr="true">/* 全局样式 */
 QWidget {
     font-family: &quot;Microsoft YaHei&quot;, &quot;SimHei&quot;, sans-serif;
     background-color: #f5f5f5;
     color: #333333;
+}
+/* style.qss */
+QToolButton {
+    border: none;
+    background-color: transparent;
+    padding: 3px;
+}
+
+QToolButton:hover {
+    background-color: red;
+    border-radius: 4px;
+}
+
+QToolButton:pressed {
+    background-color: #990000;
 }
 
 /* 主窗口样式 */
@@ -188,17 +206,31 @@ QScrollBar::handle:vertical:hover {
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
+    <widget class="QToolButton" name="toolButton_close">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="icons.qrc">
+       <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QWidget" name="widget_title" native="true">
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
-          <x>160</x>
+          <x>130</x>
           <y>10</y>
           <width>131</width>
           <height>21</height>
          </rect>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
         </property>
         <property name="text">
          <string>Login and Register</string>

@@ -13,19 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>160</y>
-     <width>181</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>DEVICE</string>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>

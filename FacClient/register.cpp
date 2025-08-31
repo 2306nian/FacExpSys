@@ -50,3 +50,9 @@ void Register::on_pushButton_back_clicked()
 
 
 
+
+void Register::on_toolButton_clicked()
+{
+    this->close();
+}
+

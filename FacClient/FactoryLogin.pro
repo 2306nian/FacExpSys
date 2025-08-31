@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,11 +12,13 @@ SOURCES += \
     MainWindow_main.cpp \
     chatroom.cpp \
     clientcore.cpp \
+    handlers.cpp \
     main.cpp \
     page_mine.cpp \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
+    session.cpp \
     widget.cpp
 
 HEADERS += \
@@ -25,10 +27,12 @@ HEADERS += \
     chatroom.h \
     clientcore.h \
     common.h \
+    handlers.h \
     page_mine.h \
     pagedevice.h \
     pageorder.h \
     register.h \
+    session.h \
     widget.h
 
 FORMS += \

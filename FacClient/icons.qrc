@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/new/prefix1">
         <file>imgs/icon.jpg</file>
+        <file>imgs/a61f9036e72089fb21c888e21ad03967.jpg</file>
+        <file>imgs/856fc6535b20b341d3bc7600799395f3.jpg</file>
+        <file>imgs/9a5b38ba47c2a57385ed9d50805693b7.jpg</file>
+        <file>imgs/x.png</file>
+        <file>imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</file>
     </qresource>
 </RCC>

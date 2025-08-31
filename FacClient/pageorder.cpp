@@ -45,6 +45,7 @@ void PageOrder::on_pushButton_clicked()
 {
     ch1=new ChatRoom(this);
     ch1->show();
+    ch1->resize(1300,900);
     this->hide();
 }
 
