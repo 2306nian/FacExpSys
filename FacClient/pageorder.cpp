@@ -1,5 +1,9 @@
 #include "pageorder.h"
 #include "ui_pageorder.h"
+#include <QJsonObject>       // 添加这行
+#include <QJsonArray>        // 添加这行
+#include <QJsonDocument>     // 添加这行
+#include <QDebug>            // 如果需要的话
 
 PageOrder::PageOrder(QWidget *parent)
     : QWidget(parent)
@@ -43,9 +47,24 @@ PageOrder::~PageOrder()
 
 void PageOrder::on_pushButton_clicked()
 {
-    ch1=new ChatRoom(this);
-    ch1->show();
-    ch1->resize(1300,900);
-    this->hide();
+    QJsonObject json{
+        {"type", "create_ticket"},
+        {"data", QJsonObject{
+                     {"device_ids", QJsonArray{"SIM_PLC_1001", "SIM_SENSOR_2002"}},
+                     {"username", g_username}
+                 }}
+    };
+
+    // 将JSON对象转换为JSON文档并发送
+    QByteArray jsonData = QJsonDocument(json).toJson(QJsonDocument::Compact);
+
+    // 使用全局Session发送消息
+    if (g_session) {
+        g_session->sendMessage(jsonData);
+        qDebug() << "工单创建请求已发送";
+    } else {
+        qDebug() << "无法发送消息：Session未初始化";
+    }
 }
+
 

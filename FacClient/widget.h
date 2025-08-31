@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include "globaldatas.h"
 
 // 不再直接包含MainWindow_main和Register
 QT_BEGIN_NAMESPACE

@@ -39,7 +39,6 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
 }
 
 
-
 void Session::sendMessage(const QByteArray &data)
 {
     if (m_socket && m_socket->state() == QAbstractSocket::ConnectedState) {
@@ -73,9 +72,6 @@ void Session::handleMessage(const QByteArray &data)
     else if(doc["type"] == "login_result"){
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
-    }
-    else if(doc["type"]=="txt"){
-
     }
     //TODO:RTMP处理
 

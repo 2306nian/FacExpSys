@@ -92,8 +92,9 @@ Session* ClientCore::initializeNetwork()
 
     tcp->connectToHost("127.0.0.1", 8888);
     connectionTimer->start(5000); // 5秒超时
-
-    return new Session(tcp);
+    Session* session = new Session(tcp);
+    g_session = session;
+    return g_session;
 }
 
 
@@ -162,6 +163,7 @@ void ClientCore::switchToPage(PageType pageType)
 // 处理来自子页面的信号
 void ClientCore::onLoginSuccess(const QString &username,const QString &password)
 {
+    g_username=username;
     if(!username.isEmpty() && !password.isEmpty()){
         QJsonObject json;
         json["type"] = "login";
