@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMap>
 #include <QMutex>
+#include <QJsonDocument>
 
 class WorkOrder;
 class ClientSession;
@@ -15,10 +16,10 @@ class WorkOrderManager : public QObject
 public:
     static WorkOrderManager *instance();
 
-    QString createTicket(ClientSession *creator,           // ← 新增：传入 session
+    QString createTicket(ClientSession *creator,
                          const QStringList &deviceIds,
                          const QString &clientUsername);
-
+    void sendNewTicketCreated(ClientSession *client, const QString ticketId);
     bool joinTicket(const QString &ticketId, ClientSession *client);
     void leaveTicket(ClientSession *client);
     void destroyTicket(const QString &ticketId);
@@ -37,6 +38,7 @@ public:
 signals:
     void ticketCreated(const QString &ticketId, const QString &deviceId);
     void ticketClosed(const QString &ticketId);
+    void ticketPending(const QString &ticketId, const QJsonObject &ticketInfo);
 
 private:
     explicit WorkOrderManager(QObject *parent = nullptr);

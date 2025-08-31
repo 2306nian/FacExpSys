@@ -19,6 +19,8 @@ SOURCES += \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
+    screensharereceiver.cpp \
+    screensharesender.cpp \
     session.cpp \
     widget.cpp
 
@@ -34,6 +36,8 @@ HEADERS += \
     pagedevice.h \
     pageorder.h \
     register.h \
+    screensharereceiver.h \
+    screensharesender.h \
     session.h \
     widget.h
 

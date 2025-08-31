@@ -58,6 +58,7 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
 
     connect(this, &ClientSession::rtmpStreamDataReceived,
             RTMPManager::instance(), &RTMPManager::relayStreamData);
+
 }
 
 ClientSession::~ClientSession() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
@@ -160,7 +161,7 @@ void ClientSession::handleMessage(const QByteArray &data)
             {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-        emit newTicketCreated(ticketId); // TODO:创建工单后广播给所有人
+        emit newTicketCreated(this,ticketId); // TODO
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();

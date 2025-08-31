@@ -4,6 +4,8 @@
 #include "workorder.h"
 #include "workorderdao.h"
 #include <QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
 
 WorkOrderManager *WorkOrderManager::m_instance = nullptr;
 
@@ -51,15 +53,20 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         return QString();
     }
 
+
     QJsonObject ticketInfo{
         {"ticket_id", order->ticketId},
         {"username", clientUsername},
         {"device_ids", QJsonArray::fromStringList(deviceIds)},
         {"createdAt", order->createdAt.toString(Qt::ISODate)}
     };
-    emit ticketPending(order->ticketId, ticketInfo);emit ticketCreated(order->ticketId, deviceIds.join(","));
+    emit ticketPending(order->ticketId, ticketInfo);
 
     return order->ticketId;
+}
+
+void sendNewTicketCreated(ClientSession *client, const QString ticketId){
+
 }
 
 bool WorkOrderManager::joinTicket(const QString &ticketId, ClientSession *client)
@@ -186,10 +193,27 @@ void WorkOrderManager::completeTicket(const QString &ticketId,
         QDateTime::currentDateTime()
         );
 
-    // 可选：自动销毁工单（或等所有人离开再销毁）
+    // 广播给工单内所有客户端工单已结束
+    QJsonObject notify{
+        {"type", "ticket_completed"},
+        {"data", QJsonObject{
+                     {"ticket_id", ticketId},
+                     {"description", description},
+                     {"solution", solution},
+                     {"completedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
+                 }}
+    };
+    QByteArray packet = packMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+
+    for (ClientSession *client : order->clients) {
+        if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {
+            client->sendMessage(packet);
+        }
+    }
+
+    // 自动销毁工单
     m_tickets.remove(ticketId);
     delete order;
-    emit ticketClosed(ticketId);
 
     qDebug() << "Ticket completed:" << ticketId;
 }
