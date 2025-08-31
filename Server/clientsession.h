@@ -49,6 +49,8 @@ signals:
     void rtmpStreamStopped(ClientSession *sender, const QString &ticketId);
     void rtmpStreamDataReceived(ClientSession *sender, const QByteArray &data);
 
+    void newTicketCreated(const QString &ticketId);
+
 private slots:
     void onReadyRead();
     void onDisconnected();

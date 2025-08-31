@@ -160,6 +160,7 @@ void ClientSession::handleMessage(const QByteArray &data)
             {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
         };
         sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+        emit newTicketCreated(ticketId); // TODO:创建工单后广播给所有人
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();

@@ -48,7 +48,7 @@ void ClientCore::onReadyRead(){
     }
    //此处可能后续需要修改
     QJsonDocument doc=QJsonDocument::fromJson(message);
-    if(doc["message"]=="Login successful"){
+    if(doc["data"]["message"]=="Login successful"){
         switchToPage(PAGE_MAIN);
     }
 }
@@ -77,7 +77,7 @@ void ClientCore::sendRegisterRequest(const QString &username, const QString &pas
         QJsonObject Qdata;
         Qdata["username"] = username;
         Qdata["password"] = password;
-        Qdata["userType"]="client";
+        Qdata["user_type"]="client";
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
         tcp->write(packMessage(sender));
