@@ -327,15 +327,11 @@ void ClientSession::handleMessage(const QByteArray &data)
     //RTMP
     else if (type == "rtmp_stream_start") {
         QJsonObject dataObj = obj["data"].toObject();
-        QString ticketId = dataObj["ticket_id"].toString();
-        QString streamName = dataObj["stream_name"].toString();
+        QString ticketId = this->currentTicket()->ticketId;
+        QString streamUrl = dataObj["stream_url"].toString();
 
         // 验证客户端是否在正确的工单中
         if (m_currentTicket && m_currentTicket->ticketId == ticketId) {
-            // 生成RTMP流URL
-            QString streamUrl = QString("rtmp://localhost/live/%1_%2")
-                                    .arg(ticketId)
-                                    .arg(streamName);
 
             m_rtmpStreamUrl = streamUrl;
             m_isStreaming = true;
@@ -381,18 +377,6 @@ void ClientSession::handleMessage(const QByteArray &data)
                      << "by client:" << m_clientIp;
         }
     }
-    else if (type == "rtmp_stream_data") {
-        // 处理RTMP流数据（如果通过TCP传输）
-        QJsonObject dataObj = obj["data"].toObject();
-        QString ticketId = dataObj["ticket_id"].toString();
-        QByteArray streamData = QByteArray::fromBase64(dataObj["stream_data"].toString().toUtf8());
-
-        if (m_currentTicket && m_currentTicket->ticketId == ticketId && m_isStreaming) {
-            // 转发流数据给同工单的其他客户端
-            emit rtmpStreamDataReceived(this, streamData);
-        }
-    }
-
     else {
         qWarning() << "Unknown message type:" << type;
     }

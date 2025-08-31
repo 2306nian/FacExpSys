@@ -76,21 +76,13 @@
     {
         "type": "rtmp_stream_start",
         "data":{
-            "ticket_id": "...",
-            "stream_name": "..."
+            "stream_url": "..."
         }
     },
     {
         "type": "rtmp_stream_stop",
         "data":{
-            "ticket_id": "..."
-        }
-    },
-    {
-        "type": "rtmp_stream_data",
-        "data":{
-            "ticket_id": "...",
-            "stream_data": "..."
+            "stream_url": "..."
         }
     }
 
@@ -172,16 +164,7 @@
         "type": "rtmp_stream_ended",
         "data":{
             "ticket_id": "...",
-            "message": "..."
-        }
-    },
-    {
-        "type": "rtmp_stream_data",
-        "data":{
-            "ticket_id": "...",
-            "data_size": "...",
-            "stream_data": "...",
-            "timestamp": "..."
+            "stream_url": "..."
         }
     },
     {

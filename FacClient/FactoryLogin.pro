@@ -1,4 +1,4 @@
-QT       += core gui network charts
+QT       += core gui network charts multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     MainWindow_main.cpp \
+    camerastreamer.cpp \
     chatroom.cpp \
     clientcore.cpp \
     globaldatas.cpp \
@@ -22,11 +23,13 @@ SOURCES += \
     screensharereceiver.cpp \
     screensharesender.cpp \
     session.cpp \
+    videoplayer.cpp \
     widget.cpp
 
 HEADERS += \
     ../../Downloads/FacExpSys-main/FacExpSys-main/Server/common.h \
     MainWindow_main.h \
+    camerastreamer.h \
     chatroom.h \
     clientcore.h \
     common.h \
@@ -39,6 +42,7 @@ HEADERS += \
     screensharereceiver.h \
     screensharesender.h \
     session.h \
+    videoplayer.h \
     widget.h
 
 FORMS += \

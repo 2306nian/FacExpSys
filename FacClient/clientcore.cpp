@@ -13,6 +13,41 @@ ClientCore::ClientCore(QWidget *parent)
     ui->setupUi(this);
 
     m_session = initializeNetwork();
+
+    // // RTMP测试
+    // m_cameraStreamer = new CameraStreamer(m_session);
+    // // 创建简单的视频预览窗口
+    // QWidget* previewWindow = new QWidget();
+    // previewWindow->setWindowTitle("摄像头预览");
+    // previewWindow->resize(800, 600);
+
+    // // 创建摄像头视图查找器
+    // QCameraViewfinder* viewfinder = new QCameraViewfinder(previewWindow);
+    // viewfinder->resize(720, 480);
+
+    // QVBoxLayout* mainLayout = new QVBoxLayout(previewWindow);
+    // mainLayout->addWidget(viewfinder);
+
+    // previewWindow->show();
+
+    // // 设置视图查找器到摄像头推流器
+    // m_cameraStreamer->setViewfinder(viewfinder);
+
+    // // 创建简单的视频窗口
+    // QWidget* videoWindow = new QWidget();
+    // videoWindow->setWindowTitle("视频播放");
+    // videoWindow->resize(800, 600);
+
+    // VideoPlayer* videoPlayer = new VideoPlayer(100, videoWindow);
+
+    // QVBoxLayout* layout = new QVBoxLayout(videoWindow);
+    // layout->addWidget(videoPlayer);
+
+    // videoWindow->show();
+
+    // // 启动推流和拉流
+    // m_cameraStreamer->startStreaming("rtmp://localhost/live/stream123");
+    // videoPlayer->playStream("rtmp://localhost/live/stream123");
     // 创建堆栈部件作为中央窗口部件
     qsw = new QStackedWidget(this);
     setCentralWidget(qsw);
@@ -62,7 +97,7 @@ Session* ClientCore::initializeNetwork()
     // 添加连接超时处理
     QTimer* connectionTimer = new QTimer(this);
     connectionTimer->setSingleShot(true);
-    connect(connectionTimer, &QTimer::timeout, this, [this, tcp]() {
+    connect(connectionTimer, &QTimer::timeout, this, [tcp]() {
         if (tcp->state() != QAbstractSocket::ConnectedState) {
             qDebug() << "连接超时！尝试重新连接...";
             tcp->abort();
@@ -76,7 +111,7 @@ Session* ClientCore::initializeNetwork()
     });
 
     connect(tcp, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
-            [tcp, this, connectionTimer](QAbstractSocket::SocketError error){
+            [tcp, this](QAbstractSocket::SocketError error){
                 qDebug() << "连接失败，错误代码：" << error;
                 qDebug() << "错误信息：" << tcp->errorString();
 

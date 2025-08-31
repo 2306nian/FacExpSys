@@ -7,7 +7,9 @@
 #include <QTcpSocket>
 #include <QJsonObject>
 #include "MainWindow_main.h"
+#include "camerastreamer.h"
 #include "register.h"
+#include "videoplayer.h"
 #include "widget.h"
 #include "session.h"
 #include<QJsonDocument>
@@ -34,7 +36,6 @@ public:
 
     // 发送注册请求
     void sendRegisterRequest(const QString &username, const QString &password);
-
 
 public slots:
     // 切换到指定页面
@@ -64,6 +65,10 @@ private:
 
     // TCP Socket
     Session *m_session;
+
+    //rtmp
+    CameraStreamer* m_cameraStreamer;
+    VideoPlayer* m_videoPlayer;
 
     // 初始化所有页面
     void initializePages();

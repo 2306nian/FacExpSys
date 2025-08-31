@@ -26,10 +26,10 @@ class FileHandler: public QObject
         void downloadFileRequest(Session *sender, const QJsonObject &data);
 
         //接收
-        void handleUploadStarted(Session *sender, const QJsonObject &data);
-        void handleFileUploaded(Session *sender, const QJsonObject &data);
-        void handleFileMeta(Session *client, const QJsonObject &data);
-        void handleFileChunk(Session *client, const QJsonObject &data);
+        void handleUploadStarted(const QJsonObject &data);
+        void handleFileUploaded(const QJsonObject &data);
+        void handleFileMeta(const QJsonObject &data);
+        void handleFileChunk(const QJsonObject &data);
 
     private:
         explicit FileHandler(QObject *parent=nullptr);
@@ -48,12 +48,32 @@ class TicketHandler: public QObject
         void handleCompleteTicket(Session *sender, const QJsonObject &data);
 
         //接收
-        void handleTicketCreate(Session *client, const QJsonObject &data);
-        void handleTicketJoined(Session *client, const QJsonObject &data);
+        void handleTicketCreate(const QJsonObject &data);
+        void handleTicketJoined(const QJsonObject &data);
 
     private:
         explicit TicketHandler(QObject *parent = nullptr);
         static TicketHandler* m_instance;
+};
+
+class RTMPHandler: public QObject
+{
+    Q_OBJECT
+    public:
+        static RTMPHandler* instance();
+        //发送
+        void handleRTMPStartSend(Session* ,QString);
+        void handleRTMPStopSend(Session*, QString);
+
+        //接收
+        void handleRTMPStartedRecv(const QJsonObject &data);
+        void handleRTMPAvailableRecv(const QJsonObject &data);
+        void handleRTMPStopRecv(const QJsonObject &data);
+        QList<QString>* getURLs();
+    private:
+        explicit RTMPHandler(QObject* parent=nullptr);
+        static RTMPHandler* m_instance;
+        QList<QString> urls;
 };
 
 #endif // HANDLERS_H
