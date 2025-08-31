@@ -51,7 +51,14 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         return QString();
     }
 
-    emit ticketCreated(order->ticketId, deviceIds.join(","));
+    QJsonObject ticketInfo{
+        {"ticket_id", order->ticketId},
+        {"username", clientUsername},
+        {"device_ids", QJsonArray::fromStringList(deviceIds)},
+        {"createdAt", order->createdAt.toString(Qt::ISODate)}
+    };
+    emit ticketPending(order->ticketId, ticketInfo);emit ticketCreated(order->ticketId, deviceIds.join(","));
+
     return order->ticketId;
 }
 
@@ -131,6 +138,24 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
         );
 
     qDebug() << "Ticket accepted:" << ticketId << "by" << expertUsername;
+
+    // 通知工单创建者工单已经创建
+    QJsonObject notify{
+        {"type", "ticket_accepted"},
+        {"data", QJsonObject{
+                     {"ticket_id", ticketId},
+                     {"username", expertUsername},
+                     {"acceptedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
+                 }}
+    };
+    QByteArray packet = packMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+
+    // 发送给该工单内的所有客户端（主要是工厂端）
+    for (ClientSession *client : order->clients) {
+        if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {
+            client->sendMessage(packet);
+        }
+    }
 }
 
 void WorkOrderManager::completeTicket(const QString &ticketId,
