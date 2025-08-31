@@ -2,6 +2,7 @@
 #define SESSION_H
 
 #include <QObject>
+#include "globaldatas.h"
 #include <QTcpSocket>
 #include <QString>
 

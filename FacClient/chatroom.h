@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <QDateTime>
 #include <QTimer>
-
+#include<session.h>
 namespace Ui {
 class ChatRoom;
 }
@@ -49,6 +49,7 @@ private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
     MessageDelegate *messageDelegate;
+    Session *sender;
 
     void appendMessage(const QString &text, bool isSelf);
 };

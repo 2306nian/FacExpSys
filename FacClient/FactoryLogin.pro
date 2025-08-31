@@ -14,6 +14,7 @@ SOURCES += \
     clientcore.cpp \
     filereceiver.cpp \
     filesender.cpp \
+    globaldatas.cpp \
     handlers.cpp \
     main.cpp \
     page_mine.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     common.h \
     filereceiver.h \
     filesender.h \
+    globaldatas.h \
     handlers.h \
     page_mine.h \
     pagedevice.h \

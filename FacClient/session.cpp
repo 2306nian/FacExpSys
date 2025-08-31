@@ -38,9 +38,12 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     // }
 }
 
+<<<<<<< HEAD
 QString Session::getTicketId(){
     return ticketId;
 }
+=======
+>>>>>>> fd637657edae9c87494b0eaa1fde8ce1100cd062
 
 void Session::sendMessage(const QByteArray &data)
 {
@@ -75,9 +78,6 @@ void Session::handleMessage(const QByteArray &data)
     else if(doc["type"] == "login_result"){
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
-    }
-    else if(doc["type"]=="txt"){
-
     }
     //TODO:RTMP处理
 

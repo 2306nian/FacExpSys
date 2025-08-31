@@ -2,6 +2,7 @@
 #define REGISTER_H
 
 #include <QWidget>
+#include "globaldatas.h"
 
 namespace Ui {
 class Register;

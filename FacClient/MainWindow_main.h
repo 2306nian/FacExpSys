@@ -5,6 +5,7 @@
 #include <pageorder.h>
 #include <page_mine.h>
 #include <pagedevice.h>
+#include "globaldatas.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

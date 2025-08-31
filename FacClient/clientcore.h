@@ -11,6 +11,7 @@
 #include "widget.h"
 #include "session.h"
 #include<QJsonDocument>
+#include "globaldatas.h"
 
 namespace Ui {
 class ClientCore;
@@ -59,6 +60,7 @@ private:
     // 页面映射表，用于方便页面切换
     QMap<PageType, QWidget*> pages;
     QByteArray receiver;
+    QString user_name;
 
     // TCP Socket
     Session *m_session;
