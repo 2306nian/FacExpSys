@@ -11,11 +11,7 @@
 #include "userdao.h"
 #include "devicedao.h"
 #include "rtmpmanager.h" // 新增RTMP管理器
-<<<<<<< HEAD
-#include "screensharemanager.h"
-=======
 #include "workorderdao.h"
->>>>>>> fd637657edae9c87494b0eaa1fde8ce1100cd062
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -53,10 +49,6 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
 
     connect(this, &ClientSession::fileDownloadRequest,
             FileRouter::instance(), &FileRouter::handleFileDownloadRequest);
-
-    // 屏幕共享信号连接
-    connect(this, &ClientSession::newScreenShare,
-            ScreenShareManager::instance(), &ScreenShareManager::startScreenShare);
 
     // RTMP流信号连接
     connect(this, &ClientSession::rtmpStreamStarted,
@@ -157,24 +149,12 @@ void ClientSession::handleMessage(const QByteArray &data)
         for (const QJsonValue &val : deviceArray) {
             deviceIds << val.toString();
         }
-
-        // 使用当前 session 的真实连接信息
+        qDebug()<<"工单正在创建";
         WorkOrderManager::instance()->createTicket(
             this,           // ← 传入当前 session
             deviceIds,
             username
-<<<<<<< HEAD
-            );
-
-        QJsonObject response{
-            {"type", "ticket_created"},
-            {"data", QJsonObject{{"ticket_id", ticketId}}} // 返回ticket_id
-        };
-        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-        emit newTicketCreated(this,ticketId);
-=======
         );
->>>>>>> fd637657edae9c87494b0eaa1fde8ce1100cd062
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();
@@ -246,6 +226,8 @@ void ClientSession::handleMessage(const QByteArray &data)
         // 调用 UserDAO 注册
         bool success = UserDAO::instance()->registerUser(username, password, userType, createdAt);
 
+        qDebug()<<"用户"+username+"注册成功";
+
         // 回复客户端
         QJsonObject response{
             {"type", "register_result"},
@@ -304,6 +286,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
 
         // 登录成功：保存用户信息
+        qDebug()<<"用户"+username+"登陆成功";
         QString m_username = username;
         QString m_userType = UserDAO::instance()->getUserType(username);
 
@@ -340,6 +323,7 @@ void ClientSession::handleMessage(const QByteArray &data)
                 {"data", QJsonObject{{"devices", arr}}}
             };
             sendMessage(QJsonDocument(deviceResponse).toJson());
+            qDebug()<<"成功发送设备初始化信息";
         }
 
         // 如果是工厂端，自动推送“已创建”工单列表
@@ -362,6 +346,7 @@ void ClientSession::handleMessage(const QByteArray &data)
                 {"data", arr}
             };
             sendMessage(QJsonDocument(workOrdersResponse).toJson(QJsonDocument::Compact));
+            qDebug()<<"成功发送工单初始化信息_client";
         }
 
         // 如果是专家端，可以推送“可承接”工单
@@ -384,6 +369,7 @@ void ClientSession::handleMessage(const QByteArray &data)
                 {"data", arr}
             };
             sendMessage(QJsonDocument(pendingResponse).toJson(QJsonDocument::Compact));
+            qDebug()<<"成功发送工单初始化信息_expert";
         }
     }
 

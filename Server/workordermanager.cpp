@@ -80,6 +80,7 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
                                             {"device_ids", QJsonArray::fromStringList(deviceIds)},
                                             {"created_at", order->createdAt.toString(Qt::ISODate)}
                                         });
+    qDebug()<<"工单创建成功";
 
     return order->ticketId;
 }
