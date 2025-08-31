@@ -25,7 +25,6 @@ private slots:
 
 private:
     explicit DeviceProxy(QObject *parent = nullptr);
-    int getControlCount(const QString &deviceId);
     static DeviceProxy *m_instance;
     QTimer *m_updateTimer;
     int qrand();
