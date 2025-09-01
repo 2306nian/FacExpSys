@@ -28,6 +28,7 @@ Session::Session(QTcpSocket *socket, QObject *parent)
     connect(this, &Session::fileUploadedRecv, FileHandler::instance(), &FileHandler::handleFileUploaded);
     connect(this, &Session::fileDownloadRequest, FileHandler::instance(), &FileHandler::downloadFileRequest);
     connect(TicketHandler::instance(),&TicketHandler::sendTicketToSession,this,&Session::setTickedFromHandel);
+    connect(this,&Session::fileDownloadStart,FileHandler::instance(),&FileHandler::handelDownload);
 
 }
 Session::~Session() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
@@ -110,7 +111,14 @@ void Session::handleMessage(const QByteArray &data)
     else if(doc["type"]=="file_uploaded"){
         qDebug()<<"准备开始接收文件信息";
         QJsonObject dataObj = doc["data"].toObject();
+        qDebug()<<dataObj<<doc<<data;
         emit fileUploadedRecv(dataObj);
     }
+    else if(doc["type"]=="file_meta"||doc["type"]=="file_chunk"){
+        qDebug()<<"开始下载文件";
+        QJsonObject json_obj=doc.object();
+        emit fileDownloadStart(json_obj);
+    }
+
     //TODO:RTMP处理
 }

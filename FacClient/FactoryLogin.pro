@@ -22,7 +22,7 @@ SOURCES += \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
-    # screenrecorder.cpp \
+    screenrecorder.cpp \
     session.cpp \
     videochat.cpp \
     videoplayer.cpp \
@@ -42,7 +42,7 @@ HEADERS += \
     pagedevice.h \
     pageorder.h \
     register.h \
-    # screenrecorder.h \
+    screenrecorder.h \
     session.h \
     videochat.h \
     videoplayer.h \

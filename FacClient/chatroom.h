@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include<QMap>
 #include<QTimer>
+#include<filereceiver.h>
 
 namespace Ui {
 class ChatRoom;
@@ -79,11 +80,13 @@ private slots:
 
     void getFileidFromhandle(QString s1,QString f_name,qint64 f_size);
 
-    void getFileId(QString fileId);
+    void getFileId(QString fileId,QJsonObject &obj);
 
     void startUploadInChat(const QJsonObject &data);
 
     void getFileInfo(const QJsonObject&data);
+
+    void startDownload(const QJsonObject&json);
 
 private:
     Ui::ChatRoom *ui;
@@ -95,6 +98,7 @@ private:
     QString fileName;
     QString file_size;
     FileSender *fsender;
+    FileReceiver *freceiver;
     QString pendingFilePath;
     QString pendingFileName;
     qint64 pendingFileSize;

@@ -20,7 +20,7 @@ ChatRoom::ChatRoom(QWidget *parent) :
     ui->setupUi(this);
 
     fsender=new FileSender(this);
-
+    freceiver=new FileReceiver(this);
     // 设置窗口标题
     setWindowTitle("聊天室");
     connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
@@ -69,8 +69,13 @@ ChatRoom::ChatRoom(QWidget *parent) :
     ui->listView->viewport()->installEventFilter(this);
 }
 
-void ChatRoom::getFileId(QString fileId){
+void ChatRoom::startDownload(const QJsonObject &json){
+    freceiver->onSessionMessage(g_session,json);
+}
+
+void ChatRoom::getFileId(QString fileId,QJsonObject &jobj){
     this->fileId=fileId;
+    fsender->onSessionMessage(g_session,jobj);
     qDebug()<<fileId;
 }
 
@@ -80,7 +85,6 @@ void ChatRoom::getFileInfo(const QJsonObject &data){
 }
 
 void ChatRoom::startUploadInChat(const QJsonObject &data){
-    fsender->onSessionMessage(g_session,data);
 }
 
 void ChatRoom::getFileidFromhandle(QString s1,QString f_name,qint64 f_size)
@@ -126,9 +130,20 @@ bool ChatRoom::eventFilter(QObject *watched, QEvent *event)
                             updatedVar.setValue(msg);
                             model->setData(index, updatedVar, Qt::UserRole + 1);
                         }
+                        QString dir = QFileDialog::getExistingDirectory(this,
+                                                                        tr("选择保存目录"),
+                                                                        QDir::homePath(),
+                                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+                        if (!dir.isEmpty()) {
+                            // 用户选择了目录
+                            qDebug() << "选择的保存目录:" << dir;
+                            // 使用该目录保存文件
+                            // 例如: QString filePath = dir + "/myfile.txt";
+                        }
 
                         // 现在调用下载处理
-
+                        freceiver->startFileDownload(g_session,msg.fileId,dir);
                         qDebug() << "下载按钮被点击，文件名:" << msg.fileName
                                  << "文件ID:" << msg.fileId;
                         return true; // 事件已处理

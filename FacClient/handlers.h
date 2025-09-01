@@ -23,7 +23,7 @@ class FileHandler: public QObject
     public:
         static FileHandler* instance();
         //发送
-        void handleFileUploadStart(Session *sender, const QJsonObject &data);
+        void handleFileUploadStart(Session *sender,  QJsonObject &data);
         void handleFileUploadChunk(Session *sender, const QJsonObject &data);
         void downloadFileRequest(Session *sender, const QJsonObject &data);
 
@@ -32,6 +32,7 @@ class FileHandler: public QObject
         void handleFileUploaded(const QJsonObject &data);
         void handleFileMeta(const QJsonObject &data);
         void handleFileChunk(const QJsonObject &data);
+        void handelDownload(const QJsonObject &json);
 
     private:
         explicit FileHandler(QObject *parent=nullptr);
@@ -40,7 +41,8 @@ class FileHandler: public QObject
     signals:
         void sendFileidToChat(QString s1,QString s2,qint64 s3);
         void startFileUploadInChat(const QJsonObject &data);
-        void getfileId(QString s1);
+        void getfileId(QString s1,QJsonObject &jobj);
+        void ChatDownloadStart(const QJsonObject&json);
 };
 
 class TicketHandler: public QObject

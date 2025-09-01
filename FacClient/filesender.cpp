@@ -97,7 +97,9 @@ bool FileSender::startFileUpload(Session* m_session, const QString& filePath)
 
 void FileSender::sendNextChunk()
 {
+    qDebug()<<"test";
     if (!m_isUploading || !m_file || !m_session) {
+        qDebug()<<m_isUploading<<m_file<<m_session;
         return;
     }
 
@@ -140,23 +142,14 @@ void FileSender::sendNextChunk()
 
 void FileSender::onSessionMessage(Session* session, const QJsonObject& message)
 {
-    QString type = message["type"].toString();
     m_session = session;
+       // 服务端确认可以开始上传
+    QString fileId = message["file_id"].toString();
 
-    if (type == "upload_started") {
-        // 服务端确认可以开始上传
-        QJsonObject data = message["data"].toObject();
-        QString fileId = data["file_id"].toString();
-
-        m_fileId = fileId;
-        while(m_isUploading){
-            qDebug()<<"文件正在分块上传中";
+    m_fileId = fileId;
+    qDebug()<<fileId;
+    while(m_isUploading){
         sendNextChunk();
-        }
-    }
-
-    else {
-        qDebug()<<"upload error!";
     }
 }
 
