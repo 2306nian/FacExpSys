@@ -39,11 +39,11 @@ FileHandler::FileHandler(QObject *parent)
     : QObject(parent){}
 
 //发送
-void FileHandler::handleFileUploadStart(Session *sender, const QJsonObject &data){
+void FileHandler::handleFileUploadStart(Session *sender,  QJsonObject &data){
     QJsonObject data_real = data["data"].toObject();
     QString s1 = data_real["file_id"].toString();
-    emit sendFileidToChat(s1);
-    emit startFileUploadInChat(data);
+    qDebug()<<data_real;
+    emit getfileId(s1,data_real);
 }
 
 void FileHandler::handleFileUploadChunk(Session *sender, const QJsonObject &data){
@@ -60,7 +60,16 @@ void FileHandler::handleUploadStarted(const QJsonObject &data){
 }
 
 void FileHandler::handleFileUploaded(const QJsonObject &data){
+    QJsonObject data_real = data["data"].toObject();
+    QString s1 = data["file_id"].toString();
+    QString s2 = data["file_name"].toString();
+    qint64 s3 = data["file_size"].toVariant().toLongLong();
+    qDebug()<<"handle 已经向chat发送"<<s1<<s2<<s3;
+    emit sendFileidToChat(s1,s2,s3);
+}
 
+void FileHandler::handelDownload(const QJsonObject &json){
+    emit ChatDownloadStart(json);
 }
 
 void FileHandler::handleFileMeta(const QJsonObject &data){

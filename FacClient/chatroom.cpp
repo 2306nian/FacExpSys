@@ -20,7 +20,7 @@ ChatRoom::ChatRoom(QWidget *parent) :
     ui->setupUi(this);
 
     fsender=new FileSender(this);
-
+    freceiver=new FileReceiver(this);
     // 设置窗口标题
     setWindowTitle("聊天室");
     connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
@@ -28,6 +28,7 @@ ChatRoom::ChatRoom(QWidget *parent) :
     connect(FileHandler::instance(),&FileHandler::sendFileidToChat,this,&ChatRoom::getFileidFromhandle);
     connect(FileHandler::instance(),&FileHandler::startFileUploadInChat,this,&ChatRoom::startUploadInChat);
     connect(g_session,&Session::fileInfoSend,this,&ChatRoom::getFileInfo);
+    connect(FileHandler::instance(),&FileHandler::getfileId,this,&ChatRoom::getFileId);
     // 初始化model，并绑定到listView
     model = new QStandardItemModel(this);
     ui->listView->setModel(model);
@@ -65,6 +66,17 @@ ChatRoom::ChatRoom(QWidget *parent) :
             }
         }
     });
+    ui->listView->viewport()->installEventFilter(this);
+}
+
+void ChatRoom::startDownload(const QJsonObject &json){
+    freceiver->onSessionMessage(g_session,json);
+}
+
+void ChatRoom::getFileId(QString fileId,QJsonObject &jobj){
+    this->fileId=fileId;
+    fsender->onSessionMessage(g_session,jobj);
+    qDebug()<<fileId;
 }
 
 void ChatRoom::getFileInfo(const QJsonObject &data){
@@ -73,11 +85,79 @@ void ChatRoom::getFileInfo(const QJsonObject &data){
 }
 
 void ChatRoom::startUploadInChat(const QJsonObject &data){
-    fsender->onSessionMessage(g_session,data);
 }
-void ChatRoom::getFileidFromhandle(QString s1){
-    fileId=s1;
+
+void ChatRoom::getFileidFromhandle(QString s1,QString f_name,qint64 f_size)
+{
+    fileId = s1;
+    qDebug() << "收到文件ID: " << fileId;
+    // 将当前上传的文件名与fileId关联起来
+    fileIdMap[fileName] = fileId;
+    qDebug() << "已将文件 " << fileName << " 与ID " << fileId << " 关联";
+    appendFileMessage(f_name,f_size,true,s1);
 }
+
+
+bool ChatRoom::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->listView->viewport() && event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        QPoint pos = mouseEvent->pos();
+
+        QModelIndex index = ui->listView->indexAt(pos);
+        if (index.isValid()) {
+            // 转换坐标到项的局部坐标系
+            QRect rect = ui->listView->visualRect(index);
+            QPoint itemPos = pos - rect.topLeft();
+
+            // 检查点击是否在下载按钮区域内
+            QMap<QModelIndex, QRect> areas = messageDelegate->getClickableAreas();
+            if (areas.contains(index)) {
+                QRect btnRect = areas[index];
+                if (btnRect.contains(itemPos)) {
+                    // 获取消息数据
+                    QVariant var = index.data(Qt::UserRole + 1);
+                    ChatMessage msg = var.value<ChatMessage>();
+
+                    if (msg.isFileMessage) {
+                        // 如果消息的fileId为空，尝试从映射中查找
+                        if (msg.fileId.isEmpty() && fileIdMap.contains(msg.fileName)) {
+                            // 更新消息中的fileId
+                            msg.fileId = fileIdMap[msg.fileName];
+
+                            // 将更新后的消息存回模型（可选，如果您想永久更新）
+                            QVariant updatedVar;
+                            updatedVar.setValue(msg);
+                            model->setData(index, updatedVar, Qt::UserRole + 1);
+                        }
+                        QString dir = QFileDialog::getExistingDirectory(this,
+                                                                        tr("选择保存目录"),
+                                                                        QDir::homePath(),
+                                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+                        if (!dir.isEmpty()) {
+                            // 用户选择了目录
+                            qDebug() << "选择的保存目录:" << dir;
+                            // 使用该目录保存文件
+                            // 例如: QString filePath = dir + "/myfile.txt";
+                        }
+
+                        // 现在调用下载处理
+                        freceiver->startFileDownload(g_session,msg.fileId,dir);
+                        qDebug() << "下载按钮被点击，文件名:" << msg.fileName
+                                 << "文件ID:" << msg.fileId;
+                        return true; // 事件已处理
+                    }
+                }
+            }
+        }
+    }
+
+    return QMainWindow::eventFilter(watched, event);
+}
+
+
+
 
 void ChatRoom::appendMessage(const QString &text, bool isSelf)
 {
@@ -143,7 +223,40 @@ void ChatRoom::on_pushButton_emission_clicked()
     });
 }
 
-// MessageDelegate的实现
+QSize MessageDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return QSize(0, 0);
+
+    // 获取消息数据
+    QVariant var = index.data(Qt::UserRole + 1);
+    ChatMessage msg = var.value<ChatMessage>();
+
+    // 确定气泡最大宽度（屏幕宽度的70%）
+    int maxWidth = option.rect.width() * 0.7;
+
+    // 计算时间戳额外高度
+    int timestampHeight = 0;
+    if (index.row() == 0 || index.row() % 5 == 0) { // 每5条消息显示一次时间
+        timestampHeight = option.fontMetrics.height() + 15; // 时间文本高度+间距
+    }
+
+    if (msg.isFileMessage) {
+        // 文件消息固定高度
+        return QSize(option.rect.width(), 85 + timestampHeight);
+    } else {
+        // 文本消息动态计算高度
+        QTextDocument doc;
+        doc.setDefaultFont(option.font);
+        doc.setTextWidth(maxWidth - 30); // 减去padding
+        doc.setHtml(Qt::convertFromPlainText(msg.content));
+
+        int height = doc.size().height() + 20; // 文本高度 + padding
+        return QSize(option.rect.width(), height + timestampHeight);
+    }
+}
+
 void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                             const QModelIndex &index) const
 {
@@ -151,24 +264,21 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         return;
 
     painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
 
     // 获取消息数据
     QVariant var = index.data(Qt::UserRole + 1);
     ChatMessage msg = var.value<ChatMessage>();
 
-    // 获取视图矩形
+    // 设置区域
     QRect rect = option.rect;
+    const int avatarSize = 40;
+    const int avatarMargin = 10;
+    const int bubblePadding = 12;
 
-    // 绘制时间戳（每5条消息显示一次时间）
-    static QDateTime lastTimestamp;
-    bool showTimestamp = false;
-
-    if (!lastTimestamp.isValid() ||
-        lastTimestamp.secsTo(msg.timestamp) > 300 || // 5分钟显示一次
-        (index.row() % 5 == 0)) {  // 或者每5条消息显示一次
-        showTimestamp = true;
-        lastTimestamp = msg.timestamp;
-    }
+    // 计算时间戳
+    bool showTimestamp = (index.row() == 0 || index.row() % 5 == 0);
+    int timestampHeight = 0;
 
     if (showTimestamp) {
         QString timeStr = msg.timestamp.toString("yyyy-MM-dd hh:mm:ss");
@@ -189,104 +299,147 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         painter->setPen(Qt::black);
         painter->drawText(timeRect, Qt::AlignCenter, timeStr);
 
-        // 调整消息显示位置
-        rect.setTop(rect.top() + timeHeight + 15);
+        timestampHeight = timeHeight + 15;
+        rect.setTop(rect.top() + timestampHeight);
     }
 
-    // 气泡最大宽度为整个区域的70%
+    // 计算气泡最大宽度为整个区域的70%
     int maxBubbleWidth = rect.width() * 0.7;
 
-    // 计算文本大小
-    QTextDocument doc;
-    doc.setDefaultFont(option.font);
-    doc.setTextWidth(maxBubbleWidth - 30);  // 30是文本内边距
-    doc.setHtml(Qt::convertFromPlainText(msg.content));
-
-    QSize docSize(doc.idealWidth(), doc.size().height());
-
-    // 气泡大小和位置
-    int bubbleWidth = docSize.width() + 30;  // 加上内边距
-    int bubbleHeight = docSize.height() + 20;
-
-    QRect bubbleRect;
-    if (msg.isSelf) {  // 自己的消息靠右
-        bubbleRect = QRect(rect.right() - bubbleWidth - 20,
-                           rect.top() + 5,
-                           bubbleWidth,
-                           bubbleHeight);
-    } else {  // 对方消息靠左
-        bubbleRect = QRect(rect.left() + 20,
-                           rect.top() + 5,
-                           bubbleWidth,
-                           bubbleHeight);
-    }
-
-    // 画头像（简化为圆形）
-    int avatarSize = 40;
+    // 计算头像位置
     QRect avatarRect;
     if (msg.isSelf) {
-        avatarRect = QRect(rect.right() - 10 - avatarSize,
-                           bubbleRect.top(),
-                           avatarSize,
-                           avatarSize);
+        avatarRect = QRect(rect.right() - avatarSize - avatarMargin,
+                           rect.top(), avatarSize, avatarSize);
     } else {
-        avatarRect = QRect(rect.left() + 10,
-                           bubbleRect.top(),
-                           avatarSize,
-                           avatarSize);
+        avatarRect = QRect(rect.left() + avatarMargin,
+                           rect.top(), avatarSize, avatarSize);
     }
 
+    // 绘制头像
     painter->setPen(Qt::NoPen);
-    painter->setBrush(msg.isSelf ? QColor(50, 200, 100) : QColor(200, 200, 200));
+    painter->setBrush(msg.isSelf ? QColor(0, 150, 136) : QColor(158, 158, 158));
     painter->drawEllipse(avatarRect);
 
-    // 画气泡
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(msg.isSelf ? QColor(95, 233, 152) : QColor(245, 245, 245));  // 绿色/白色气泡
-    painter->drawRoundedRect(bubbleRect, 10, 10);
+    // 计算气泡尺寸和位置
+    QRect bubbleRect;
 
-    // 画文本
-    painter->translate(msg.isSelf ? bubbleRect.left() + 15 : bubbleRect.left() + 15,
-                       bubbleRect.top() + 10);
-    QRect clipRect(0, 0, bubbleRect.width() - 30, bubbleRect.height() - 20);
-    painter->setClipRect(clipRect);
+    if (msg.isFileMessage) {
+        // 文件消息气泡固定尺寸
+        int bubbleWidth = 280;
+        int bubbleHeight = 70;
 
-    doc.drawContents(painter);
+        if (msg.isSelf) {
+            bubbleRect = QRect(avatarRect.left() - bubbleWidth - 10,
+                               avatarRect.top(), bubbleWidth, bubbleHeight);
+        } else {
+            bubbleRect = QRect(avatarRect.right() + 10,
+                               avatarRect.top(), bubbleWidth, bubbleHeight);
+        }
+
+        // 绘制气泡背景
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(msg.isSelf ? QColor(220, 248, 198) : QColor(240, 240, 240));
+        painter->drawRoundedRect(bubbleRect, 10, 10);
+
+        // 绘制文件图标
+        QRect iconRect(bubbleRect.left() + bubblePadding,
+                       bubbleRect.top() + bubblePadding,
+                       40, 40);
+        painter->setPen(Qt::gray);
+        painter->setBrush(QColor(200, 200, 200));
+        painter->drawRect(iconRect);
+        painter->drawText(iconRect, Qt::AlignCenter, "📄");
+
+        // 绘制文件名（限制宽度，过长时截断）
+        QFont nameFont = option.font;
+        nameFont.setBold(true);
+        painter->setFont(nameFont);
+        QFontMetrics nameFm(nameFont);
+        QString elidedName = nameFm.elidedText(msg.fileName, Qt::ElideMiddle, 150);
+
+        QRect nameRect(iconRect.right() + 10,
+                       bubbleRect.top() + bubblePadding,
+                       150, 20);
+        painter->setPen(Qt::black);
+        painter->drawText(nameRect, Qt::AlignLeft | Qt::AlignVCenter, elidedName);
+
+        // 绘制文件大小
+        QFont sizeFont = option.font;
+        sizeFont.setPointSize(sizeFont.pointSize() - 1);
+        painter->setFont(sizeFont);
+
+        QString sizeStr;
+        if (msg.fileSize < 1024) {
+            sizeStr = QString("%1 B").arg(msg.fileSize);
+        } else if (msg.fileSize < 1024*1024) {
+            sizeStr = QString("%1 KB").arg(msg.fileSize / 1024.0, 0, 'f', 2);
+        } else {
+            sizeStr = QString("%1 MB").arg(msg.fileSize / (1024.0*1024.0), 0, 'f', 2);
+        }
+
+        QRect sizeRect(nameRect.left(), nameRect.bottom() + 5,
+                       nameRect.width(), 20);
+        painter->setPen(Qt::darkGray);
+        painter->drawText(sizeRect, Qt::AlignLeft | Qt::AlignVCenter, sizeStr);
+
+        // 绘制下载按钮
+        QRect btnRect(bubbleRect.right() - 70, bubbleRect.bottom() - 30,
+                      60, 24);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(QColor(0, 150, 136, 180));
+        painter->drawRoundedRect(btnRect, 12, 12);
+
+        painter->setPen(Qt::white);
+        painter->setFont(option.font);
+        painter->drawText(btnRect, Qt::AlignCenter, "下载");
+
+        // 保存点击区域
+        const_cast<MessageDelegate*>(this)->clickableAreas[index] = btnRect;
+
+    } else {
+        // 文本消息动态计算气泡大小
+        QTextDocument doc;
+        doc.setDefaultFont(option.font);
+        doc.setTextWidth(maxBubbleWidth - 2 * bubblePadding);
+        doc.setHtml(Qt::convertFromPlainText(msg.content));
+
+        QSizeF docSize = doc.size();
+        int bubbleWidth = docSize.width() + 2 * bubblePadding;
+        int bubbleHeight = docSize.height() + 2 * bubblePadding;
+
+        if (msg.isSelf) {
+            bubbleRect = QRect(avatarRect.left() - bubbleWidth - 10,
+                               avatarRect.top(), bubbleWidth, bubbleHeight);
+        } else {
+            bubbleRect = QRect(avatarRect.right() + 10,
+                               avatarRect.top(), bubbleWidth, bubbleHeight);
+        }
+
+        // 绘制气泡背景
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(msg.isSelf ? QColor(220, 248, 198) : QColor(240, 240, 240));
+        painter->drawRoundedRect(bubbleRect, 10, 10);
+
+        // 绘制文本内容
+        painter->setPen(Qt::black);
+        painter->setFont(option.font);
+
+        // 创建一个临时的矩形用于文本绘制
+        QRect textRect = bubbleRect.adjusted(bubblePadding, bubblePadding,
+                                             -bubblePadding, -bubblePadding);
+
+        // 使用 QTextDocument 绘制文本，支持换行
+        painter->save();
+        painter->translate(textRect.topLeft());
+        QRect clip(0, 0, textRect.width(), textRect.height());
+        doc.drawContents(painter, clip);
+        painter->restore();
+    }
 
     painter->restore();
 }
 
-QSize MessageDelegate::sizeHint(const QStyleOptionViewItem &option,
-                                const QModelIndex &index) const
-{
-    if (!index.isValid())
-        return QSize();
-
-    // 获取消息数据
-    QVariant var = index.data(Qt::UserRole + 1);
-    ChatMessage msg = var.value<ChatMessage>();
-
-    // 计算文本大小
-    QTextDocument doc;
-    doc.setDefaultFont(option.font);
-
-    // 气泡最大宽度为整个区域的70%
-    int maxBubbleWidth = option.rect.width() * 0.7;
-    doc.setTextWidth(maxBubbleWidth - 30);
-    doc.setHtml(Qt::convertFromPlainText(msg.content));
-
-    QSize docSize(doc.idealWidth(), doc.size().height());
-
-    // 添加足够的高度来容纳气泡、头像和可能的时间戳
-    int height = docSize.height() + 40;  // 基本高度
-
-    // 每5条消息显示一次时间，需要额外高度
-    if (index.row() % 5 == 0) {
-        height += 30;
-    }
-
-    return QSize(option.rect.width(), height);
-}
 
 
 void ChatRoom::messageUpdate(){
@@ -313,5 +466,58 @@ void ChatRoom::on_toolButton_file_clicked()
         );
 
     fsender->startFileUpload(g_session,filePath);
+
+    // if (!filePath.isEmpty()) {
+    //     QFileInfo fileInfo(filePath);
+    //     QString fileName = fileInfo.fileName();      // 获取文件名（带扩展名）
+    //     QString baseName = fileInfo.baseName();      // 获取文件名（不带扩展名）
+    //     QString suffix = fileInfo.suffix();          // 获取文件扩展名
+    //     qint64 fileSize = fileInfo.size();           // 获取文件大小（字节）
+    //     qDebug() << "文件路径:" << filePath;
+    //     qDebug() << "文件名:" << fileName;
+    //     qDebug() << "文件大小:" << fileSize << "字节";
+    //     qDebug() << "文件扩展名:" << suffix;
+    //     appendFileMessage(filePath, fileName, fileSize, true,fileId);
+    // }
 }
+
+void ChatRoom::appendFileMessage(const QString &fileName,
+                                 qint64 fileSize, bool isSelf,const QString &fileId)
+{
+    QStandardItem *item = new QStandardItem();
+
+    // 创建文件消息对象
+    ChatMessage msg;
+    msg.isFileMessage = true;
+    msg.fileName = fileName;
+    msg.fileSize = fileSize;
+    msg.fileId = fileId; // 使用从服务器获取的fileId
+    msg.isSelf = isSelf;
+    msg.timestamp = QDateTime::currentDateTime();
+
+    qDebug()<<msg.fileId;
+    // 设置显示内容（将在delegate中使用）
+    QString sizeStr;
+    if (fileSize < 1024) {
+        sizeStr = QString("%1 B").arg(fileSize);
+    } else if (fileSize < 1024*1024) {
+        sizeStr = QString("%1 KB").arg(fileSize / 1024.0, 0, 'f', 2);
+    } else {
+        sizeStr = QString("%1 MB").arg(fileSize / (1024.0*1024.0), 0, 'f', 2);
+    }
+
+    msg.content = QString("文件: %1 (%2)").arg(fileName).arg(sizeStr);
+
+    // 将消息对象存储在item的数据中
+    QVariant v;
+    v.setValue(msg);
+    item->setData(v, Qt::UserRole + 1);
+
+    // 添加到模型
+    model->appendRow(item);
+
+    // 滚动到底部
+    ui->listView->scrollToBottom();
+}
+
 

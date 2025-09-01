@@ -32,7 +32,7 @@ signals:
     void completeTicketSend(Session *sender, QJsonObject &data);
 
     // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
-    void fileUploadStart(Session*, const QJsonObject&);
+    void fileUploadStart(Session*,  QJsonObject&);
     void fileUploadChunk(Session*, const QJsonObject&);
     void fileInfoSend(const QJsonObject&);
     void fileDownloadRequest(Session* requester, const QJsonObject& downlodaRequest); // 文件下载请求
@@ -61,6 +61,8 @@ signals:
     //TODO:与ClientCore通信
     void registerResult(bool);
     void loginResult(bool);
+
+    void fileDownloadStart(const QJsonObject &json);
 
 private slots:
     void onReadyRead();

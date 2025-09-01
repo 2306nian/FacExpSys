@@ -30,6 +30,7 @@ FileSender::~FileSender()
 
 bool FileSender::startFileUpload(Session* m_session, const QString& filePath)
 {
+    qDebug()<<filePath;
     // 判断是否在上传文件
     if (m_isUploading) {
         emit uploadError("文件上传已在进行中");
@@ -96,7 +97,9 @@ bool FileSender::startFileUpload(Session* m_session, const QString& filePath)
 
 void FileSender::sendNextChunk()
 {
+    qDebug()<<"test";
     if (!m_isUploading || !m_file || !m_session) {
+        qDebug()<<m_isUploading<<m_file<<m_session;
         return;
     }
 
@@ -139,9 +142,11 @@ void FileSender::sendNextChunk()
 
 void FileSender::onSessionMessage(Session* session, const QJsonObject& message)
 {
-    QString type = message["type"].toString();
     m_session = session;
+       // 服务端确认可以开始上传
+    QString fileId = message["file_id"].toString();
 
+<<<<<<< HEAD
     if (type == "upload_started") {
         // 服务端确认可以开始上传
         QJsonObject data = message["data"].toObject();
@@ -151,12 +156,12 @@ void FileSender::onSessionMessage(Session* session, const QJsonObject& message)
         qDebug()<<m_fileId;
         while(m_isUploading){
             qDebug()<<"test";
+=======
+    m_fileId = fileId;
+    qDebug()<<fileId;
+    while(m_isUploading){
+>>>>>>> 01c7f892c545978da0008d7c6d3dae23b69c5985
         sendNextChunk();
-        }
-    }
-
-    else {
-        qDebug()<<"upload error!";
     }
 }
 

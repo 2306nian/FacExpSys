@@ -59,10 +59,10 @@ FORMS += \
     videochat.ui \
     widget.ui
 
-# FFmpeg 配置
-# 使用pkg-config自动获取FFmpeg配置
-CONFIG += link_pkgconfig
-PKGCONFIG += libavformat libavcodec libavutil libswscale libswresample
+# # FFmpeg 配置
+# # 使用pkg-config自动获取FFmpeg配置
+# CONFIG += link_pkgconfig
+# PKGCONFIG += libavformat libavcodec libavutil libswscale libswresample
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

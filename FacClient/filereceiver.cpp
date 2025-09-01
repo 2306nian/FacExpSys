@@ -37,12 +37,14 @@ bool FileReceiver::startFileDownload(Session* session, const QString& fileId, co
 {
     // 检查是否正在下载
     if (m_isDownloading) {
+        qDebug()<<"文件下载进行中";
         emit downloadError("文件下载已在进行中");
         return false;
     }
 
     // 检查参数
     if (fileId.isEmpty()) {
+        qDebug()<<"文件ID为空";
         emit downloadError("文件ID为空");
         return false;
     }
@@ -52,6 +54,7 @@ bool FileReceiver::startFileDownload(Session* session, const QString& fileId, co
     QDir dir(fileInfo.absolutePath());
     if (!dir.exists()) {
         if (!dir.mkpath(".")) {
+            qDebug()<<"无法创建保存目录"+ fileInfo.absolutePath();
             emit downloadError("无法创建保存目录: " + fileInfo.absolutePath());
             return false;
         }
@@ -71,6 +74,7 @@ bool FileReceiver::startFileDownload(Session* session, const QString& fileId, co
     if (!m_file->open(QIODevice::WriteOnly)) {
         delete m_file;
         m_file = nullptr;
+        qDebug()<<"无法创建文件: " + savePath;
         emit downloadError("无法创建文件: " + savePath);
         return false;
     }

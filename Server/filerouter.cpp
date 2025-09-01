@@ -146,10 +146,10 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         nData["file_size"] = ctx.fileSize;
         nData["ticket_id"] = ctx.ticketId;
         notify["data"] = nData;
+        qDebug()<<ctx.fileName<<ctx.fileSize<<nData["file_name"].toString();
 
         emit fileUploaded(sender, notify); // TODO:广播文件上传成功
         m_uploads.remove(sender); // 移除会话
-
         qDebug() << "Upload completed:" << ctx.fileName << "saved as" << ctx.filePath;
     }
 }
@@ -222,15 +222,11 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
         cData["data"] = base64Data;
         cData["is_last"] = file.atEnd();  // 用 is_last 判断结束
         chunk["data"] = cData;
-
         // 发送
         sender->sendMessage(QJsonDocument(chunk).toJson(QJsonDocument::Compact));
-
         totalSent += buffer.size();
     }
-
     file.close();
-
     qDebug() << "Successfully streamed file:" << ctx.fileName
              << "Total sent:" << totalSent << "bytes";
 }

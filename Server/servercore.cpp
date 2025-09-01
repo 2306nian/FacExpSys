@@ -59,8 +59,6 @@ void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject 
             client->sendMessage(payload);
         }
     }
-
-    qDebug() << "Broadcasted device data:" << deviceId;
 }
 
 void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)
