@@ -49,7 +49,7 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
     QString fileId = generateFileId();
 
     // 创建存储目录
-    QString dirPath = "uploads/" + ticketId;
+    QString dirPath = "uploads"; //文件保存路径build/
     QDir().mkpath(dirPath);
 
     // 存储路径：使用 fileId 避免冲突
