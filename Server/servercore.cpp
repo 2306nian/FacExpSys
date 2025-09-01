@@ -45,12 +45,13 @@ void ServerCore::incomingConnection(qintptr handle)
 }
 
 // 广播设备实时数据给所有客户端
-void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject &data)
+void ServerCore::broadcastDeviceData(const QJsonArray &devicesData)
 {
     QJsonObject msg{
         {"type", "device_realtime_update"},
-        {"data", data}
+        {"data", devicesData}
     };
+
     QByteArray payload = QJsonDocument(msg).toJson(QJsonDocument::Compact);
 
     // 广播给所有在线客户端
@@ -59,6 +60,8 @@ void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject 
             client->sendMessage(payload);
         }
     }
+
+    qDebug() << "Broadcasted batch update for" << devicesData.size() << "devices.";
 }
 
 void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)

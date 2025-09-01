@@ -151,13 +151,13 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
         return;
     }
 
-    // 状态判断：只能从 pending → in_progress
+    // 状态判断
     if (order->status != WORK_ORDER_PENDING) {
         qWarning() << "Ticket already handled:" << ticketId << "status:" << order->status;
         return;
     }
 
-    // 更新内存状态
+    // 更新状态
     order->status = WORK_ORDER_IN_PROGRESS;
 
     // 记录到数据库
@@ -171,7 +171,7 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
 
     qDebug() << "Ticket accepted:" << ticketId << "by" << expertUsername;
 
-    // 通知工单创建者工单已经创建
+    // 通知双端该工单被承接
     QJsonObject notify{
         {"type", "ticket_accepted"},
         {"data", QJsonObject{
@@ -182,7 +182,6 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
     };
     QByteArray packet = packMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
 
-    // 发送给该工单内的所有客户端（主要是工厂端）
     for (ClientSession *client : order->clients) {
         if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {
             client->sendMessage(packet);
@@ -202,7 +201,7 @@ void WorkOrderManager::completeTicket(const QString &ticketId,
         return;
     }
 
-    // 状态判断：只能从 in_progress → completed
+    // 状态判断
     if (order->status != WORK_ORDER_IN_PROGRESS) {
         qWarning() << "Cannot complete ticket: invalid state" << order->status;
         return;

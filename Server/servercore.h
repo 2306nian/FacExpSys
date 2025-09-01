@@ -23,7 +23,7 @@ protected:
 
 private slots:
     // 处理设备数据更新并广播
-    void broadcastDeviceData(const QString &deviceId, const QJsonObject &data);
+    void broadcastDeviceData(const QJsonArray &devicesData);
     // 广播工单创建
     void broadcastTicketPending(const QString &ticketId, const QJsonObject &info);
 

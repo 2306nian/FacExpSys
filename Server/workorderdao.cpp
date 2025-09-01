@@ -198,7 +198,6 @@ QList<WorkOrderRecord> WorkOrderDAO::getPendingWorkOrders()
     return list;
 }
 
-// 新增：工厂端查询
 QList<WorkOrderRecord> WorkOrderDAO::getClientWorkOrders(const QString &clientUsername)
 {
     QList<WorkOrderRecord> list;

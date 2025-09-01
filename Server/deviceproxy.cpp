@@ -119,6 +119,8 @@ void DeviceProxy::onUpdateTimer()
     QStringList deviceIds = {"SIM_PLC_1001", "SIM_SENSOR_2002", "SIM_MOTOR_3003"};
     QDateTime now = QDateTime::currentDateTime();
 
+    QJsonArray alldevicesData;
+
     for (const QString &deviceId : deviceIds) {
         double pressure = 80 + QRandomGenerator::global()->bounded(20);  // 80~100
         double temperature = 50 + QRandomGenerator::global()->bounded(20); // 50~70
@@ -161,15 +163,15 @@ void DeviceProxy::onUpdateTimer()
         }
 
         // emit 给客户端
-        QJsonObject data{
+        alldevicesData.append( QJsonObject{
             {"device_id", deviceId},
             {"pressure", pressure},
             {"temperature", temperature},
             {"control_count", getControlCount(deviceId)},
             {"status", status},
             {"timestamp", now.toString(Qt::ISODate)}
-        };
-        emit deviceDataUpdated(deviceId, data);
+        });
+        emit deviceDataUpdated(alldevicesData);
     }
 
     counter++;

@@ -18,7 +18,7 @@ public:
     int getControlCount(const QString &deviceId);
 
 signals:
-    void deviceDataUpdated(const QString &deviceId, const QJsonObject &data);
+    void deviceDataUpdated(const QJsonArray &devicesData);
 
 private slots:
     void onUpdateTimer();
