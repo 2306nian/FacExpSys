@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QJsonArray>
+#include <QJsonDocument>
 
 DeviceDAO *DeviceDAO::m_instance = nullptr;
 

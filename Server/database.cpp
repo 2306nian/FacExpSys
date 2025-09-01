@@ -1,4 +1,3 @@
-// database.cpp
 #include "database.h"
 #include <QSqlQuery>
 #include <QSqlError>
@@ -66,16 +65,16 @@ bool Database::initialize(const QString &dbPath)
     bool users_ok = userQuery.exec(R"(
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,           -- 用户名唯一
-        password_hash TEXT NOT NULL,             -- 密码哈希（不要存明文！）
-        user_type TEXT NOT NULL CHECK(user_type IN ('client', 'expert')),  -- 类型
-        created_at DATETIME NOT NULL,            -- 注册时间
-        last_login DATETIME                      -- 最后登录时间
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        user_type TEXT NOT NULL CHECK(user_type IN ('client', 'expert')),
+        created_at DATETIME NOT NULL,
+        last_login DATETIME
         )
     )");
 
 
-    // 1. 设备基本信息
+    // 设备基本信息
     bool devices_ok = query.exec(R"(
     CREATE TABLE IF NOT EXISTS devices (
         device_id TEXT PRIMARY KEY,
@@ -93,7 +92,7 @@ bool Database::initialize(const QString &dbPath)
     )
 )");
 
-    // 2. 实时数据（最新值）
+    // 实时数据（最新值）
     bool device_realtime_ok = query.exec(R"(
     CREATE TABLE IF NOT EXISTS device_realtime (
         device_id TEXT PRIMARY KEY,
@@ -109,7 +108,7 @@ bool Database::initialize(const QString &dbPath)
     )
 )");
 
-    // 3. 历史数据（用于曲线）
+    // 历史数据
     bool device_history_ok = query.exec(R"(
     CREATE TABLE IF NOT EXISTS device_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

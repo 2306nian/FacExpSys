@@ -32,8 +32,8 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::mediaDataReceived,
             MediaRelay::instance(), &MediaRelay::relayMedia);
 
-    connect(this, &ClientSession::deviceDataRequest,
-            DeviceProxy::instance(), &DeviceProxy::requestData);
+    /*connect(this, &ClientSession::deviceDataRequest,
+            DeviceProxy::instance(), &DeviceProxy::requestData);*/
 
     connect(this, &ClientSession::controlCommandReceived,
             DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
@@ -254,9 +254,9 @@ void ClientSession::handleMessage(const QByteArray &data)
                          {"user_type", result.userType}
                      }}
         };
-        sendMessage(QJsonDocument(response).toJson());
+        sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
 
-        qDebug()<<"用户"+username+"登陆成功";
+        qDebug()<<"用户"+username+"，类型为："+result.userType+"登陆成功";
 
         if (result.success) {
             // 设备信息初始化
@@ -322,34 +322,21 @@ void ClientSession::handleMessage(const QByteArray &data)
         }
     }
     else if (type == "get_work_orders") {
-
         QJsonObject dataObj = obj["data"].toObject();
         QString scope = dataObj["scope"].toString();
-        QString m_username = dataObj["username"].toString();
-        QList<WorkOrderRecord> records;
+        QString username = dataObj["username"].toString();  // 从请求中获取
 
-        QString m_userType = UserDAO::instance()->getUserType(m_username);
-
-        if (m_userType == "client") {
-            if (scope == "all") {
-                records = WorkOrderDAO::instance()->getClientWorkOrders(m_username);
-            } else if (scope == "pending") {
-                records = WorkOrderDAO::instance()->getClientPendingWorkOrders(m_username);
-            } else if (scope == "in_progress") {
-                records = WorkOrderDAO::instance()->getClientInProgressWorkOrders(m_username);
-            } else if (scope == "completed") {
-                records = WorkOrderDAO::instance()->getClientCompletedWorkOrders(m_username);
-            }
-        } else if (m_userType == "expert") {
-            if (scope == "pending") {
-                records = WorkOrderDAO::instance()->getPendingWorkOrders();
-            } else if (scope == "in_progress") {
-                records = WorkOrderDAO::instance()->getExpertInProgressWorkOrders(m_username);
-            } else if (scope == "completed") {
-                records = WorkOrderDAO::instance()->getExpertCompletedWorkOrders(m_username);
-            }
+        if (username.isEmpty()) {
+            sendError("Username required");
+            return;
         }
 
+        QString userType = UserDAO::instance()->getUserType(username);
+
+        // 交由 WorkOrderManager 处理
+        QList<WorkOrderRecord> records = WorkOrderManager::instance()->queryWorkOrders(username, userType, scope);
+
+        // 转为 JSON
         QJsonArray arr;
         for (const auto &r : records) {
             arr.append(QJsonObject{

@@ -178,6 +178,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getAllWorkOrders()
 {
     QList<WorkOrderRecord> list;
     QSqlQuery query("SELECT * FROM work_orders ORDER BY created_at DESC", Database::instance()->db());
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -201,6 +205,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getClientWorkOrders(const QString &clientUs
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE client_username = ? ORDER BY created_at DESC");
     query.addBindValue(clientUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -213,6 +221,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getClientPendingWorkOrders(const QString &c
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'pending' ORDER BY accepted_at DESC");
     query.addBindValue(clientUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -225,6 +237,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getClientInProgressWorkOrders(const QString
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'in_progress' ORDER BY accepted_at DESC");
     query.addBindValue(clientUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -237,6 +253,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getClientCompletedWorkOrders(const QString 
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE client_username = ? AND status = 'completed' ORDER BY completed_at DESC");
     query.addBindValue(clientUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -249,6 +269,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getExpertInProgressWorkOrders(const QString
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE expert_username = ? AND status = 'in_progress' ORDER BY accepted_at DESC");
     query.addBindValue(expertUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
@@ -261,6 +285,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getExpertCompletedWorkOrders(const QString 
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE expert_username = ? AND status = 'completed' ORDER BY completed_at DESC");
     query.addBindValue(expertUsername);
+    if(!query.exec()){
+        qDebug()<<"Query failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
