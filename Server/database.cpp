@@ -28,7 +28,7 @@ bool Database::initialize(const QString &dbPath)
         return false;
     }
 
-    // 创建工单表
+    // 工单表
     QSqlQuery query(m_db);
     bool work_order_ok = query.exec(R"(
         CREATE TABLE IF NOT EXISTS work_orders (
@@ -92,7 +92,7 @@ bool Database::initialize(const QString &dbPath)
     )
 )");
 
-    // 实时数据（最新值）
+    // 设备实时信息
     bool device_realtime_ok = query.exec(R"(
     CREATE TABLE IF NOT EXISTS device_realtime (
         device_id TEXT PRIMARY KEY,
@@ -108,7 +108,7 @@ bool Database::initialize(const QString &dbPath)
     )
 )");
 
-    // 历史数据
+    // 设备历史数据
     bool device_history_ok = query.exec(R"(
     CREATE TABLE IF NOT EXISTS device_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
