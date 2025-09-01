@@ -38,7 +38,10 @@ FileHandler::FileHandler(QObject *parent)
 
 //发送
 void FileHandler::handleFileUploadStart(Session *sender, const QJsonObject &data){
-
+    QJsonObject data_real = data["data"].toObject();
+    QString s1 = data_real["file_id"].toString();
+    emit sendFileidToChat(s1);
+    emit startFileUploadInChat(data);
 }
 
 void FileHandler::handleFileUploadChunk(Session *sender, const QJsonObject &data){
@@ -95,8 +98,10 @@ void TicketHandler::handleCompleteTicket(Session *sender, const QJsonObject &dat
 
 //接收
 void TicketHandler::handleTicketCreate(Session *client, const QJsonArray &data){
-    QJsonObject firstOrder = data.first().toObject();
+    QJsonObject firstOrder = data[0].toObject();
     QString s2=firstOrder["ticket_id"].toString();
+    client->setTickedId(s2);
+    qDebug()<<s2;
     emit sendTicketToSession(s2);
 }
 

@@ -36,6 +36,10 @@ class FileHandler: public QObject
     private:
         explicit FileHandler(QObject *parent=nullptr);
         static FileHandler* m_instance;
+
+    signals:
+        void sendFileidToChat(QString s1);
+        void startFileUploadInChat(const QJsonObject &data);
 };
 
 class TicketHandler: public QObject

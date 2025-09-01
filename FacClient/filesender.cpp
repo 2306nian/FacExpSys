@@ -59,6 +59,7 @@ bool FileSender::startFileUpload(Session* m_session, const QString& filePath)
     m_filePath = filePath;
     // 获取工单号
     m_ticketId = m_session->getTicketId();
+    qDebug()<<m_ticketId;
     m_fileSize = file.size();
     m_fileName = QFileInfo(filePath).fileName();
     m_uploadedBytes = 0;

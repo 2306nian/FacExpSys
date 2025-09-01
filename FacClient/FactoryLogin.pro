@@ -24,6 +24,7 @@ SOURCES += \
     screensharereceiver.cpp \
     screensharesender.cpp \
     session.cpp \
+    videochat.cpp \
     widget.cpp
 
 HEADERS += \
@@ -43,6 +44,7 @@ HEADERS += \
     screensharereceiver.h \
     screensharesender.h \
     session.h \
+    videochat.h \
     widget.h
 
 FORMS += \
@@ -53,6 +55,7 @@ FORMS += \
     pagedevice.ui \
     pageorder.ui \
     register.ui \
+    videochat.ui \
     widget.ui
 
 # Default rules for deployment.

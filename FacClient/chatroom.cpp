@@ -8,6 +8,10 @@
 #include <QTextOption>
 #include<QJsonObject>
 #include <QJsonDocument>
+#include <QFileDialog>
+#include<QDir>
+#include<filesender.h>
+#include<session.h>
 
 ChatRoom::ChatRoom(QWidget *parent) :
     QMainWindow(parent),
@@ -15,11 +19,15 @@ ChatRoom::ChatRoom(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    fsender=new FileSender(this);
+
     // 设置窗口标题
     setWindowTitle("聊天室");
-
     connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
     connect(g_session,&Session::textUpdate,this,&ChatRoom::messageUpdate);
+    connect(FileHandler::instance(),&FileHandler::sendFileidToChat,this,&ChatRoom::getFileidFromhandle);
+    connect(FileHandler::instance(),&FileHandler::startFileUploadInChat,this,&ChatRoom::startUploadInChat);
+    connect(g_session,&Session::fileInfoSend,this,&ChatRoom::getFileInfo);
     // 初始化model，并绑定到listView
     model = new QStandardItemModel(this);
     ui->listView->setModel(model);
@@ -57,6 +65,18 @@ ChatRoom::ChatRoom(QWidget *parent) :
             }
         }
     });
+}
+
+void ChatRoom::getFileInfo(const QJsonObject &data){
+    fileName=data["file_name"].toString();
+    file_size=data["file_size"].toString();
+}
+
+void ChatRoom::startUploadInChat(const QJsonObject &data){
+    fsender->onSessionMessage(g_session,data);
+}
+void ChatRoom::getFileidFromhandle(QString s1){
+    fileId=s1;
 }
 
 void ChatRoom::appendMessage(const QString &text, bool isSelf)
@@ -281,4 +301,17 @@ void ChatRoom::on_toolButton_clicked()
 
 
 Q_DECLARE_METATYPE(ChatMessage)
+
+
+void ChatRoom::on_toolButton_file_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        tr("选择要发送的文件"),
+        QDir::homePath(),  // 起始目录，也可以用QStandardPaths::DocumentsLocation
+        tr("所有文件 (*.*)") // 文件过滤器，可以根据需要调整
+        );
+
+    fsender->startFileUpload(g_session,filePath);
+}
 

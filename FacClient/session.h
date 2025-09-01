@@ -34,7 +34,7 @@ signals:
     // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
     void fileUploadStart(Session*, const QJsonObject&);
     void fileUploadChunk(Session*, const QJsonObject&);
-
+    void fileInfoSend(const QJsonObject&);
     void fileDownloadRequest(Session* requester, const QJsonObject& downlodaRequest); // 文件下载请求
 
     //收包

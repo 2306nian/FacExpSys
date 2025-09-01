@@ -19,6 +19,7 @@ public:
     // 文件发送控制
     bool startFileUpload(Session* m_session, const QString& filePath);
     void cancelUpload();
+    void onSessionMessage(Session* session, const QJsonObject& message);
 
     // 状态查询
     bool isUploading() const { return m_isUploading; }
@@ -34,7 +35,7 @@ signals:
 
 private slots:
     void sendNextChunk();
-    void onSessionMessage(Session* session, const QJsonObject& message);
+
 
 private:
     // void cleanup();
