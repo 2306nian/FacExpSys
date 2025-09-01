@@ -44,6 +44,7 @@ private slots:
     void captureScreenFrame();
     void processAudioData();
     void onAudioDataReady();
+    void onAudioReadyRead();
 
 private:
     void cleanupFFmpeg();
@@ -77,7 +78,8 @@ private:
     struct SwsContext *m_swsContext;  // 视频格式转换上下文
 
     // 音频相关
-    QAudioInput *m_audioInput;   // Qt音频输入设备
+    QAudioInput *m_audioInput = nullptr;   // Qt音频输入设备
+    QIODevice*   m_audioIO = nullptr;     // 音频输入的IO设备
     QBuffer *m_audioBuffer; // 音频数据缓冲区
     QTimer *m_captureTimer; // 屏幕捕获定时器（30fps）
     QTimer *m_audioTimer; // 音频处理定时器（每20ms）

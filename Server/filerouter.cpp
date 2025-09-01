@@ -244,6 +244,7 @@ void FileRouter::newFileUploaded(ClientSession *sender, const QJsonObject &notif
     }
 
     for (ClientSession *client : order->clients) {
+        // 注释掉的是新文件上传给上传者广播
         if (client != sender) {
             client->sendMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
         }

@@ -1,10 +1,11 @@
+// sudo apt install pulseaudio pavucontrol
 #include "screenrecorder.h"
 #include <QDebug>
 #include <QDir>
 #include <QDateTime>
 #include <QPixmap>
 #include <QScreen>
-
+#include <QGuiApplication>
 // 在session中连接
 // connect(m_recorder, &ScreenRecorder::recordingStarted, this, ...);
 // connect(m_recorder, &ScreenRecorder::recordingStopped, this, ...);
@@ -47,8 +48,8 @@ ScreenRecorder::ScreenRecorder(QObject *parent)
     if (inputDevice.isFormatSupported(audioFormat)) {
         // 创建音频输入和缓冲区
         m_audioInput = new QAudioInput(inputDevice, audioFormat, this);
-        m_audioBuffer = new QBuffer(this);
-        m_audioBuffer->open(QIODevice::WriteOnly);
+        // m_audioBuffer = new QBuffer(this);
+        // m_audioBuffer->open(QIODevice::WriteOnly);
 
         // 音频数据就绪信号
         connect(m_audioInput, &QAudioInput::notify, this, &ScreenRecorder::onAudioDataReady);
@@ -121,9 +122,15 @@ bool ScreenRecorder::startRecording(const QString& filePath)
     m_audioFrameCount = 0;
 
     // 启动音频输入
-    if (m_audioInput && m_audioBuffer) {
-        m_audioInput->start(m_audioBuffer);
-        m_audioDataBuffer.clear();
+    if (m_audioInput) {
+        m_audioIO = m_audioInput->start();  // 直接拿 QIODevice
+        if (m_audioIO) {
+            connect(m_audioIO, &QIODevice::readyRead,
+                    this, &ScreenRecorder::onAudioReadyRead);
+            m_audioDataBuffer.clear();
+        } else {
+            qWarning() << "启动音频输入失败";
+        }
     }
 
     // 启动屏幕捕获定时器（固定30fps）
@@ -148,6 +155,11 @@ void ScreenRecorder::stopRecording()
     // 停止音频输入
     if (m_audioInput) {
         m_audioInput->stop();
+        if (m_audioIO) {
+            disconnect(m_audioIO, &QIODevice::readyRead,
+                       this, &ScreenRecorder::onAudioReadyRead);
+            m_audioIO = nullptr;
+        }
     }
 
     // 处理剩余的音频数据
@@ -309,7 +321,7 @@ bool ScreenRecorder::setupVideoStream()
     }
 
     // 设置流时间基
-    m_videoStream->time_base = {1, 90000};
+    m_videoStream->time_base = {1, 90000}; // 标准视频时间基
     return true;
 }
 
@@ -471,9 +483,8 @@ void ScreenRecorder::writeVideoFrame(const QImage& frame)
               m_videoFrame->data, m_videoFrame->linesize);
 
     // 设置时间戳
-    m_videoFrame->pts = av_rescale_q(m_videoFrameCount++,
-                                     AVRational{1, FRAME_RATE},
-                                     m_videoStream->time_base);
+    m_videoFrame->pts = m_videoFrameCount; // 直接使用帧计数
+    m_videoFrameCount++; // 确保递增
 
     // 编码并写入
     AVPacket pkt;
@@ -510,6 +521,17 @@ void ScreenRecorder::onAudioDataReady()
             QByteArray data = m_audioBuffer->read(bytesReady);
             m_audioDataBuffer.append(data);
         }
+    }
+}
+
+void ScreenRecorder::onAudioReadyRead()
+{
+    if (!m_audioIO) return;
+
+    QByteArray data = m_audioIO->readAll();  // 直接读PCM
+    if (!data.isEmpty()) {
+        QMutexLocker locker(&m_audioMutex);
+        m_audioDataBuffer.append(data);
     }
 }
 
