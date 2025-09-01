@@ -115,7 +115,7 @@ void Session::handleMessage(const QByteArray &data)
         emit fileUploadedRecv(dataObj);
     }
     else if(doc["type"]=="file_meta"||doc["type"]=="file_chunk"){
-        qDebug()<<"开始下载文件";
+        // qDebug()<<"开始下载文件";
         QJsonObject json_obj=doc.object();
         emit fileDownloadStart(json_obj);
     }

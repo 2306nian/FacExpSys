@@ -29,6 +29,7 @@ ChatRoom::ChatRoom(QWidget *parent) :
     connect(FileHandler::instance(),&FileHandler::startFileUploadInChat,this,&ChatRoom::startUploadInChat);
     connect(g_session,&Session::fileInfoSend,this,&ChatRoom::getFileInfo);
     connect(FileHandler::instance(),&FileHandler::getfileId,this,&ChatRoom::getFileId);
+    connect(FileHandler::instance(),&FileHandler::ChatDownloadStart,this,&ChatRoom::startDownload);
     // 初始化model，并绑定到listView
     model = new QStandardItemModel(this);
     ui->listView->setModel(model);
@@ -143,7 +144,7 @@ bool ChatRoom::eventFilter(QObject *watched, QEvent *event)
                         }
 
                         // 现在调用下载处理
-                        freceiver->startFileDownload(g_session,msg.fileId,dir);
+                        freceiver->startFileDownload(g_session,msg.fileName,msg.fileId,dir);
                         qDebug() << "下载按钮被点击，文件名:" << msg.fileName
                                  << "文件ID:" << msg.fileId;
                         return true; // 事件已处理

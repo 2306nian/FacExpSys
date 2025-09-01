@@ -33,18 +33,16 @@ FileReceiver::~FileReceiver()
     }
 }
 
-bool FileReceiver::startFileDownload(Session* session, const QString& fileId, const QString& savePath)
+bool FileReceiver::startFileDownload(Session* session,const QString& fileName, const QString& fileId, const QString& savePath)
 {
     // 检查是否正在下载
     if (m_isDownloading) {
-        qDebug()<<"文件下载进行中";
         emit downloadError("文件下载已在进行中");
         return false;
     }
 
     // 检查参数
     if (fileId.isEmpty()) {
-        qDebug()<<"文件ID为空";
         emit downloadError("文件ID为空");
         return false;
     }
@@ -54,7 +52,7 @@ bool FileReceiver::startFileDownload(Session* session, const QString& fileId, co
     QDir dir(fileInfo.absolutePath());
     if (!dir.exists()) {
         if (!dir.mkpath(".")) {
-            qDebug()<<"无法创建保存目录"+ fileInfo.absolutePath();
+            qDebug()<<"无法创建保存目录: " + fileInfo.absolutePath();
             emit downloadError("无法创建保存目录: " + fileInfo.absolutePath());
             return false;
         }
@@ -64,18 +62,17 @@ bool FileReceiver::startFileDownload(Session* session, const QString& fileId, co
     m_session = session;
     m_fileId = fileId;
     m_ticketId = session->getTicketId();
-    m_savePath = savePath;
-    m_fileName = fileInfo.fileName();
+    m_fileName = fileName;
+    m_savePath = savePath + "/" + m_fileName;
     m_downloadedBytes = 0;
     m_fileSize = 0;
 
     // 创建文件
-    m_file = new QFile(savePath);
+    m_file = new QFile(m_savePath);
     if (!m_file->open(QIODevice::WriteOnly)) {
         delete m_file;
         m_file = nullptr;
-        qDebug()<<"无法创建文件: " + savePath;
-        emit downloadError("无法创建文件: " + savePath);
+        emit downloadError("无法创建文件: " + m_savePath);
         return false;
     }
 
@@ -113,6 +110,7 @@ void FileReceiver::onSessionMessage(Session* session, const QJsonObject& message
         qDebug() << "Download started:" << m_fileName << "(" << m_fileSize << "bytes)";
 
     } else if (type == "file_chunk") {
+        qDebug()<<"1111111111";
         // 接收到文件分块
         if (!m_isDownloading || !m_file) {
             qDebug()<<"未启动下载却收到文件块";
@@ -135,9 +133,11 @@ void FileReceiver::onSessionMessage(Session* session, const QJsonObject& message
         }
 
         m_downloadedBytes += chunkData.size();
+                qDebug()<<"222222222";
         emit downloadProgress(m_downloadedBytes, m_fileSize);
 
         if (isLast) {
+                    qDebug()<<"33333333333333";
             // 下载完成
             m_file->flush();
             m_file->close();

@@ -15,7 +15,7 @@ public:
     ~FileReceiver();
 
     // 启动文件下载
-    bool startFileDownload(Session* session, const QString& fileId, const QString& savePath);
+    bool startFileDownload(Session* session,const QString& fileName, const QString& fileId, const QString& savePath);
 
     // 处理服务端消息
     void onSessionMessage(Session* session, const QJsonObject& message);
