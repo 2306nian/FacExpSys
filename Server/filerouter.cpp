@@ -137,8 +137,6 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         delete ctx.file;
         ctx.file = nullptr;
 
-        m_uploads.remove(sender); // 移除会话
-
         // 通知工单系统：文件已上传 TODO:客户端接收并处理此广播
         QJsonObject notify;
         notify["type"] = "file_uploaded";
@@ -149,6 +147,7 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         nData["ticket_id"] = ctx.ticketId;
         notify["data"] = nData;
 
+        m_uploads.remove(sender); // 移除会话
         emit fileUploaded(sender, notify); // TODO:广播文件上传成功
 
         qDebug() << "Upload completed:" << ctx.fileName << "saved as" << ctx.filePath;
