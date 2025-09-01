@@ -1,6 +1,5 @@
 #include "camerastreamer.h"
 #include "session.h"
-#include "handlers.h"
 #include <QDebug>
 #include <QCameraInfo>
 #include <QVideoEncoderSettings>
@@ -9,18 +8,13 @@
 #include <QFile>
 #include <QDateTime>
 
-CameraStreamer::CameraStreamer(Session* session, QObject *parent, QString name)
+CameraStreamer::CameraStreamer(Session* session, bool viewfinder, QObject *parent)
     : QObject(parent)
     , m_session(session)
-    , m_name(name)
-    , m_camera(nullptr)
-    , m_recorder(nullptr)
     , m_isStreaming(false)
-    , m_viewfinder(nullptr)
+    , m_viewfinder(viewfinder)
     , m_ffmpegProcess(new QProcess(this))
 {
-    initializeCamera();
-
     // 连接 FFmpeg 进程信号
     connect(m_ffmpegProcess, &QProcess::started, [this]() {
         m_isStreaming = true;
@@ -83,46 +77,6 @@ CameraStreamer::CameraStreamer(Session* session, QObject *parent, QString name)
 CameraStreamer::~CameraStreamer()
 {
     stopStreaming();
-    if (m_camera) {
-        delete m_camera;
-    }
-    if (m_recorder) {
-        delete m_recorder;
-    }
-}
-
-void CameraStreamer::initializeCamera()
-{
-    // 获取可用的摄像头列表
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    if (cameras.isEmpty()) {
-        emit errorOccurred("No camera available");
-        return;
-    }
-
-    // 使用默认摄像头
-    m_camera = new QCamera(cameras.first(), this);
-
-    // 创建媒体录制器
-    m_recorder = new QMediaRecorder(m_camera, this);
-
-    // 连接信号
-    connect(m_recorder, &QMediaRecorder::stateChanged,
-            this, &CameraStreamer::onRecorderStateChanged);
-    connect(m_recorder, &QMediaRecorder::statusChanged,
-            this, &CameraStreamer::onRecorderStatusChanged);
-    connect(m_camera, &QCamera::statusChanged,
-            this, &CameraStreamer::onCameraStatusChanged);
-    connect(m_camera, static_cast<void(QCamera::*)(QCamera::Error)>(&QCamera::error),
-            this, &CameraStreamer::onCameraError);
-
-    connect(m_session, &Session::rtmpStreamStartSend, RTMPHandler::instance(), &RTMPHandler::handleRTMPStartSend);
-    connect(m_session, &Session::rtmpStreamStopSend, RTMPHandler::instance(), &RTMPHandler::handleRTMPStopSend);
-
-    // 设置取景器（如果提供了）
-    if (m_viewfinder) {
-        m_camera->setViewfinder(m_viewfinder);
-    }
 }
 
 void CameraStreamer::startFFmpegStreaming(const QString &rtmpUrl)
@@ -131,36 +85,46 @@ void CameraStreamer::startFFmpegStreaming(const QString &rtmpUrl)
 
 #ifdef Q_OS_LINUX
     // Linux 平台 - 兼容 FFmpeg 4.2.7 的参数
-    arguments << "-f" << "v4l2"                          // 视频输入格式
-              << "-thread_queue_size" << "512"           // 增加队列大小防止阻塞
-              << "-i" << "/dev/video0"                   // 摄像头设备
-              << "-f" << "alsa"                          // 音频输入格式
+    arguments << "-f" << "v4l2"
               << "-thread_queue_size" << "512"
-              << "-i" << "default"                       // 默认音频设备
+              << "-i" << "/dev/video0"
+              << "-f" << "alsa"
+              << "-thread_queue_size" << "512"
+              << "-i" << "default"
+
               // 视频编码参数（直播优化）
-              << "-vcodec" << "libx264"                  // H.264 编码
-              << "-preset" << "ultrafast"                // 超快速编码
-              << "-tune" << "zerolatency"                // 零延迟优化
-              << "-profile:v" << "baseline"              // 基础配置文件（兼容性好）
-              << "-level" << "3.0"                       // 编码级别
-              << "-pix_fmt" << "yuv420p"                 // 像素格式
-              << "-s" << "1280x720"                      // 分辨率
-              << "-r" << "30"                            // 帧率
-              << "-g" << "30"                            // GOP大小（关键帧间隔）
-              << "-keyint_min" << "30"                   // 最小关键帧间隔
-              << "-sc_threshold" << "0"                  // 禁用场景切换关键帧
-              << "-b:v" << "2000k"                       // 视频码率
-              << "-maxrate" << "2000k"                   // 最大码率
-              << "-bufsize" << "2000k"                   // 缓冲区大小
+              << "-vcodec" << "libx264"
+              << "-preset" << "ultrafast"
+              << "-tune" << "zerolatency"
+              << "-profile:v" << "baseline"
+              << "-level" << "3.0"
+              << "-pix_fmt" << "yuv420p"
+              << "-s" << "1280x720"
+              << "-r" << "30"
+              << "-g" << "30"
+              << "-keyint_min" << "30"
+              << "-sc_threshold" << "0"
+              << "-b:v" << "2000k"
+              << "-maxrate" << "2000k"
+              << "-bufsize" << "2000k"
+
               // 音频编码参数
-              << "-acodec" << "aac"                      // AAC 音频编码
-              << "-ar" << "44100"                        // 音频采样率
-              << "-ac" << "2"                            // 音频通道数
-              << "-b:a" << "128k"                        // 音频码率
-              // 输出参数（移除了不支持的选项）
-              << "-f" << "flv"                           // FLV 格式
-              << "-flvflags" << "no_duration_filesize"   // 不写入持续时间和文件大小
-              << rtmpUrl;                                // RTMP URL
+              << "-acodec" << "aac"
+              << "-ar" << "44100"
+              << "-ac" << "2"
+              << "-b:a" << "128k"
+
+              // 输出参数
+              << "-flvflags" << "no_duration_filesize"
+              << "-f" << "flv"
+              << rtmpUrl
+
+              // 同时创建预览窗口（使用不同的输出格式）
+              << "-vf" << "scale=640:480"
+              << "-vcodec" << "rawvideo"
+              << "-pix_fmt" << "bgr24"
+              << "-f" << "sdl"
+              << QString("Camera Preview");
 
 #elif defined(Q_OS_WIN)
     // Windows 平台
@@ -222,6 +186,9 @@ void CameraStreamer::startFFmpegStreaming(const QString &rtmpUrl)
               << "-flvflags" << "no_duration_filesize"
               << rtmpUrl;
 #endif
+    if (m_viewfinder){
+        setupPreviewReceiver();
+    }
 
     // 添加全局选项
     arguments.prepend("-fflags");
@@ -324,106 +291,31 @@ bool CameraStreamer::isStreaming() const
     return m_isStreaming;
 }
 
-void CameraStreamer::setViewfinder(QCameraViewfinder* viewfinder)
+void CameraStreamer::setupPreviewReceiver()
 {
-    m_viewfinder = viewfinder;
-    if (m_camera && m_viewfinder) {
-        m_camera->setViewfinder(m_viewfinder);
-    }
+    // 创建预览显示窗口
+    m_previewReceiver = new QProcess(this);
+
+    // 使用 ffplay 从管道接收数据
+    QStringList args;
+    args << "-f" << "rawvideo"
+         << "-pixel_format" << "rgb24"
+         << "-video_size" << "640x480"
+         << "-i" << "pipe:0"  // 从标准输入读取
+         << "-window_title" << QString("Preview - %1").arg(m_rtmpUrl)
+         << "-autosync" << "1";
+
+    m_previewReceiver->start("ffplay", args);
+
+    // 连接 FFmpeg 的输出到预览接收器的输入
+    connect(m_ffmpegProcess, &QProcess::readyReadStandardOutput,
+            this, [this]() {
+                QByteArray data = m_ffmpegProcess->readAllStandardOutput();
+
+                if (m_previewReceiver && m_previewReceiver->state() == QProcess::Running) {
+                    m_previewReceiver->write(data);
+                }
+            });
 }
 
-void CameraStreamer::onRecorderStateChanged(QMediaRecorder::State state)
-{
-    QString stateStr;
-    switch (state) {
-    case QMediaRecorder::StoppedState:
-        stateStr = "Stopped";
-        break;
-    case QMediaRecorder::RecordingState:
-        stateStr = "Recording";
-        break;
-    case QMediaRecorder::PausedState:
-        stateStr = "Paused";
-        break;
-    }
-    qDebug() << "Recorder state changed:" << stateStr;
-}
 
-void CameraStreamer::onRecorderStatusChanged(QMediaRecorder::Status status)
-{
-    QString statusStr;
-    switch (status) {
-    case QMediaRecorder::UnavailableStatus:
-        statusStr = "Unavailable";
-        break;
-    case QMediaRecorder::UnloadedStatus:
-        statusStr = "Unloaded";
-        break;
-    case QMediaRecorder::LoadingStatus:
-        statusStr = "Loading";
-        break;
-    case QMediaRecorder::LoadedStatus:
-        statusStr = "Loaded";
-        break;
-    case QMediaRecorder::StartingStatus:
-        statusStr = "Starting";
-        break;
-    case QMediaRecorder::RecordingStatus:
-        statusStr = "Recording";
-        break;
-    case QMediaRecorder::PausedStatus:
-        statusStr = "Paused";
-        break;
-    case QMediaRecorder::FinalizingStatus:
-        statusStr = "Finalizing";
-        break;
-    }
-    qDebug() << "Recorder status changed:" << statusStr;
-}
-
-void CameraStreamer::onCameraStatusChanged(QCamera::Status status)
-{
-    QString statusStr;
-    switch (status) {
-    case QCamera::UnloadedStatus:
-        statusStr = "Unloaded";
-        break;
-    case QCamera::LoadingStatus:
-        statusStr = "Loading";
-        break;
-    case QCamera::LoadedStatus:
-        statusStr = "Loaded";
-        break;
-    case QCamera::ActiveStatus:
-        statusStr = "Active";
-        break;
-    }
-
-    emit cameraStatusChanged(statusStr);
-    qDebug() << "Camera status changed:" << statusStr;
-}
-
-void CameraStreamer::onCameraError(QCamera::Error error)
-{
-    QString errorStr;
-    switch (error) {
-    case QCamera::NoError:
-        errorStr = "No error";
-        break;
-    case QCamera::CameraError:
-        errorStr = "Camera error";
-        break;
-    case QCamera::InvalidRequestError:
-        errorStr = "Invalid request";
-        break;
-    case QCamera::ServiceMissingError:
-        errorStr = "Service missing";
-        break;
-    case QCamera::NotSupportedFeatureError:
-        errorStr = "Not supported";
-        break;
-    }
-
-    emit errorOccurred(errorStr);
-    qDebug() << "Camera error:" << errorStr;
-}

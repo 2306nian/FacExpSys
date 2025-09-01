@@ -17,39 +17,28 @@ class CameraStreamer : public QObject
     Q_OBJECT
 
 public:
-    explicit CameraStreamer(Session* session, QObject *parent = nullptr, QString name = "test");
+    explicit CameraStreamer(Session* session, bool viewfinder = false, QObject *parent = nullptr);
     ~CameraStreamer();
 
     bool startStreaming(const QString &rtmpUrl);
     void stopStreaming();
     bool isStreaming() const;
-    void setViewfinder(QCameraViewfinder* viewfinder);
 
 signals:
     void streamingStarted();
     void streamingStopped();
     void errorOccurred(const QString &error);
-    void cameraStatusChanged(const QString &status);
-
-private slots:
-    void onRecorderStateChanged(QMediaRecorder::State state);
-    void onRecorderStatusChanged(QMediaRecorder::Status status);
-    void onCameraStatusChanged(QCamera::Status status);
-    void onCameraError(QCamera::Error error);
 
 private:
-    void initializeCamera();
-    void setupRecorder();
+    void setupPreviewReceiver();
     void startFFmpegStreaming(const QString &rtmpUrl);
 
     Session* m_session;
-    QString m_name;
-    QCamera *m_camera;
-    QMediaRecorder *m_recorder;
     QString m_rtmpUrl;
     bool m_isStreaming;
-    QCameraViewfinder* m_viewfinder;
+    bool m_viewfinder;
     QProcess *m_ffmpegProcess;
+    QProcess *m_previewReceiver;
 
 };
 
