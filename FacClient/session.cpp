@@ -89,18 +89,28 @@ void Session::handleMessage(const QByteArray &data)
     }
     else if(doc["type"]=="work_orders"){
         qDebug() << "收到工单创建完成请求";
-
         // 正确获取data数组
         QJsonArray dataArray = doc["data"].toArray();
-
+        // TODO:此处有问题
+        qDebug()<<dataArray;
         emit createChatRoom();
-        emit ticketCreateRecv(dataArray);
+        emit ticketCreateRecv(this, dataArray);
     }
     else if(doc["type"]=="text_msg"){
         qDebug()<<"收到传来的消息";
         QJsonObject dataObj = doc["data"].toObject();
         emit textMessageSend(g_session,dataObj);
         emit textUpdate();
+    }
+    else if(doc["type"]=="upload_started"){
+        qDebug()<<"开始下载";
+        QJsonObject dataObj = doc.object();
+        emit fileUploadStart(g_session,dataObj);
+    }
+    else if(doc["type"]=="file_uploaded"){
+        qDebug()<<"准备开始接收文件信息";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit fileInfoSend(dataObj);
     }
     //TODO:RTMP处理
 }

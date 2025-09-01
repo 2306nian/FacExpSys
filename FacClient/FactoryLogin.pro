@@ -22,8 +22,12 @@ SOURCES += \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
+<<<<<<< HEAD
     screenrecorder.cpp \
+=======
+>>>>>>> d6764fc1917bd21b2e9c10b480b7f7a0a9bdaad9
     session.cpp \
+    videochat.cpp \
     videoplayer.cpp \
     widget.cpp
 
@@ -41,8 +45,12 @@ HEADERS += \
     pagedevice.h \
     pageorder.h \
     register.h \
+<<<<<<< HEAD
     screenrecorder.h \
+=======
+>>>>>>> d6764fc1917bd21b2e9c10b480b7f7a0a9bdaad9
     session.h \
+    videochat.h \
     videoplayer.h \
     widget.h
 
@@ -54,6 +62,7 @@ FORMS += \
     pagedevice.ui \
     pageorder.ui \
     register.ui \
+    videochat.ui \
     widget.ui
 
 # FFmpeg 配置

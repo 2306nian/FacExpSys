@@ -34,7 +34,7 @@ signals:
     // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
     void fileUploadStart(Session*, const QJsonObject&);
     void fileUploadChunk(Session*, const QJsonObject&);
-
+    void fileInfoSend(const QJsonObject&);
     void fileDownloadRequest(Session* requester, const QJsonObject& downlodaRequest); // 文件下载请求
     //RTMP
     void rtmpStreamStartSend(Session *, const QString &);
@@ -43,7 +43,7 @@ signals:
     //收包
     void registerResultRecv(QByteArray &data);
     void loginResultRecv(QByteArray &data);
-    void ticketCreateRecv(QJsonArray &data);
+    void ticketCreateRecv(Session *, QJsonArray &data);
     void joinedTicketRecv(QJsonObject &data);
 
     void fileMetaRecv(QJsonObject &data);

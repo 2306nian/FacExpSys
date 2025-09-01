@@ -47,7 +47,6 @@ void ServerCore::incomingConnection(qintptr handle)
 // 广播设备实时数据给所有客户端
 void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject &data)
 {
-    // 构造 JSON 消息
     QJsonObject msg{
         {"type", "device_realtime_update"},
         {"data", data}
@@ -64,8 +63,6 @@ void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject 
             client->socket()->flush();  // 立即发送
         }
     }
-
-    qDebug() << "Broadcasted device data:" << deviceId;
 }
 
 void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)

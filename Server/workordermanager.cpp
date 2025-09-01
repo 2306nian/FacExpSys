@@ -35,6 +35,7 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
     int clientPort = creator->clientPort();
 
     WorkOrder *order = new WorkOrder(deviceIds);
+    qDebug()<<"工单号："+order->ticketId;
     m_tickets[order->ticketId] = order;
     //
     order->addClient(creator);
@@ -56,6 +57,7 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
 
     // 获取该用户的所有工单
     QList<WorkOrderRecord> allOrders = WorkOrderDAO::instance()->getClientWorkOrders(clientUsername);
+    qDebug() << allOrders.length();
 
     // 构造完整响应
     QJsonArray arr;
@@ -281,4 +283,32 @@ void WorkOrderManager::sendInitialWorkOrdersTo(ClientSession *client, const QStr
         };
         client->sendMessage(QJsonDocument(response).toJson());
     }
+}
+
+QList<WorkOrderRecord> WorkOrderManager::queryWorkOrders(const QString &username, const QString &userType, const QString &scope)
+{
+    QMutexLocker locker(&m_mutex);
+    QList<WorkOrderRecord> records;
+
+    if (userType == "client") {
+        if (scope == "all") {
+            records = WorkOrderDAO::instance()->getClientWorkOrders(username);
+        } else if (scope == "pending") {
+            records = WorkOrderDAO::instance()->getClientPendingWorkOrders(username);
+        } else if (scope == "in_progress") {
+            records = WorkOrderDAO::instance()->getClientInProgressWorkOrders(username);
+        } else if (scope == "completed") {
+            records = WorkOrderDAO::instance()->getClientCompletedWorkOrders(username);
+        }
+    } else if (userType == "expert") {
+        if (scope == "pending") {
+            records = WorkOrderDAO::instance()->getPendingWorkOrders();
+        } else if (scope == "in_progress") {
+            records = WorkOrderDAO::instance()->getExpertInProgressWorkOrders(username);
+        } else if (scope == "completed") {
+            records = WorkOrderDAO::instance()->getExpertCompletedWorkOrders(username);
+        }
+    }
+
+    return records;
 }

@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include<session.h>
+#include<filesender.h>
 namespace Ui {
 class ChatRoom;
 }
@@ -49,12 +50,24 @@ private slots:
 
     void messageData(QString s1);
 
+    void on_toolButton_file_clicked();
+
+    void getFileidFromhandle(QString s1);
+
+    void startUploadInChat(const QJsonObject &data);
+
+    void getFileInfo(const QJsonObject&data);
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
     MessageDelegate *messageDelegate;
     Session *sender;
     QString receivedMsg;
+    QString fileId;
+    QString fileName;
+    QString file_size;
+    FileSender *fsender;
 
     void appendMessage(const QString &text, bool isSelf);
 };

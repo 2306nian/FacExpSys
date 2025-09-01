@@ -6,6 +6,8 @@
 #include <QMutex>
 #include <QJsonDocument>
 
+#include "workorderdao.h"
+
 class WorkOrder;
 class ClientSession;
 
@@ -38,6 +40,9 @@ public:
 
     // 初始化客户端工单表
     void sendInitialWorkOrdersTo(ClientSession *client, const QString &username, const QString &userType);
+
+    //查询工单统一接口
+    QList<WorkOrderRecord> queryWorkOrders(const QString &username, const QString &userType, const QString &scope);
 signals:
     void ticketCreated(const QString &ticketId, const QString &deviceId);
     void ticketClosed(const QString &ticketId);
