@@ -88,6 +88,8 @@ void DeviceProxy::receiveControlCommand(const QJsonObject &command)
     QString deviceId = command["device_id"].toString();
     QString action = command["action"].toString();
 
+    QJsonArray devicesData;
+
     qDebug() << "Control command sent to device" << deviceId << ":" << action;
 
     // 更新数据库：增加控制次数
@@ -100,13 +102,13 @@ void DeviceProxy::receiveControlCommand(const QJsonObject &command)
 
     // 触发一次设备数据更新，推动客户端刷新
     // 模拟一次实时数据更新并广播
-    QJsonObject data{
+    devicesData.append(QJsonObject{
         {"device_id", deviceId},
         {"action", action},
         {"control_count", getControlCount(deviceId)}, // 自定义函数获取当前次数
         {"timestamp", QDateTime::currentDateTime().toString(Qt::ISODate)}
-    };
-    emit deviceDataUpdated(deviceId, data);
+    });
+    emit deviceDataUpdated(devicesData);
 }
 
 

@@ -191,13 +191,21 @@ void ClientSession::handleMessage(const QByteArray &data)
     }
 
     // 专家接单
+    // clientsession.cpp
     else if (type == "accept_ticket") {
         QJsonObject dataObj = obj["data"].toObject();
         QString ticketId = dataObj["ticket_id"].toString();
-        QString expertUsername = dataObj["expert_username"].toString();
+        QString expertUsername = dataObj["username"].toString(); // 建议用 username
         QString expertIp = m_socket->peerAddress().toString();
         int expertPort = m_socket->peerPort();
 
+        // 加入工单
+        if (!WorkOrderManager::instance()->joinTicket(ticketId, this)) {
+            qWarning() << "Failed to join ticket" << ticketId;
+            return;
+        }
+
+        // 承接工单
         WorkOrderManager::instance()->acceptTicket(ticketId, expertUsername, expertIp, expertPort);
     }
 

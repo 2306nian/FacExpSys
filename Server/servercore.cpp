@@ -5,6 +5,7 @@
 #include "qjsondocument.h"
 #include "workordermanager.h"
 #include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 
 ServerCore::ServerCore(quint16 port, QObject *parent)
