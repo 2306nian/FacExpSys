@@ -284,3 +284,31 @@ void WorkOrderManager::sendInitialWorkOrdersTo(ClientSession *client, const QStr
         client->sendMessage(QJsonDocument(response).toJson());
     }
 }
+
+QList<WorkOrderRecord> WorkOrderManager::queryWorkOrders(const QString &username, const QString &userType, const QString &scope)
+{
+    QMutexLocker locker(&m_mutex);
+    QList<WorkOrderRecord> records;
+
+    if (userType == "client") {
+        if (scope == "all") {
+            records = WorkOrderDAO::instance()->getClientWorkOrders(username);
+        } else if (scope == "pending") {
+            records = WorkOrderDAO::instance()->getClientPendingWorkOrders(username);
+        } else if (scope == "in_progress") {
+            records = WorkOrderDAO::instance()->getClientInProgressWorkOrders(username);
+        } else if (scope == "completed") {
+            records = WorkOrderDAO::instance()->getClientCompletedWorkOrders(username);
+        }
+    } else if (userType == "expert") {
+        if (scope == "pending") {
+            records = WorkOrderDAO::instance()->getPendingWorkOrders();
+        } else if (scope == "in_progress") {
+            records = WorkOrderDAO::instance()->getExpertInProgressWorkOrders(username);
+        } else if (scope == "completed") {
+            records = WorkOrderDAO::instance()->getExpertCompletedWorkOrders(username);
+        }
+    }
+
+    return records;
+}
