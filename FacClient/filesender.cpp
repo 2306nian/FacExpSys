@@ -148,7 +148,9 @@ void FileSender::onSessionMessage(Session* session, const QJsonObject& message)
         QString fileId = data["file_id"].toString();
 
         m_fileId = fileId;
+        qDebug()<<m_fileId;
         while(m_isUploading){
+            qDebug()<<"test";
         sendNextChunk();
         }
     }
