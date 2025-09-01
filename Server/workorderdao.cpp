@@ -74,7 +74,7 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
     query.addBindValue(createdAt);
 
     if (!query.exec()) {
-        qWarning() << "Failed to insert work order:" << query.lastError().text();
+        qDebug() << "Failed to insert work order:" << query.lastError().text();
         db.rollback();
         return false;
     }
@@ -85,7 +85,7 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
     for (const QString &devId : deviceIds) {
         devQuery.bindValue(1, devId);
         if (!devQuery.exec()) {
-            qWarning() << "Failed to insert device:" << devId;
+            qDebug() << "Failed to insert device:" << devId;
             db.rollback();
             return false;
         }
@@ -201,6 +201,10 @@ QList<WorkOrderRecord> WorkOrderDAO::getClientWorkOrders(const QString &clientUs
     QSqlQuery query(Database::instance()->db());
     query.prepare("SELECT * FROM work_orders WHERE client_username = ? ORDER BY created_at DESC");
     query.addBindValue(clientUsername);
+    if (!query.exec()){
+        qWarning() << "Qurey failed";
+        return list;
+    }
     while (query.next()) {
         list.append(getWorkOrderFromQuery(query));
     }
