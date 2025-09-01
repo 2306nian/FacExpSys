@@ -326,11 +326,6 @@ void ClientSession::handleMessage(const QByteArray &data)
         QString scope = dataObj["scope"].toString();
         QString username = dataObj["username"].toString();  // 从请求中获取
 
-        if (username.isEmpty()) {
-            sendError("Username required");
-            return;
-        }
-
         QString userType = UserDAO::instance()->getUserType(username);
 
         // 交由 WorkOrderManager 处理

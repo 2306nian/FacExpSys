@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include "servercore.h"
 #include "database.h"
+#include "deviceproxy.h"
 #include <QDebug>
 
 int main(int argc, char *argv[])
@@ -8,7 +9,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     // 初始化数据库
-   if (!Database::instance()->initialize("C:\Db")) { // 这里只能用绝对路径建数据库，你们自己改
+   if (!Database::instance()->initialize("~/haoming/practiceOfComputerScience/FacExpSys/Dbserver.db")) { // 这里只能用绝对路径建数据库，你们自己改
         qCritical() << "Cannot initialize database. Exiting.";
         return -1;
     }
