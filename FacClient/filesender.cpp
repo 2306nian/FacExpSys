@@ -30,6 +30,7 @@ FileSender::~FileSender()
 
 bool FileSender::startFileUpload(Session* m_session, const QString& filePath)
 {
+    qDebug()<<filePath;
     // 判断是否在上传文件
     if (m_isUploading) {
         emit uploadError("文件上传已在进行中");
@@ -149,6 +150,7 @@ void FileSender::onSessionMessage(Session* session, const QJsonObject& message)
 
         m_fileId = fileId;
         while(m_isUploading){
+            qDebug()<<"文件正在分块上传中";
         sendNextChunk();
         }
     }

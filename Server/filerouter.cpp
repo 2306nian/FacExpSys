@@ -49,7 +49,7 @@ void FileRouter::handleFileUploadStart(ClientSession *sender, const QJsonObject 
     QString fileId = generateFileId();
 
     // 创建存储目录
-    QString dirPath = "uploads";
+    QString dirPath = "uploads"; //文件保存路径build/
     QDir().mkpath(dirPath);
 
     // 存储路径：使用 fileId 避免冲突
@@ -137,8 +137,6 @@ void FileRouter::handleFileUploadChunk(ClientSession *sender, const QJsonObject 
         delete ctx.file;
         ctx.file = nullptr;
 
-
-
         // 通知工单系统：文件已上传 TODO:客户端接收并处理此广播
         QJsonObject notify;
         notify["type"] = "file_uploaded";
@@ -224,15 +222,11 @@ void FileRouter::handleFileDownloadRequest(ClientSession *sender, const QJsonObj
         cData["data"] = base64Data;
         cData["is_last"] = file.atEnd();  // 用 is_last 判断结束
         chunk["data"] = cData;
-
         // 发送
         sender->sendMessage(QJsonDocument(chunk).toJson(QJsonDocument::Compact));
-
         totalSent += buffer.size();
     }
-
     file.close();
-
     qDebug() << "Successfully streamed file:" << ctx.fileName
              << "Total sent:" << totalSent << "bytes";
 }
@@ -246,7 +240,9 @@ void FileRouter::newFileUploaded(ClientSession *sender, const QJsonObject &notif
     }
 
     for (ClientSession *client : order->clients) {
-        client->sendMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
-        qDebug()<<"testtstettsttdaksaj好好打好的哈无敌";
+        // 注释掉的是新文件上传给上传者广播
+        // if (client != sender) {
+            client->sendMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+        // }
     }
 }

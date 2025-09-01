@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include "servercore.h"
 #include "database.h"
+#include "deviceproxy.h"
 #include <QDebug>
 
 int main(int argc, char *argv[])
@@ -12,6 +13,8 @@ int main(int argc, char *argv[])
         qCritical() << "Cannot initialize database. Exiting.";
         return -1;
     }
+
+    DeviceProxy::instance();
 
     quint16 port = 8888;
     if (argc > 1) {

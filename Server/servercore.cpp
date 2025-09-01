@@ -47,21 +47,16 @@ void ServerCore::incomingConnection(qintptr handle)
 // 广播设备实时数据给所有客户端
 void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject &data)
 {
-    // 构造 JSON 消息
     QJsonObject msg{
         {"type", "device_realtime_update"},
         {"data", data}
     };
-
-    // 序列化并添加长度头
     QByteArray payload = QJsonDocument(msg).toJson(QJsonDocument::Compact);
-    QByteArray packet = packMessage(payload);  // 使用 common.h 中的 packMessage
 
     // 广播给所有在线客户端
     for (ClientSession *client : qAsConst(m_clients)) {
-        if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {
-            client->socket()->write(packet);
-            client->socket()->flush();  // 立即发送
+        if (client) {
+            client->sendMessage(payload);
         }
     }
 }
@@ -75,8 +70,8 @@ void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObje
     QByteArray packet = packMessage(QJsonDocument(msg).toJson(QJsonDocument::Compact));
 
     for (ClientSession *client : qAsConst(m_clients)) {
-        if (client->socket()->state() == QAbstractSocket::ConnectedState) {
-            client->socket()->write(packet);
+        if (client) {
+            client->sendMessage(packet);
         }
     }
 }

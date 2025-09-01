@@ -22,13 +22,13 @@ SOURCES += \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
+    # screenrecorder.cpp \
     session.cpp \
     videochat.cpp \
     videoplayer.cpp \
     widget.cpp
 
 HEADERS += \
-    ../../Downloads/FacExpSys-main/FacExpSys-main/Server/common.h \
     MainWindow_main.h \
     camerastreamer.h \
     chatroom.h \
@@ -42,6 +42,7 @@ HEADERS += \
     pagedevice.h \
     pageorder.h \
     register.h \
+    # screenrecorder.h \
     session.h \
     videochat.h \
     videoplayer.h \
@@ -57,6 +58,11 @@ FORMS += \
     register.ui \
     videochat.ui \
     widget.ui
+
+# # FFmpeg 配置
+# # 使用pkg-config自动获取FFmpeg配置
+# CONFIG += link_pkgconfig
+# PKGCONFIG += libavformat libavcodec libavutil libswscale libswresample
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

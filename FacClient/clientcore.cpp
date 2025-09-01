@@ -15,23 +15,7 @@ ClientCore::ClientCore(QWidget *parent)
     m_session = initializeNetwork();
 
     // // RTMP测试
-    // m_cameraStreamer = new CameraStreamer(m_session);
-    // // 创建简单的视频预览窗口
-    // QWidget* previewWindow = new QWidget();
-    // previewWindow->setWindowTitle("摄像头预览");
-    // previewWindow->resize(800, 600);
-
-    // // 创建摄像头视图查找器
-    // QCameraViewfinder* viewfinder = new QCameraViewfinder(previewWindow);
-    // viewfinder->resize(720, 480);
-
-    // QVBoxLayout* mainLayout = new QVBoxLayout(previewWindow);
-    // mainLayout->addWidget(viewfinder);
-
-    // previewWindow->show();
-
-    // // 设置视图查找器到摄像头推流器
-    // m_cameraStreamer->setViewfinder(viewfinder);
+    // m_cameraStreamer = new CameraStreamer(m_session, true);
 
     // // 创建简单的视频窗口
     // QWidget* videoWindow = new QWidget();
@@ -47,7 +31,7 @@ ClientCore::ClientCore(QWidget *parent)
 
     // // 启动推流和拉流
     // m_cameraStreamer->startStreaming("rtmp://localhost/live/stream123");
-    // videoPlayer->playStream("rtmp://localhost/live/stream123");
+    // // videoPlayer->playStream("rtmp://localhost/live/stream123");
     // 创建堆栈部件作为中央窗口部件
     qsw = new QStackedWidget(this);
     setCentralWidget(qsw);
@@ -73,7 +57,7 @@ ClientCore::ClientCore(QWidget *parent)
             //TODO:登陆失败处理
         }
     });
-    connect(m_session, &Session::registerResult, this, [this](bool result){
+    connect(m_session, &Session::registerResult, this, [](bool result){
         if (result){
             //TODO：注册成功处理
         }else{
