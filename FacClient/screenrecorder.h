@@ -9,7 +9,6 @@
 #include <QMutex>
 #include <QScreen>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QGuiApplication>
 #include <QMutexLocker>
 
