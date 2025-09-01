@@ -64,8 +64,6 @@ void ServerCore::broadcastDeviceData(const QString &deviceId, const QJsonObject 
             client->socket()->flush();  // 立即发送
         }
     }
-
-    qDebug() << "Broadcasted device data:" << deviceId;
 }
 
 void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)

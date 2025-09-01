@@ -38,8 +38,9 @@ class FileHandler: public QObject
         static FileHandler* m_instance;
 
     signals:
-        void sendFileidToChat(QString s1);
+        void sendFileidToChat(QString s1,QString s2,qint64 s3);
         void startFileUploadInChat(const QJsonObject &data);
+        void getfileId(QString s1);
 };
 
 class TicketHandler: public QObject

@@ -42,8 +42,7 @@ FileHandler::FileHandler(QObject *parent)
 void FileHandler::handleFileUploadStart(Session *sender, const QJsonObject &data){
     QJsonObject data_real = data["data"].toObject();
     QString s1 = data_real["file_id"].toString();
-    emit sendFileidToChat(s1);
-    emit startFileUploadInChat(data);
+    emit getfileId(s1);
 }
 
 void FileHandler::handleFileUploadChunk(Session *sender, const QJsonObject &data){
@@ -60,7 +59,12 @@ void FileHandler::handleUploadStarted(const QJsonObject &data){
 }
 
 void FileHandler::handleFileUploaded(const QJsonObject &data){
-
+    QJsonObject data_real = data["data"].toObject();
+    QString s1 = data_real["file_id"].toString();
+    QString s2 = data_real["file_name"].toString();
+    qint64 s3 = data_real["file_size"].toVariant().toLongLong();
+    qDebug()<<"handle 已经向chat发送"<<s1<<s2<<s3;
+    emit sendFileidToChat(s1,s2,s3);
 }
 
 void FileHandler::handleFileMeta(const QJsonObject &data){
