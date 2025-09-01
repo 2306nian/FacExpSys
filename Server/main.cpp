@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    DeviceProxy::instance();
+
     quint16 port = 8888;
     if (argc > 1) {
         port = QString(argv[1]).toUShort();
