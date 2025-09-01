@@ -2,6 +2,8 @@
 #ifndef DEVICE_DAO_H
 #define DEVICE_DAO_H
 
+#include "clientsession.h"
+
 #include <QObject>
 #include <QString>
 #include <QList>
@@ -41,6 +43,9 @@ public:
 
     // 4. 获取设备日志
     QJsonArray getDeviceLogs(const QString &deviceId, int limit = 50);
+
+    // 用于登陆时初始化设备信息列表
+    void sendDeviceListTo(ClientSession *client); // 由 DeviceDAO 主动发送
 
 private:
     explicit DeviceDAO(QObject *parent = nullptr);

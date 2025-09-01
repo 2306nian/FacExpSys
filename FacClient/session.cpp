@@ -94,7 +94,7 @@ void Session::handleMessage(const QByteArray &data)
         // TODO:此处有问题
         qDebug()<<dataArray;
         emit createChatRoom();
-        emit ticketCreateRecv(g_session, dataArray);
+        emit ticketCreateRecv(this, dataArray);
     }
     else if(doc["type"]=="text_msg"){
         qDebug()<<"收到传来的消息";

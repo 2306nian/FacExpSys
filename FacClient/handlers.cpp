@@ -1,12 +1,14 @@
 #include "handlers.h"
+#include <QJsonDocument>
 #include <QObject>
-#include<QJsonDocument>
-#include<QJsonObject>
+#include <QJsonObject>
+#include <QDebug>
 #include<QJsonArray>
 
 MessageHandler* MessageHandler::m_instance = nullptr;
 FileHandler* FileHandler::m_instance = nullptr;
 TicketHandler* TicketHandler::m_instance = nullptr;
+RTMPHandler* RTMPHandler::m_instance = nullptr;
 
 //==============MessageHandler================
 MessageHandler* MessageHandler::instance(){
@@ -53,19 +55,19 @@ void FileHandler::downloadFileRequest(Session *sender, const QJsonObject &data){
 }
 
 //接收
-void FileHandler::handleUploadStarted(Session *sender, const QJsonObject &data){
+void FileHandler::handleUploadStarted(const QJsonObject &data){
 
 }
 
-void FileHandler::handleFileUploaded(Session *sender, const QJsonObject &data){
+void FileHandler::handleFileUploaded(const QJsonObject &data){
 
 }
 
-void FileHandler::handleFileMeta(Session *client, const QJsonObject &data){
+void FileHandler::handleFileMeta(const QJsonObject &data){
 
 }
 
-void FileHandler::handleFileChunk(Session *client, const QJsonObject &data){
+void FileHandler::handleFileChunk(const QJsonObject &data){
 
 }
 
@@ -98,13 +100,58 @@ void TicketHandler::handleCompleteTicket(Session *sender, const QJsonObject &dat
 
 //接收
 void TicketHandler::handleTicketCreate(Session *client, const QJsonArray &data){
-    QJsonObject firstOrder = data[0].toObject();
+    QJsonObject firstOrder = data.first().toObject();
     QString s2=firstOrder["ticket_id"].toString();
     client->setTickedId(s2);
     qDebug()<<s2;
     emit sendTicketToSession(s2);
 }
 
-void TicketHandler::handleTicketJoined(Session *client, const QJsonObject &data){
+void TicketHandler::handleTicketJoined(const QJsonObject &data){
 
+}
+
+//================RTMPHandler===============
+RTMPHandler* RTMPHandler::instance(){
+    if (!m_instance){
+        m_instance = new RTMPHandler;
+    }
+    return m_instance;
+}
+RTMPHandler::RTMPHandler(QObject *parent)
+    : QObject(parent){}
+
+void RTMPHandler::handleRTMPAvailableRecv(const QJsonObject &data){
+    QString streamurl = data["stream_url"].toString();
+    urls.append(streamurl);
+    qDebug() << "stream url: " << streamurl;
+    return;
+}
+void RTMPHandler::handleRTMPStartedRecv(const QJsonObject &data){
+    QString ticket_id = data["ticket_id"].toString();
+    QString stream_url = data["stream_url"].toString();
+    qDebug() << "ticket id:" << ticket_id << "\n" << "stream url:" << stream_url;
+}
+
+void RTMPHandler::handleRTMPStopRecv(const QJsonObject &data){
+    QString stream_url = data["stream_url"].toString();
+    urls.removeOne(stream_url);
+}
+
+void RTMPHandler::handleRTMPStartSend(Session *sender, QString stream_url){
+    QJsonObject json;
+    json["type"] = "rtmp_stream_start";
+    QJsonObject data;
+    data["stream_url"] = stream_url;
+    json["data"] = data;
+    sender->sendMessage(QJsonDocument(json).toJson(QJsonDocument::Compact));
+}
+
+void RTMPHandler::handleRTMPStopSend(Session *sender, QString stream_url){
+    QJsonObject json;
+    json["type"] = "rtmp_stream_stop";
+    QJsonObject data;
+    data["stream_url"] = stream_url;
+    json["data"] = data;
+    sender->sendMessage(QJsonDocument(json).toJson(QJsonDocument::Compact));
 }

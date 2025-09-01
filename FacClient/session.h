@@ -36,18 +36,28 @@ signals:
     void fileUploadChunk(Session*, const QJsonObject&);
     void fileInfoSend(const QJsonObject&);
     void fileDownloadRequest(Session* requester, const QJsonObject& downlodaRequest); // 文件下载请求
+    //RTMP
+    void rtmpStreamStartSend(Session *, const QString &);
+    void rtmpStreamStopSend(Session *, const QString &);
 
     //收包
-    void registerResultRecv(Session *client, QByteArray &data);
-    void loginResultRecv(Session *client, QByteArray &data);
-    void ticketCreateRecv(Session *client, QJsonArray &data);
-    void joinedTicketRecv(Session *client, QJsonObject &data);
+    void registerResultRecv(QByteArray &data);
+    void loginResultRecv(QByteArray &data);
+    void ticketCreateRecv(Session *, QJsonArray &data);
+    void joinedTicketRecv(QJsonObject &data);
 
-    void fileMetaRecv(Session *client, QJsonObject &data);
-    void fileChunkRecv(Session *client, QJsonObject &data);
-    void uploadStartedRecv(Session *client, QJsonObject &data);
-    void fileUploadedRecv(Session *client, QJsonObject &data);
+    void fileMetaRecv(QJsonObject &data);
+    void fileChunkRecv(QJsonObject &data);
+    void uploadStartedRecv(QJsonObject &data);
+    void fileUploadedRecv(QJsonObject &data);
+    //RTMP
+    void rtmpStreamAvailableRecv(QByteArray &data);
+    void rtmpStreamStartedRecv(QByteArray &);
+    void rtmpStreamEndedRecv(QByteArray &);
+    void rtmpStreamDataRecv(QByteArray &);
+
     void createChatRoom();
+
     //TODO:与ClientCore通信
     void registerResult(bool);
     void loginResult(bool);

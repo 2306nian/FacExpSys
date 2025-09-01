@@ -129,3 +129,28 @@ QJsonArray DeviceDAO::getDeviceLogs(const QString &deviceId, int limit)
     }
     return array;
 }
+
+void DeviceDAO::sendDeviceListTo(ClientSession *client)
+{
+    QList<DeviceBasicInfo> devices = getAllDevices();
+    QJsonArray arr;
+    for (const auto &dev : devices) {
+        QJsonObject realtime = getDeviceRealtime(dev.deviceId);
+        arr.append(QJsonObject{
+            {"device_id", dev.deviceId},
+            {"name", dev.name},
+            {"type", dev.type},
+            {"location", dev.location},
+            {"online_status", dev.onlineStatus},
+            {"pressure", realtime["pressure"]},
+            {"temperature", realtime["temperature"]},
+            {"status", realtime["status"]}
+        });
+    }
+
+    QJsonObject response{
+        {"type", "device_list"},
+        {"data", QJsonObject{{"devices", arr}}}
+    };
+    client->sendMessage(QJsonDocument(response).toJson());
+}

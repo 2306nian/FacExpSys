@@ -38,9 +38,6 @@ ClientSession::ClientSession(QTcpSocket *socket, QObject *parent)
     connect(this, &ClientSession::controlCommandReceived,
             DeviceProxy::instance(), &DeviceProxy::receiveControlCommand);
 
-    connect(this, &ClientSession::controlCommandReceived, DeviceProxy::instance(),
-            &DeviceProxy::receiveControlCommand);
-
     connect(this, &ClientSession::fileUploadStart,
             FileRouter::instance(), &FileRouter::handleFileUploadStart);
 
@@ -154,7 +151,7 @@ void ClientSession::handleMessage(const QByteArray &data)
             this,           // ← 传入当前 session
             deviceIds,
             username
-        );
+            );
     }
     else if (type == "join_ticket") {
         QString ticketId = obj["data"].toObject()["ticket_id"].toString();
@@ -245,146 +242,40 @@ void ClientSession::handleMessage(const QByteArray &data)
         QString username = dataObj["username"].toString();
         QString password = dataObj["password"].toString();
 
-        // 参数检查
-        if (username.isEmpty() || password.isEmpty()) {
-            QJsonObject response{
-                {"type", "login_result"},
-                {"data", QJsonObject{
-                             {"success", false},
-                             {"message", "Username or password cannot be empty"}
-                         }}
-            };
-            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-            return;
-        }
+        // 处理登录
+        LoginResult result = UserDAO::instance()->login(username, password);
 
-        // 查询用户是否存在
-        if (!UserDAO::instance()->userExists(username)) {
-            QJsonObject response{
-                {"type", "login_result"},
-                {"data", QJsonObject{
-                             {"success", false},
-                             {"message", "User does not exist"}
-                         }}
-            };
-            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-            return;
-        }
-
-        // 验证密码
-        bool isValid = UserDAO::instance()->verifyUser(username, password);
-        if (!isValid) {
-            QJsonObject response{
-                {"type", "login_result"},
-                {"data", QJsonObject{
-                             {"success", false},
-                             {"message", "Incorrect password"}
-                         }}
-            };
-            sendMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
-            return;
-        }
-
-        // 登录成功：保存用户信息
-        qDebug()<<"用户"+username+"登陆成功";
-        QString m_username = username;
-        QString m_userType = UserDAO::instance()->getUserType(username);
-
-        // 登录成功响应
-        QJsonObject loginResponse{
+        // 返回登录结果
+        QJsonObject response{
             {"type", "login_result"},
             {"data", QJsonObject{
-                         {"success", true},
-                         {"message", "Login successful"},
-                         {"user_type", m_userType}  // 告诉客户端角色
+                         {"success", result.success},
+                         {"message", result.message},
+                         {"user_type", result.userType}
                      }}
         };
-        sendMessage(QJsonDocument(loginResponse).toJson(QJsonDocument::Compact));
+        sendMessage(QJsonDocument(response).toJson());
 
-        // 获取并推送设备列表
-        {
-            QList<DeviceBasicInfo> devices = DeviceDAO::instance()->getAllDevices();
-            QJsonArray arr;
-            for (const auto &dev : devices) {
-                QJsonObject realtime = DeviceDAO::instance()->getDeviceRealtime(dev.deviceId);
-                arr.append(QJsonObject{
-                    {"device_id", dev.deviceId},
-                    {"name", dev.name},
-                    {"type", dev.type},
-                    {"location", dev.location},
-                    {"online_status", dev.onlineStatus},
-                    {"pressure", realtime["pressure"]},
-                    {"temperature", realtime["temperature"]},
-                    {"status", realtime["status"]}
-                });
-            }
-            QJsonObject deviceResponse{
-                {"type", "device_list"},
-                {"data", QJsonObject{{"devices", arr}}}
-            };
-            sendMessage(QJsonDocument(deviceResponse).toJson());
-            qDebug()<<"成功发送设备初始化信息";
-        }
+        qDebug()<<"用户"+username+"登陆成功";
 
-        // 如果是工厂端，自动推送“已创建”工单列表
-        if (m_userType == "client") {
-            QList<WorkOrderRecord> allOrders = WorkOrderDAO::instance()->getClientWorkOrders(m_username);
-
-            QJsonArray arr;
-            for (const auto &r : allOrders) {
-                arr.append(QJsonObject{
-                    {"ticket_id", r.ticketId},
-                    {"status", r.status},
-                    {"created_at", r.createdAt.toString(Qt::ISODate)},
-                    {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
-                });
-            }
-
-            QJsonObject workOrdersResponse{
-                {"type", "work_orders_initial"},
-                {"scope", "all"},
-                {"data", arr}
-            };
-            sendMessage(QJsonDocument(workOrdersResponse).toJson(QJsonDocument::Compact));
-            qDebug()<<"成功发送工单初始化信息_client";
-        }
-
-        // 如果是专家端，可以推送“可承接”工单
-        if (m_userType == "expert") {
-            QList<WorkOrderRecord> pendingOrders = WorkOrderDAO::instance()->getPendingWorkOrders();
-
-            QJsonArray arr;
-            for (const auto &r : pendingOrders) {
-                arr.append(QJsonObject{
-                    {"ticket_id", r.ticketId},
-                    {"client_username", r.clientUsername},
-                    {"created_at", r.createdAt.toString(Qt::ISODate)},
-                    {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
-                });
-            }
-
-            QJsonObject pendingResponse{
-                {"type", "work_orders"},
-                {"scope", "pending"},
-                {"data", arr}
-            };
-            sendMessage(QJsonDocument(pendingResponse).toJson(QJsonDocument::Compact));
-            qDebug()<<"成功发送工单初始化信息_expert";
+        if (result.success) {
+            // 设备信息初始化
+            DeviceDAO::instance()->sendDeviceListTo(this);
+            qDebug()<<"设备初始化信息发送成功";
+            // 工单信息初始化
+            WorkOrderManager::instance()->sendInitialWorkOrdersTo(this, username, result.userType);
+            qDebug()<<"工单初始化信息发送成功";
         }
     }
 
     //RTMP
     else if (type == "rtmp_stream_start") {
         QJsonObject dataObj = obj["data"].toObject();
-        QString ticketId = dataObj["ticket_id"].toString();
-        QString streamName = dataObj["stream_name"].toString();
+        QString ticketId = this->currentTicket()->ticketId;
+        QString streamUrl = dataObj["stream_url"].toString();
 
         // 验证客户端是否在正确的工单中
         if (m_currentTicket && m_currentTicket->ticketId == ticketId) {
-            // 生成RTMP流URL
-            QString streamUrl = QString("rtmp://localhost/live/%1_%2")
-                                    .arg(ticketId)
-                                    .arg(streamName);
 
             m_rtmpStreamUrl = streamUrl;
             m_isStreaming = true;
@@ -428,17 +319,6 @@ void ClientSession::handleMessage(const QByteArray &data)
 
             qDebug() << "RTMP stream stopped for ticket:" << ticketId
                      << "by client:" << m_clientIp;
-        }
-    }
-    else if (type == "rtmp_stream_data") {
-        // 处理RTMP流数据（如果通过TCP传输）
-        QJsonObject dataObj = obj["data"].toObject();
-        QString ticketId = dataObj["ticket_id"].toString();
-        QByteArray streamData = QByteArray::fromBase64(dataObj["stream_data"].toString().toUtf8());
-
-        if (m_currentTicket && m_currentTicket->ticketId == ticketId && m_isStreaming) {
-            // 转发流数据给同工单的其他客户端
-            emit rtmpStreamDataReceived(this, streamData);
         }
     }
     else if (type == "get_work_orders") {

@@ -6,6 +6,12 @@
 #include <QString>
 #include <QDateTime>
 
+struct LoginResult {
+    bool success;
+    QString userType;
+    QString message;
+};
+
 class UserDAO : public QObject
 {
     Q_OBJECT
@@ -24,6 +30,9 @@ public:
 
     // 验证登录（用户名 + 密码）
     bool verifyUser(const QString &username, const QString &password);
+
+    // 登陆逻辑函数
+    LoginResult login(const QString &username, const QString &password);
 
     // 获取用户类型
     QString getUserType(const QString &username);

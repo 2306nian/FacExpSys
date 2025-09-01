@@ -35,6 +35,9 @@ public:
     void completeTicket(const QString &ticketId,
                         const QString &description,
                         const QString &solution);
+
+    // 初始化客户端工单表
+    void sendInitialWorkOrdersTo(ClientSession *client, const QString &username, const QString &userType);
 signals:
     void ticketCreated(const QString &ticketId, const QString &deviceId);
     void ticketClosed(const QString &ticketId);
