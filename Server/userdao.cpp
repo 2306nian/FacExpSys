@@ -115,3 +115,18 @@ QString UserDAO::getUserType(const QString &username)
     }
     return QString();
 }
+
+LoginResult UserDAO::login(const QString &username, const QString &password)
+{
+    if (username.isEmpty() || password.isEmpty())
+        return {false, "", "Username or password cannot be empty"};
+
+    if (!userExists(username))
+        return {false, "", "User does not exist"};
+
+    if (!verifyUser(username, password))
+        return {false, "", "Incorrect password"};
+
+    QString userType = getUserType(username);
+    return {true, userType, "Login successful"};
+}

@@ -15,9 +15,6 @@
         }
     },
     {
-        "type": "get_device_list"
-    },
-    {
         "type": "create_ticket",
         "data":{
             "device_ids": ["...", "..."],
@@ -44,6 +41,13 @@
             "solution": "..."
         }
     },
+    {
+  	"type": "control_command",
+  	"data": {
+    		"device_id": "...",
+    		"action": "..."
+        }
+    }
     {
         "type":"text_msg",
         "data":{
@@ -101,10 +105,11 @@
         }
     },
     {
-        "type": "login_register",
+        "type": "login_result",
         "data": {
             "success": true,
-            "message": "..."
+            "message": "...",
+            "user_type":"...",
         }
     },
     {
@@ -121,10 +126,32 @@
         }
     },
     {
-        "type": "ticket_create",
-        "data":{
-            "ticket_id": "..."
-        }
+  	"type": "work_orders_initial_client",
+  	"scope": "all",
+  	"data": [
+	    {
+	      "ticket_id": "...",
+	      "status": "...",
+	      "created_at": "...",
+	      "device_ids": ["...","..."]
+	    },
+    	    {"..."},
+    	    {"..."}
+    		]
+    }
+    {
+  	"type": "work_orders_initial_expert",
+  	"scope": "pending",
+  	"data": [
+	    {
+	      "ticket_id": "...",
+	      "username": "...",
+	      "created_at": "...",
+	      "device_ids": ["...","..."]
+	    },
+    	    {"..."},
+    	    {"..."}
+    		]
     },
     {
         "type": "joined_ticket",

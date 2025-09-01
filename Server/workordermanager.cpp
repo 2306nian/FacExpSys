@@ -240,3 +240,45 @@ void WorkOrderManager::completeTicket(const QString &ticketId,
 
     qDebug() << "Ticket completed:" << ticketId;
 }
+
+void WorkOrderManager::sendInitialWorkOrdersTo(ClientSession *client, const QString &username, const QString &userType)
+{
+    if (userType == "client") {
+        QList<WorkOrderRecord> allOrders = WorkOrderDAO::instance()->getClientWorkOrders(username);
+        QJsonArray arr;
+        for (const auto &r : allOrders) {
+            arr.append(QJsonObject{
+                {"ticket_id", r.ticketId},
+                {"status", r.status},
+                {"created_at", r.createdAt.toString(Qt::ISODate)},
+                {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+            });
+        }
+
+        QJsonObject response{
+            {"type", "work_orders_initial_client"},
+            {"scope", "all"},
+            {"data", arr}
+        };
+        client->sendMessage(QJsonDocument(response).toJson());
+    }
+    else if (userType == "expert") {
+        QList<WorkOrderRecord> pendingOrders = WorkOrderDAO::instance()->getPendingWorkOrders();
+        QJsonArray arr;
+        for (const auto &r : pendingOrders) {
+            arr.append(QJsonObject{
+                {"ticket_id", r.ticketId},
+                {"username", r.clientUsername},
+                {"created_at", r.createdAt.toString(Qt::ISODate)},
+                {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+            });
+        }
+
+        QJsonObject response{
+            {"type", "work_orders_initial_expert"},
+            {"scope", "pending"},
+            {"data", arr}
+        };
+        client->sendMessage(QJsonDocument(response).toJson());
+    }
+}
