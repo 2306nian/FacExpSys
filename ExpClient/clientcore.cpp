@@ -47,7 +47,7 @@ ClientCore::ClientCore(QWidget *parent)
     this->resize(480,672);
 
     // 设置窗口标题和大小
-    setWindowTitle("客户端");
+    setWindowTitle("专家端");
 
     connect(m_session, &Session::loginResult, this, [this](bool result){
         if(result){
@@ -129,7 +129,7 @@ void ClientCore::sendRegisterRequest(const QString &username, const QString &pas
         QJsonObject Qdata;
         Qdata["username"] = username;
         Qdata["password"] = password;
-        Qdata["user_type"]="client";
+        Qdata["user_type"]="expert";
         json["data"] = Qdata;
         QByteArray sender = QJsonDocument(json).toJson(QJsonDocument::Compact);
         m_session->sendMessage(sender);

@@ -42,6 +42,9 @@ Session::~Session() // 应该在析构函数中添加一个清理函数 防止�
     //     emit rtmpStreamStopped(this, m_currentTicket->ticketId);
     // }
 }
+void Session::create_ChatRoom(){
+    emit createChatRoom();
+}
 
 void Session::setTickedId(QString s1){
     ticketId=s1;
@@ -76,6 +79,7 @@ void Session::onReadyRead()
 
     QByteArray message;
     while (unpackMessage(m_buffer, message)) {
+        qDebug()<<message;
         handleMessage(message);
     }
 }
@@ -87,8 +91,11 @@ void Session::onDisconnected()
 
 void Session::handleMessage(const QByteArray &data)
 {
+
     //此处可能后续需要修改
     QJsonDocument doc= QJsonDocument::fromJson(data);
+    //
+    qDebug()<<doc["type"];
     if (doc["type"] == "register_result"){
         QJsonObject dataObj = doc["data"].toObject();
         emit registerResult(dataObj["success"].toBool());
@@ -148,7 +155,5 @@ void Session::handleMessage(const QByteArray &data)
         QString ticketId = dataObj.value("ticket_id").toString();//获取结束的工单号发给mainwindow
         emit confirmCompleted(ticketId);
     }
-
-
     //TODO:RTMP处理
 }

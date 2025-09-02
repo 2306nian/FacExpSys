@@ -24,6 +24,7 @@ signals:
     void joinTicketSend(const QJsonObject &response); // 新增信号
     void acceptTicketSend(QJsonObject &data);//承接工单
     void completeTicketSend(QJsonObject &data);
+    void create_chatroom();
 
 private slots:
     void on_joinTicket_clicked(); // 新增槽函数

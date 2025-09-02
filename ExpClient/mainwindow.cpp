@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this,&MainWindow::completeTicketSend,g_session,&Session::handleCompleteTicket);
     connect(g_session, &Session::confirmCompleted,
             this, &MainWindow::onConfirmCompleted);
+    connect(this,&MainWindow::create_chatroom,g_session,&Session::create_ChatRoom);
 }
 
 
@@ -29,6 +30,7 @@ MainWindow::~MainWindow()
 }
 void MainWindow::on_joinTicket_clicked()//点击按钮触发
 {
+    emit create_chatroom();
 }
 void MainWindow::on_acceptTicket_clicked()
 {
@@ -46,11 +48,14 @@ void MainWindow::on_acceptTicket_clicked()
     }
     QString ticketId = item->text().trimmed();
     currentTicket=ticketId;//设置当前工单号
+
     // 2. 构造 JSON 数据
     QJsonObject data{
         {"type", "accept_ticket"},
-        {"data", QJsonObject{{"ticket_id", ticketId}}}
+        {"data", QJsonObject{{"ticket_id", ticketId},
+                             {"username",g_username}}}
     };
+    qDebug()<<data;
     // 4. 发出信号
     emit acceptTicketSend(data);
 }
@@ -125,13 +130,13 @@ void MainWindow::onTableInitial(const Session *,QJsonArray &data)
 void MainWindow::onAddTicket(const Session *,const QJsonObject &data)
 {
     if (data.isEmpty()) return;
-
+    qDebug()<<"增量更新";
     // 获取工单号，确保数据有效性
     QString ticketId = data["ticket_id"].toString();
     if (ticketId.isEmpty()) return;
 
-    // 在表格末尾添加新行
-    int newRow = ui->tableWidget->rowCount();
+    // 在表格开头添加新行
+    int newRow = 0;
     ui->tableWidget->insertRow(newRow);
 
     // 工单号（第0列）
@@ -164,6 +169,8 @@ void MainWindow::onAddTicket(const Session *,const QJsonObject &data)
 
     // 自动滚动到新添加的行
     ui->tableWidget->scrollToItem(ui->tableWidget->item(newRow, 0));
+    ui->tableWidget->viewport()->update();
+    QApplication::processEvents(); // 处理待处理的事件
 }
 void MainWindow::on_completeTicket_clicked()
 {

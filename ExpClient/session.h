@@ -72,6 +72,7 @@ signals:
 public slots:
     void handleAcceptTicket(QJsonObject &data); // 自己接收信号并发送
     void handleCompleteTicket(QJsonObject &data);
+    void create_ChatRoom();
 
 
 private slots:

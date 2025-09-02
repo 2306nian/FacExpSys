@@ -24,14 +24,16 @@ inline QByteArray packMessage(const QByteArray& data) {
 }
 
 inline bool unpackMessage(QByteArray& buffer, QByteArray& message) {
-    if (buffer.size() < 4) return false;
+    if (buffer.size() < 4)
+        return false;
 
     QDataStream stream(buffer);
     stream.setByteOrder(QDataStream::BigEndian);
     quint32 length;
     stream >> length;
 
-    if (buffer.size() < 4 + int(length)) return false;
+    if (buffer.size() < 4 + int(length))
+        return false;
 
     message = buffer.mid(4, length);
     buffer.remove(0, 4 + length);

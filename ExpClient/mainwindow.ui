@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1250</width>
+    <height>771</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>90</y>
-      <width>501</width>
-      <height>341</height>
+      <x>70</x>
+      <y>70</y>
+      <width>1201</width>
+      <height>611</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -29,54 +29,49 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>80</y>
-       <width>256</width>
-       <height>192</height>
+       <x>90</x>
+       <y>40</y>
+       <width>931</width>
+       <height>601</height>
       </rect>
      </property>
-    </widget>
-    <widget class="QPushButton" name="joinTicket">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>30</y>
-       <width>95</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>加入工单会议</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="completeTicket">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>30</y>
-       <width>95</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>结束工单</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="acceptTicket">
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>30</y>
-       <width>95</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>承接工单</string>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="acceptTicket">
+          <property name="text">
+           <string>承接工单</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="joinTicket">
+          <property name="text">
+           <string>加入工单会议</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="completeTicket">
+          <property name="text">
+           <string>结束工单</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
   </widget>
@@ -85,7 +80,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1250</width>
      <height>27</height>
     </rect>
    </property>
