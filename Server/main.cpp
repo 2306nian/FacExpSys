@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     // 初始化数据库
-   if (!Database::instance()->initialize("/home/zheng/FacExpSys/Db")) { // 这里只能用绝对路径建数据库，你们自己改
+   if (!Database::instance()->initialize("/home/haoming/FacExpSys/Db")) { // 这里只能用绝对路径建数据库，你们自己改
         qCritical() << "Cannot initialize database. Exiting.";
         return -1;
     }

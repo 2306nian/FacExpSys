@@ -21,7 +21,6 @@ ChatRoom::ChatRoom(QWidget *parent) :
     m_recordingTime(0)
 {
     ui->setupUi(this);
-    this->resize(1400,900);
     fsender=new FileSender(this);
     freceiver=new FileReceiver(this);
     // 设置窗口标题
@@ -121,7 +120,7 @@ bool ChatRoom::eventFilter(QObject *watched, QEvent *event)
         if (index.isValid()) {
             // 转换坐标到项的局部坐标系
             QRect rect = ui->listView->visualRect(index);
-            QPoint itemPos = pos - rect.topLeft();
+            QPoint itemPos = mouseEvent->pos() - rect.topLeft();
 
             // 检查点击是否在下载按钮区域内
             QMap<QModelIndex, QRect> areas = messageDelegate->getClickableAreas();
@@ -409,7 +408,7 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         painter->drawText(btnRect, Qt::AlignCenter, "下载");
 
         // 保存点击区域
-        const_cast<MessageDelegate*>(this)->clickableAreas[index] = btnRect;
+        const_cast<MessageDelegate*>(this)->clickableAreas[index] = bubbleRect;
 
     } else {
         // 文本消息动态计算气泡大小
@@ -578,12 +577,8 @@ void ChatRoom::on_pushButton_3_clicked()
     QString fileName = QFileDialog::getExistingDirectory(this, "选择保存目录",
                                                          QDir::homePath(),
                                                          QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
-    if (!fileName.isEmpty()) {
-        if (!fileName.endsWith(".mp4", Qt::CaseInsensitive)) {
-            fileName += ".mp4";
-        }
+        fileName += "/record.mp4";
         video_filepath=fileName;
-    }
 }
 
 
@@ -625,8 +620,6 @@ void ChatRoom::on_pushButton_4_clicked()
 {
 
 }
-<<<<<<< HEAD
-=======
 
 
 void ChatRoom::on_toolButton_2_clicked()
@@ -648,4 +641,4 @@ void ChatRoom::on_toolButton_share_clicked()
     m_cameraStreamer->startScreenStreaming(rtmpUrl);
 }
 
->>>>>>> 2f8dee52d7a5f1b2be3fe985e72875b9c32d93f1
+
