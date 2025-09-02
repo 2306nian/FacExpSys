@@ -30,6 +30,12 @@ Session::Session(QTcpSocket *socket, QObject *parent)
     connect(TicketHandler::instance(),&TicketHandler::sendTicketToSession,this,&Session::setTickedFromHandel);
     connect(this,&Session::fileDownloadStart,FileHandler::instance(),&FileHandler::handelDownload);
 
+    connect(this, &Session::rtmpStreamAvailableRecv, RTMPHandler::instance(), &RTMPHandler::handleRTMPAvailableRecv);
+    connect(this, &Session::rtmpStreamStopRecv, RTMPHandler::instance(), &RTMPHandler::handleRTMPStopRecv);
+    connect(this, &Session::rtmpStreamStartedRecv, RTMPHandler::instance(), &RTMPHandler::handleRTMPStartedRecv);
+    connect(this, &Session::rtmpStreamStartSend, RTMPHandler::instance(), &RTMPHandler::handleRTMPStartSend);
+    connect(this, &Session::rtmpStreamStopSend, RTMPHandler::instance(), &RTMPHandler::handleRTMPStopSend);
+
 }
 Session::~Session() // 应该在析构函数中添加一个清理函数 防止意外连接中断时m_uploads不会被清除 不过不必要
 {
@@ -123,8 +129,19 @@ void Session::handleMessage(const QByteArray &data)
         QJsonArray deviceDataArray = doc["data"].toObject()["devices"].toArray();
         emit deviceDataArrayReceived(deviceDataArray); // 发送信号，通知UI更新多个设备信息
     }
-
-
-
     //TODO:RTMP处理
+    else if(doc["type"]=="rtmp_stream_started"){
+        QJsonObject dataObj = doc["data"].toObject();
+        emit rtmpStreamStartedRecv(dataObj);
+    }
+    else if(doc["type"]=="rtmp_stream_rtmp_stream_available"){
+        qDebug() << "A Stream Available";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit rtmpStreamAvailableRecv(dataObj);
+    }
+    else if(doc["type"]=="rtmp_stream_ended"){
+        qDebug() << "A Stream Stop";
+        QJsonObject dataObj = doc["data"].toObject();
+        emit rtmpStreamStopRecv(dataObj);
+    }
 }

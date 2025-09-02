@@ -626,3 +626,11 @@ void ChatRoom::on_pushButton_4_clicked()
 
 }
 
+
+void ChatRoom::on_toolButton_2_clicked()
+{
+    m_cameraStreamer = new CameraStreamer(g_session, true);
+    QString rtmpUrl = "rtmp://localhost/live/" + g_username;
+    m_cameraStreamer->startStreaming(rtmpUrl);
+}
+
