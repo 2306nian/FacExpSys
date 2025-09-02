@@ -20,7 +20,8 @@ public:
 
     QString createTicket(ClientSession *creator,
                          const QStringList &deviceIds,
-                         const QString &clientUsername);
+                         const QString &clientUsername,
+                         const QString &description);
     void sendNewTicketCreated(ClientSession *client, const QString ticketId);
     bool joinTicket(const QString &ticketId, ClientSession *client);
     void leaveTicket(ClientSession *client);

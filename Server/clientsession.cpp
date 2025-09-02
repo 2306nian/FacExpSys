@@ -141,6 +141,7 @@ void ClientSession::handleMessage(const QByteArray &data)
         QJsonObject dataObj = obj["data"].toObject();
         QString username = dataObj["username"].toString();
         QJsonArray deviceArray = dataObj["device_ids"].toArray();
+        QString description = dataObj["description"].toString();
 
         QStringList deviceIds;
         for (const QJsonValue &val : deviceArray) {
@@ -150,7 +151,8 @@ void ClientSession::handleMessage(const QByteArray &data)
         WorkOrderManager::instance()->createTicket(
             this,           // ← 传入当前 session
             deviceIds,
-            username
+            username,
+            description
             );
     }
     else if (type == "join_ticket") {

@@ -37,7 +37,8 @@ public:
                          const QString &clientIp,
                          int clientPort,
                          const QDateTime &createdAt,
-                         const QStringList &deviceIds);
+                         const QStringList &deviceIds,
+                         const QString &feedback_description);
 
     bool acceptWorkOrder(const QString &ticketId,
                          const QString &expertUsername,

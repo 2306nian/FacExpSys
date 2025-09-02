@@ -56,7 +56,8 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
                                    const QString &clientIp,
                                    int clientPort,
                                    const QDateTime &createdAt,
-                                   const QStringList &deviceIds)
+                                   const QStringList &deviceIds,
+                                   const QString &feedback_description)
 {
     QSqlDatabase db = Database::instance()->db();
     QSqlQuery query(db);
@@ -64,14 +65,15 @@ bool WorkOrderDAO::insertWorkOrder(const QString &ticketId,
 
     query.prepare(R"(
         INSERT INTO work_orders (
-            ticket_id, client_username, client_ip, client_port, created_at, status
-        ) VALUES (?, ?, ?, ?, ?, 'pending')
+            ticket_id, client_username, client_ip, client_port, created_at,feedback_description,status
+        ) VALUES (?, ?, ?, ?, ?, ?,'pending')
     )");
     query.addBindValue(ticketId);
     query.addBindValue(clientUsername);
     query.addBindValue(clientIp);
     query.addBindValue(clientPort);
     query.addBindValue(createdAt);
+    query.addBindValue(feedback_description);
 
     if (!query.exec()) {
         qDebug() << "Failed to insert work order:" << query.lastError().text();

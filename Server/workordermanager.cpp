@@ -27,7 +27,8 @@ WorkOrderManager::WorkOrderManager(QObject *parent)
 
 QString WorkOrderManager::createTicket(ClientSession *creator,
                                        const QStringList &deviceIds,
-                                       const QString &clientUsername)
+                                       const QString &clientUsername,
+                                       const QString &description)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -47,7 +48,8 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
         clientIp,
         clientPort,
         order->createdAt,
-        deviceIds
+        deviceIds,
+        description
         );
 
     if (!ok) {
@@ -66,7 +68,8 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
             {"ticket_id", r.ticketId},
             {"status", r.status},
             {"created_at", r.createdAt.toString(Qt::ISODate)},
-            {"device_ids", QJsonArray::fromStringList(r.deviceIds)}
+            {"device_ids", QJsonArray::fromStringList(r.deviceIds)},
+            {"description",description}
         });
     }
 
@@ -83,7 +86,8 @@ QString WorkOrderManager::createTicket(ClientSession *creator,
                                             {"ticket_id", order->ticketId},
                                             {"username", clientUsername},
                                             {"device_ids", QJsonArray::fromStringList(deviceIds)},
-                                            {"created_at", order->createdAt.toString(Qt::ISODate)}
+                                            {"created_at", order->createdAt.toString(Qt::ISODate)},
+                                            {"description",description}
                                         });
     qDebug()<<"工单创建成功";
 
