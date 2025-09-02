@@ -152,7 +152,7 @@ void Session::handleMessage(const QByteArray &data)
         QJsonArray json_arr = doc["data"].toArray();
         emit sendInitialOrder(json_arr);
     }
-    else if(doc["type"]==""){
+    else if(doc["type"]=="ticket_accepted"){
 
     }
 }

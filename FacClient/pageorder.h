@@ -28,6 +28,10 @@ private slots:
     void onRowDoubleClicked(int row, int column);
 
 
+    void on_pushButton_3_clicked();
+
+    void on_pushButton_2_clicked();
+
 private:
     Ui::PageOrder *ui;
     ChatRoom *ch1;

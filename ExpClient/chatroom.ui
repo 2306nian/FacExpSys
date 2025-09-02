@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>585</width>
-    <height>402</height>
+    <width>1436</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -119,9 +119,15 @@ QTextEdit:focus {
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
             <widget class="QToolButton" name="toolButton_file">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>28</height>
+              </size>
+             </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
+               <width>70</width>
                <height>16</height>
               </size>
              </property>
@@ -154,6 +160,12 @@ QTextEdit:focus {
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_video">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>28</height>
+              </size>
+             </property>
              <property name="maximumSize">
               <size>
                <width>40</width>
@@ -171,6 +183,12 @@ QTextEdit:focus {
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_share">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>28</height>
+              </size>
+             </property>
              <property name="maximumSize">
               <size>
                <width>40</width>
@@ -188,6 +206,12 @@ QTextEdit:focus {
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_2">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>28</height>
+              </size>
+             </property>
              <property name="maximumSize">
               <size>
                <width>43</width>
@@ -253,10 +277,16 @@ QTextEdit:focus {
        </item>
        <item>
         <widget class="QTextEdit" name="textEdit_chat">
+         <property name="minimumSize">
+          <size>
+           <width>1400</width>
+           <height>899</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
-           <height>400</height>
+           <width>1401</width>
+           <height>900</height>
           </size>
          </property>
         </widget>
@@ -271,7 +301,7 @@ QTextEdit:focus {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>585</width>
+     <width>1436</width>
      <height>27</height>
     </rect>
    </property>

@@ -223,9 +223,9 @@ QScrollBar::handle:vertical:hover {
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
-          <x>130</x>
+          <x>80</x>
           <y>10</y>
-          <width>131</width>
+          <width>191</width>
           <height>21</height>
          </rect>
         </property>
@@ -233,7 +233,7 @@ QScrollBar::handle:vertical:hover {
          <enum>Qt::RightToLeft</enum>
         </property>
         <property name="text">
-         <string>Login and Register</string>
+         <string>Factory Login and Register</string>
         </property>
        </widget>
       </widget>

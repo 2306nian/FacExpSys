@@ -12,7 +12,7 @@ class ordersdetail : public QWidget
     Q_OBJECT
 
 public:
-    explicit ordersdetail(QString ticket_id,QString status,QString created_at,QWidget *parent = nullptr);
+    explicit ordersdetail(QString ticket_id,QString status,QString created_at,QString device_id,QString description,QWidget *parent = nullptr);
     ~ordersdetail();
 
 private slots:

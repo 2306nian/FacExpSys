@@ -7,6 +7,8 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
     ui->pushButton_login->setEnabled(false);
+    this->setWindowTitle("工厂端登陆");
+
     connect(ui->lineEdit_account, &QLineEdit::textChanged, this, &Widget::checkInputs);
     connect(ui->lineEdit_password, &QLineEdit::textChanged, this, &Widget::checkInputs);
 }

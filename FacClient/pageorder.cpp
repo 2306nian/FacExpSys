@@ -14,7 +14,9 @@ PageOrder::PageOrder(QWidget *parent)
     QStringList headers;
     headers << "工单号" << "工单名";
     ui->tableWidget->setHorizontalHeaderLabels(headers);
-
+    ui->comboBox->addItem("pending");
+    ui->comboBox->addItem("in_progress");
+    ui->comboBox->addItem("completed");
     connect(g_session,&Session::sendInitialOrder,this,&PageOrder::getInitialOrders);
     connect(ui->tableWidget, &QTableWidget::cellDoubleClicked, this, &PageOrder::onRowDoubleClicked);
     // 设置表格样式
@@ -32,7 +34,12 @@ void PageOrder::onRowDoubleClicked(int row, int column){
     QString t_id=js1["ticket_id"].toString();
     QString status=js1["status"].toString();
     QString time=js1["created_at"].toString();
-    ordersdetail *or_detail = new ordersdetail(t_id,status,time);
+    QJsonArray dev_arr=js1["device_ids"].toArray();
+
+    QString device_id=dev_arr[0].toString();
+    qDebug()<<js1<<js1["device_ids"]<<dev_arr<<dev_arr[0]<<device_id;
+    QString desc=js1["description"].toString();
+    ordersdetail *or_detail = new ordersdetail(t_id,status,time,device_id,desc);
     or_detail->show();
 }
 
@@ -67,4 +74,29 @@ void PageOrder::on_pushButton_clicked()
     senddtails->show();
 }
 
+
+
+void PageOrder::on_pushButton_3_clicked()
+{
+    QString filterText = ui->comboBox->currentText();  // 获取下拉框选中的文本
+
+    // 遍历所有行，显示或隐藏
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        QTableWidgetItem *item = ui->tableWidget->item(row, 1);  // 第2列（索引1）
+
+        if (item && item->text() == filterText) {
+            ui->tableWidget->setRowHidden(row, false);  // 显示匹配的行
+        } else {
+            ui->tableWidget->setRowHidden(row, true);   // 隐藏不匹配的行
+        }
+    }
+}
+
+
+void PageOrder::on_pushButton_2_clicked()
+{
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        ui->tableWidget->setRowHidden(row, false);  // 显示所有行
+    }
+}
 

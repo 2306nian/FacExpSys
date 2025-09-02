@@ -44,7 +44,7 @@ ClientCore::ClientCore(QWidget *parent)
 
     // 默认显示登录页面
     switchToPage(PAGE_LOGIN);
-    this->resize(480,672);
+    this->resize(480,1000);
 
     // 设置窗口标题和大小
     setWindowTitle("客户端");
@@ -75,6 +75,7 @@ ClientCore::~ClientCore()
 void ClientCore::onChatroomShow(){
     chat = new ChatRoom(this);
     chat->show();
+    this->resize(1400,900);
 }
 
 Session* ClientCore::initializeNetwork()
@@ -204,14 +205,14 @@ void ClientCore::onRegisterRequest()
 {
     qDebug() << "请求注册，切换到注册页面";
     switchToPage(PAGE_REGISTER);
-    resize(480,672);
+    resize(480,1000);
 }
 
 void ClientCore::onRegisterSuccess()
 {
     qDebug() << "请求返回登录";
     switchToPage(PAGE_LOGIN);
-    resize(480,672);
+    resize(480,1000);
 }
 
 void ClientCore::onLogout()

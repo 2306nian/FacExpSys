@@ -3,7 +3,7 @@
 #include "session.h"
 #include "globaldatas.h"
 
-ordersdetail::ordersdetail(QString ticket_id,QString status,QString created_at,QWidget *parent)
+ordersdetail::ordersdetail(QString ticket_id,QString status,QString created_at,QString device_id,QString description,QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ordersdetail)
 {
@@ -12,6 +12,8 @@ ordersdetail::ordersdetail(QString ticket_id,QString status,QString created_at,Q
     ui->label->setText(ticket_id);
     ui->label_2->setText(status);
     ui->label_3->setText(created_at);
+    ui->label_4->setText(device_id);
+    ui->label_5->setText(description);
 
     connect(this,&ordersdetail::createChatByOrder,g_session,&Session::startChatRoom);
 }

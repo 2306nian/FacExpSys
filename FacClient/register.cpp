@@ -10,7 +10,8 @@ Register::Register(QWidget *parent)
     , m_core(nullptr)
 {
     ui->setupUi(this);
-
+    this->setWindowTitle("工厂注册");
+    this->resize(300,400);
     // 如果UI中有返回按钮，连接它的点击信号
     // 假设有这个按钮，如果没有可以删除此代码
     // connect(ui->pushButton_back, &QPushButton::clicked, this, &Register::on_pushButton_back_clicked);
