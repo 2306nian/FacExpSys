@@ -158,7 +158,6 @@ void PageDevice::updateChart()
         for (int i = 0; i < temps.size(); ++i) {
             series->append(i, temps[i]);
         }
-        qDebug() << "Series" << devId << "points:" << series->points();
     };
 
     updateSeries(seriesDevice1, deviceIds[0]);

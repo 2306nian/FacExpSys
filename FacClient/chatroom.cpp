@@ -213,8 +213,8 @@ void ChatRoom::on_pushButton_emission_clicked()
     QJsonObject json_message{
         {"type","text_msg"},
         {"data",QJsonObject{
-                {"message",text},
-            }}
+                             {"message",text},
+                             }}
     };
     // 先将QJsonObject转换为QJsonDocument
     g_session->sendMessage(QJsonDocument(json_message).toJson(QJsonDocument::Compact));
@@ -227,13 +227,13 @@ void ChatRoom::on_pushButton_emission_clicked()
     // 模拟回复
     QTimer::singleShot(1000, this, [this, text]() {
         // 简单的回复逻辑
-        if (text.contains("你好") || text.contains("hello")) {
-            appendMessage("你好！有什么可以帮助你的吗？", false);
-        } else if (text.contains("时间") || text.contains("几点")) {
-            appendMessage("现在时间是: " + QDateTime::currentDateTime().toString("hh:mm:ss"), false);
-        } else {
-            appendMessage("收到你的消息: " + text, false);
-        }
+        // if (text.contains("你好") || text.contains("hello")) {
+        //     appendMessage("你好！有什么可以帮助你的吗？", false);
+        // } else if (text.contains("时间") || text.contains("几点")) {
+        //     appendMessage("现在时间是: " + QDateTime::currentDateTime().toString("hh:mm:ss"), false);
+        // } else {
+        //     appendMessage("收到你的消息: " + text, false);
+        // }
     });
 }
 
@@ -576,8 +576,8 @@ void ChatRoom::on_toolButton_video_clicked()
 void ChatRoom::on_pushButton_3_clicked()
 {
     QString fileName = QFileDialog::getExistingDirectory(this, "选择保存目录",
-                                                    QDir::homePath(),
-                                                    QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
+                                                         QDir::homePath(),
+                                                         QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
     if (!fileName.isEmpty()) {
         if (!fileName.endsWith(".mp4", Qt::CaseInsensitive)) {
             fileName += ".mp4";
@@ -625,4 +625,3 @@ void ChatRoom::on_pushButton_4_clicked()
 {
 
 }
-

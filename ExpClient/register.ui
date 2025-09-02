@@ -79,7 +79,7 @@ QToolButton:pressed {
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="icons.qrc">:/new/prefix1/imgs/icon.jpg</pixmap>
+        <pixmap resource="icons.qrc">:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</pixmap>
        </property>
       </widget>
      </item>

@@ -61,25 +61,44 @@ QTextEdit:focus {
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
-     <widget class="QToolButton" name="toolButton">
-      <property name="maximumSize">
-       <size>
-        <width>40</width>
-        <height>16</height>
-       </size>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::RightToLeft</enum>
-      </property>
-      <property name="text">
-       <string>...</string>
-      </property>
-      <property name="icon">
-       <iconset>
-        <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
-      </property>
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="TimeLabel">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>16</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="icons.qrc">
+           <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
@@ -113,7 +132,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="icons.qrc">
                <normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</iconset>
              </property>
              <property name="iconSize">
@@ -145,7 +164,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="icons.qrc">
                <normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</iconset>
              </property>
             </widget>
@@ -162,7 +181,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="icons.qrc">
                <normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</iconset>
              </property>
             </widget>
@@ -181,6 +200,27 @@ QTextEdit:focus {
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_4">
+           <property name="text">
+            <string>控制设备</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_3">
+           <property name="text">
+            <string>保存路径选择</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="text">
+            <string>停止</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButton">
@@ -225,6 +265,8 @@ QTextEdit:focus {
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

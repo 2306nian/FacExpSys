@@ -13,6 +13,7 @@ SOURCES += \
     camerastreamer.cpp \
     chatroom.cpp \
     clientcore.cpp \
+    controlcount.cpp \
     filereceiver.cpp \
     filesender.cpp \
     globaldatas.cpp \
@@ -22,7 +23,7 @@ SOURCES += \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
-    # screenrecorder.cpp \
+    screenrecorder.cpp \
     session.cpp \
     videochat.cpp \
     videoplayer.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     chatroom.h \
     clientcore.h \
     common.h \
+    controlcount.h \
     filereceiver.h \
     filesender.h \
     globaldatas.h \
@@ -42,7 +44,7 @@ HEADERS += \
     pagedevice.h \
     pageorder.h \
     register.h \
-    # screenrecorder.h \
+    screenrecorder.h \
     session.h \
     videochat.h \
     videoplayer.h \
@@ -52,6 +54,7 @@ FORMS += \
     mainwindow.ui \
     chatroom.ui \
     clientcore.ui \
+    controlcount.ui \
     page_mine.ui \
     pagedevice.ui \
     pageorder.ui \
@@ -59,10 +62,10 @@ FORMS += \
     videochat.ui \
     widget.ui
 
-# # FFmpeg 配置
-# # 使用pkg-config自动获取FFmpeg配置
-# CONFIG += link_pkgconfig
-# PKGCONFIG += libavformat libavcodec libavutil libswscale libswresample
+# FFmpeg 配置
+# 使用pkg-config自动获取FFmpeg配置
+CONFIG += link_pkgconfig
+PKGCONFIG += libavformat libavcodec libavutil libswscale libswresample
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

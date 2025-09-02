@@ -28,6 +28,10 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+void Session::create_ChatRoom(){
+    emit createChatRoom();
+}
+
 void MainWindow::on_joinTicket_clicked()//点击按钮触发
 {
     emit create_chatroom();
@@ -47,6 +51,7 @@ void MainWindow::on_acceptTicket_clicked()
         return;
     }
     QString ticketId = item->text().trimmed();
+    g_session->setTickedId(ticketId);
     currentTicket=ticketId;//设置当前工单号
 
     // 2. 构造 JSON 数据

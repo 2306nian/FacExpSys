@@ -30,7 +30,7 @@ signals:
     void joinTicketSend(Session *sender, QJsonObject &data);
     void acceptTicketSend(Session *sender, QJsonObject &data);
     void completeTicketSend(Session *sender, QJsonObject &data);
-    void confirmCompleted(const QString &ticketId);  // 发出完成确认信号
+    void confirmCompleted(const QString &ticketId);
 
     // void fileUploadRequest(ClientSession* sender, const QJsonObject& uploadRequest); // 文件上传请求
     void fileUploadStart(Session*,  QJsonObject&);
@@ -48,6 +48,7 @@ signals:
     void joinedTicketRecv(QJsonObject &data);
     void tableInitial(Session* session,QJsonArray &data);//新增信号发往mainwindow
     void addTicket(Session* session,QJsonObject &data);//发给mainwindow
+
 
     void fileMetaRecv(QJsonObject &data);
     void fileChunkRecv(QJsonObject &data);
@@ -73,7 +74,6 @@ public slots:
     void handleAcceptTicket(QJsonObject &data); // 自己接收信号并发送
     void handleCompleteTicket(QJsonObject &data);
     void create_ChatRoom();
-
 
 private slots:
     void onReadyRead();

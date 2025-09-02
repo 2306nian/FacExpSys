@@ -164,3 +164,7 @@ void RTMPHandler::handleRTMPStopSend(Session *sender, QString stream_url){
     json["data"] = data;
     sender->sendMessage(QJsonDocument(json).toJson(QJsonDocument::Compact));
 }
+
+QList<QString> RTMPHandler::getURLs(){
+    return urls;
+}

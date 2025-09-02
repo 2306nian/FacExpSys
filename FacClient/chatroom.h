@@ -126,6 +126,8 @@ private:
     int m_recordingTime;
     // 初始化音频设备列表
     void initAudioDevices();
+
+    QString video_filepath;
 };
 
 #endif // CHATROOM_H

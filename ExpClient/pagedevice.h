@@ -52,6 +52,8 @@ private:
     void setupCharts();
     void updateChart();
 
+
+
 public slots:
     void updateDeviceData(const QJsonArray &devices);
 

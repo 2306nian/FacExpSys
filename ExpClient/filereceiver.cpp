@@ -110,6 +110,7 @@ void FileReceiver::onSessionMessage(Session* session, const QJsonObject& message
         qDebug() << "Download started:" << m_fileName << "(" << m_fileSize << "bytes)";
 
     } else if (type == "file_chunk") {
+        qDebug()<<"1111111111";
         // 接收到文件分块
         if (!m_isDownloading || !m_file) {
             qDebug()<<"未启动下载却收到文件块";
@@ -132,9 +133,11 @@ void FileReceiver::onSessionMessage(Session* session, const QJsonObject& message
         }
 
         m_downloadedBytes += chunkData.size();
+                qDebug()<<"222222222";
         emit downloadProgress(m_downloadedBytes, m_fileSize);
 
         if (isLast) {
+                    qDebug()<<"33333333333333";
             // 下载完成
             m_file->flush();
             m_file->close();
