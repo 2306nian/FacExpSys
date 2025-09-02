@@ -13,6 +13,7 @@ SOURCES += \
     camerastreamer.cpp \
     chatroom.cpp \
     clientcore.cpp \
+    controlcount.cpp \
     filereceiver.cpp \
     filesender.cpp \
     globaldatas.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     chatroom.h \
     clientcore.h \
     common.h \
+    controlcount.h \
     filereceiver.h \
     filesender.h \
     globaldatas.h \
@@ -52,6 +54,7 @@ FORMS += \
     MainWindow_main.ui \
     chatroom.ui \
     clientcore.ui \
+    controlcount.ui \
     page_mine.ui \
     pagedevice.ui \
     pageorder.ui \

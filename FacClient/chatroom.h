@@ -14,6 +14,7 @@
 #include<QMap>
 #include<QTimer>
 #include<filereceiver.h>
+#include"videoplayer.h"
 
 namespace Ui {
 class ChatRoom;
@@ -90,6 +91,19 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_toolButton_video_clicked();
+    void onRecordingStarted();
+    void onRecordingStopped();
+    void onRecordingError(const QString& error);
+    void updateRecordingTime();
+
+
+    void on_pushButton_3_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_4_clicked();
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
@@ -106,6 +120,11 @@ private:
     qint64 pendingFileSize;
     void appendMessage(const QString &text, bool isSelf);
     QMap<QString, QString> fileIdMap;
+    // ScreenRecorder *m_recorder;
+    QTimer *m_timer;
+    int m_recordingTime;
+    // 初始化音频设备列表
+    void initAudioDevices();
 };
 
 #endif // CHATROOM_H

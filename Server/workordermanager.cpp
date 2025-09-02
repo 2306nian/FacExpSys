@@ -227,6 +227,7 @@ void WorkOrderManager::completeTicket(const QString &ticketId,
                      {"completedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
                  }}
     };
+
     QByteArray packet =QJsonDocument(notify).toJson(QJsonDocument::Compact);
 
     for (ClientSession *client : order->clients) {
