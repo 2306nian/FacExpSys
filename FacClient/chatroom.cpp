@@ -640,5 +640,3 @@ void ChatRoom::on_toolButton_share_clicked()
     QString rtmpUrl = "rtmp://localhost/live/" + g_username + "_screen";
     m_cameraStreamer->startScreenStreaming(rtmpUrl);
 }
-
-
