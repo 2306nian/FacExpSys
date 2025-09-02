@@ -15,7 +15,10 @@
 
 ChatRoom::ChatRoom(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::ChatRoom)
+    ui(new Ui::ChatRoom),
+    m_recorder(new ScreenRecorder(this)),
+    m_timer(new QTimer(this)),
+    m_recordingTime(0)
 {
     ui->setupUi(this);
 
@@ -23,7 +26,15 @@ ChatRoom::ChatRoom(QWidget *parent) :
     freceiver=new FileReceiver(this);
     // 设置窗口标题
     setWindowTitle("聊天室");
+    // 连接信号
+    connect(m_recorder, &ScreenRecorder::recordingStarted,
+            this, &ChatRoom::onRecordingStarted);
+    connect(m_recorder, &ScreenRecorder::recordingStopped,
+            this, &ChatRoom::onRecordingStopped);
+    connect(m_recorder, &ScreenRecorder::recordingError,
+            this, &ChatRoom::onRecordingError);
 
+    connect(m_timer, &QTimer::timeout, this, &ChatRoom::updateRecordingTime);
     connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
     connect(g_session,&Session::textUpdate,this,&ChatRoom::messageUpdate);
     connect(FileHandler::instance(),&FileHandler::sendFileidToChat,this,&ChatRoom::getFileidFromhandle);
@@ -194,6 +205,7 @@ void ChatRoom::messageData(QString s1){
 
 void ChatRoom::on_pushButton_emission_clicked()
 {
+    qDebug()<<g_session->getTicketId();
     QString text = ui->textEdit_chat->toPlainText().trimmed();
     if (text.isEmpty())
         return;
@@ -526,6 +538,85 @@ void ChatRoom::appendFileMessage(const QString &fileName,
 
 void ChatRoom::on_pushButton_clicked()
 {
+    QString filePath = ui->textEdit_chat->text();
+    if (filePath.isEmpty()) {
+        QMessageBox::warning(this, "警告", "请选择保存文件路径");
+        return;
+    }
 
+    if (!filePath.endsWith(".mp4", Qt::CaseInsensitive)) {
+        filePath += ".mp4";
+    }
+
+    if (m_recorder->startRecording(filePath)) {
+        // ui->startButton->setEnabled(false);
+        // ui->stopButton->setEnabled(true);
+        m_timer->start(1000); // 每秒更新一次
+        m_recordingTime = 0;
+    }
 }
 
+
+void ChatRoom::on_toolButton_video_clicked()
+{
+    // 创建简单的视频窗口
+    QWidget* videoWindow = new QWidget();
+    videoWindow->setWindowTitle("视频播放");
+    videoWindow->resize(800, 600);
+
+    VideoPlayer* videoPlayer = new VideoPlayer(100, videoWindow);
+
+    QVBoxLayout* layout = new QVBoxLayout(videoWindow);
+    layout->addWidget(videoPlayer);
+
+    videoWindow->show();
+}
+
+
+void ChatRoom::on_pushButton_3_clicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "选择保存文件",
+                                                    QDir::homePath(),
+                                                    "MP4 Files (*.mp4)");
+    if (!fileName.isEmpty()) {
+        if (!fileName.endsWith(".mp4", Qt::CaseInsensitive)) {
+            fileName += ".mp4";
+        }
+        ui->textEdit_chat->setText(fileName);
+    }
+}
+
+
+void ChatRoom::on_pushButton_2_clicked()
+{
+    m_recorder->stopRecording();
+}
+
+void ChatRoom::onRecordingStarted()
+{
+    // ui->statusLabel->setText("状态: 录制中...");
+}
+
+void ChatRoom::onRecordingStopped()
+{
+    // ui->statusLabel->setText("状态: 录制完成");
+    // ui->startButton->setEnabled(true);
+    // ui->stopButton->setEnabled(false);
+    m_timer->stop();
+    QMessageBox::information(this, "完成", "录制已完成！文件已保存。");
+}
+
+void ChatRoom::onRecordingError(const QString& error)
+{
+    // ui->statusLabel->setText("状态: 错误 - " + error);
+    // ui->startButton->setEnabled(true);
+    // ui->stopButton->setEnabled(false);
+    m_timer->stop();
+    QMessageBox::critical(this, "错误", "录制失败: " + error);
+}
+
+void ChatRoom::updateRecordingTime()
+{
+    m_recordingTime++;
+    ui->TimeLabel->setText(QString("录制时间: %1秒").arg(m_recordingTime));
+}
