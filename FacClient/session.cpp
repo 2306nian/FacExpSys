@@ -111,7 +111,6 @@ void Session::handleMessage(const QByteArray &data)
     else if(doc["type"]=="file_uploaded"){
         qDebug()<<"准备开始接收文件信息";
         QJsonObject dataObj = doc["data"].toObject();
-        qDebug()<<dataObj<<doc<<data;
         emit fileUploadedRecv(dataObj);
     }
     else if(doc["type"]=="file_meta"||doc["type"]=="file_chunk"){

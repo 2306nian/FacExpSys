@@ -95,7 +95,6 @@ void PageDevice::updateDeviceData(const QJsonArray &devices)
     QMap<QString, QVector<double>> tempHistory = temperatureHistory;
 
     model->removeRows(0, model->rowCount());  // 清空旧数据
-    qDebug() << "Received devices:" << devices;
 
     // 遍历设备数组填充表格，并更新温度历史
     for (int i = 0; i < devices.size(); ++i) {
@@ -144,7 +143,6 @@ void PageDevice::updateDeviceData(const QJsonArray &devices)
         }
     }
 
-    qDebug() << "Temperature history:" << temperatureHistory;
     updateChart();
 }
 

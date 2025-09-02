@@ -17,7 +17,6 @@ public:
     void sendMessage(const QByteArray &data);
     QString getTicketId();
     static Session* instance();
-    QString getTickedId();
     void setTickedId(QString s1);
 signals:
     void disconnected(Session *session);

@@ -81,7 +81,7 @@ class RTMPHandler: public QObject
         void handleRTMPStartedRecv(const QJsonObject &data);
         void handleRTMPAvailableRecv(const QJsonObject &data);
         void handleRTMPStopRecv(const QJsonObject &data);
-        QList<QString>* getURLs();
+        QList<QString> getURLs();
     private:
         explicit RTMPHandler(QObject* parent=nullptr);
         static RTMPHandler* m_instance;
