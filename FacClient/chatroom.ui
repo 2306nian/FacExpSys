@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>585</width>
-    <height>402</height>
+    <width>664</width>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -93,7 +93,7 @@ QTextEdit:focus {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="icons.qrc">
+          <iconset resource="../ExpClient/icons.qrc">
            <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
          </property>
         </widget>
@@ -132,7 +132,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset resource="../ExpClient/icons.qrc">
                <normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</iconset>
              </property>
              <property name="iconSize">
@@ -154,6 +154,12 @@ QTextEdit:focus {
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_video">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="maximumSize">
               <size>
                <width>40</width>
@@ -164,16 +170,22 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset resource="../ExpClient/icons.qrc">
                <normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</iconset>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_share">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
+               <width>60</width>
                <height>16</height>
               </size>
              </property>
@@ -181,8 +193,14 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset resource="../ExpClient/icons.qrc">
                <normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>30</width>
+               <height>16</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -258,15 +276,13 @@ QTextEdit:focus {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>585</width>
-     <height>18</height>
+     <width>664</width>
+     <height>27</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

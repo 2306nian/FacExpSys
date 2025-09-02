@@ -215,3 +215,10 @@ void MainWindow::onConfirmCompleted(const QString &ticketId)
     qDebug() << "未找到要删除的工单：" << ticketId;
 }
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    PageDevice *p1=new PageDevice();
+    p1->show();
+}
+

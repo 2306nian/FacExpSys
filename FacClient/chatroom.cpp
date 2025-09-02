@@ -21,7 +21,7 @@ ChatRoom::ChatRoom(QWidget *parent) :
     m_recordingTime(0)
 {
     ui->setupUi(this);
-
+    this->resize(1400,900);
     fsender=new FileSender(this);
     freceiver=new FileReceiver(this);
     // 设置窗口标题
@@ -248,7 +248,7 @@ QSize MessageDelegate::sizeHint(const QStyleOptionViewItem &option,
     ChatMessage msg = var.value<ChatMessage>();
 
     // 确定气泡最大宽度（屏幕宽度的70%）
-    int maxWidth = option.rect.width() * 0.7;
+    int maxWidth = option.rect.width() * 0.4;
 
     // 计算时间戳额外高度
     int timestampHeight = 0;
@@ -318,7 +318,7 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     }
 
     // 计算气泡最大宽度为整个区域的70%
-    int maxBubbleWidth = rect.width() * 0.7;
+    int maxBubbleWidth = rect.width() * 0.4;
 
     // 计算头像位置
     QRect avatarRect;

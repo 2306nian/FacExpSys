@@ -39,6 +39,8 @@ private slots:
     void onTableInitial(const Session *,QJsonArray &data);
     void onAddTicket(const Session *,const QJsonObject &data);
     void onConfirmCompleted(const QString &ticketId);  // 响应信号，删除表格行
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     PageOrder *po1;
