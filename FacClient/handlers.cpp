@@ -153,6 +153,7 @@ void RTMPHandler::handleRTMPStartSend(Session *sender, QString stream_url){
     QJsonObject data;
     data["stream_url"] = stream_url;
     json["data"] = data;
+    qDebug() << stream_url << " started";
     sender->sendMessage(QJsonDocument(json).toJson(QJsonDocument::Compact));
 }
 

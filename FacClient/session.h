@@ -50,10 +50,9 @@ signals:
     void uploadStartedRecv(QJsonObject &data);
     void fileUploadedRecv(QJsonObject &data);
     //RTMP
-    void rtmpStreamAvailableRecv(QByteArray &data);
-    void rtmpStreamStartedRecv(QByteArray &);
-    void rtmpStreamEndedRecv(QByteArray &);
-    void rtmpStreamDataRecv(QByteArray &);
+    void rtmpStreamAvailableRecv(QJsonObject &data);
+    void rtmpStreamStartedRecv(QJsonObject &);
+    void rtmpStreamStopRecv(QJsonObject &);
 
     void createChatRoom();
 
