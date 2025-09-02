@@ -124,6 +124,13 @@ void Session::handleMessage(const QByteArray &data)
         QJsonArray deviceDataArray = doc["data"].toObject()["devices"].toArray();
         emit deviceDataArrayReceived(deviceDataArray); // 发送信号，通知UI更新多个设备信息
     }
+    //test
+    else if(doc["type"]=="ticket_pending"){
+        qDebug()<<"增量更新工单列表";
+        QJsonObject dataObj = doc["data"].toObject();
+        // TODO:此处有问题
+        qDebug()<<dataObj;
+    }
 
 
     //TODO:RTMP处理

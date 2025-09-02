@@ -180,7 +180,8 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
                      {"acceptedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
                  }}
     };
-    QByteArray packet = packMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+
+    QByteArray packet = QJsonDocument(notify).toJson(QJsonDocument::Compact);
 
     for (ClientSession *client : order->clients) {
         if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {
@@ -188,7 +189,6 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
         }
     }
 }
-
 void WorkOrderManager::completeTicket(const QString &ticketId,
                                       const QString &description,
                                       const QString &solution)
@@ -227,7 +227,7 @@ void WorkOrderManager::completeTicket(const QString &ticketId,
                      {"completedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
                  }}
     };
-    QByteArray packet = packMessage(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+    QByteArray packet =QJsonDocument(notify).toJson(QJsonDocument::Compact);
 
     for (ClientSession *client : order->clients) {
         if (client && client->socket()->state() == QAbstractSocket::ConnectedState) {

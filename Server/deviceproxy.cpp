@@ -25,7 +25,7 @@ DeviceProxy::DeviceProxy(QObject *parent)
 {
     m_updateTimer = new QTimer(this);
     connect(m_updateTimer, &QTimer::timeout, this, &DeviceProxy::onUpdateTimer);
-    m_updateTimer->start(3000); // 每3秒更新一次
+    m_updateTimer->start(30000); // 每3秒更新一次
 
     // 注册模拟设备（只执行一次）
     QSqlQuery query(Database::instance()->db());

@@ -71,7 +71,7 @@ QJsonObject DeviceDAO::getDeviceRealtime(const QString &deviceId)
             {"temperature", query.value("temperature").toDouble()},
             {"status", query.value("status").toString()},
             {"last_update", query.value("last_update").toDateTime().toString(Qt::ISODate)},
-            {"control_count", query.value("control_conut").toInt()},
+            {"control_count", query.value("control_count").toInt()},
         };
     }
     return QJsonObject(); // 空表示未找到
