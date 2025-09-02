@@ -68,6 +68,10 @@ void Session::sendMessage(const QByteArray &data)
     }
 }
 
+void Session::startChatRoom(){
+    emit createChatRoom();
+}
+
 void Session::onReadyRead()
 {
     m_buffer.append(m_socket->readAll());
@@ -97,11 +101,10 @@ void Session::handleMessage(const QByteArray &data)
     }
     else if(doc["type"]=="work_orders"){
         qDebug() << "收到工单创建完成请求";
-        // 正确获取data数组
-        QJsonArray dataArray = doc["data"].toArray();
         // TODO:此处有问题
-        emit createChatRoom();
-        emit ticketCreateRecv(this, dataArray);
+        QJsonArray json_arr = doc["data"].toArray();
+        emit sendInitialOrder(json_arr);
+        emit ticketCreateRecv(g_session,json_arr);
     }
     else if(doc["type"]=="text_msg"){
         qDebug()<<"收到传来的消息";
@@ -143,5 +146,13 @@ void Session::handleMessage(const QByteArray &data)
         qDebug() << "A Stream Stop";
         QJsonObject dataObj = doc["data"].toObject();
         emit rtmpStreamStopRecv(dataObj);
+    }
+    else if(doc["type"]=="work_orders_initial_client"){
+        qDebug() << "接收到初始化信息，可以开始初始化";
+        QJsonArray json_arr = doc["data"].toArray();
+        emit sendInitialOrder(json_arr);
+    }
+    else if(doc["type"]==""){
+
     }
 }

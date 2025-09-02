@@ -15,6 +15,7 @@
 #include<QJsonDocument>
 #include "globaldatas.h"
 #include "chatroom.h"
+#include "ordersdetail.h"
 
 namespace Ui {
 class ClientCore;
@@ -59,6 +60,8 @@ private:
     MainWindow_main *m_main; // 主界面
     ChatRoom *chat;
     QStackedWidget *qsw;    // 堆栈窗口部件
+
+    ordersdetail *ordersender;
 
     // 页面映射表，用于方便页面切换
     QMap<PageType, QWidget*> pages;

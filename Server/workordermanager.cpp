@@ -181,7 +181,8 @@ void WorkOrderManager::acceptTicket(const QString &ticketId,
         {"data", QJsonObject{
                      {"ticket_id", ticketId},
                      {"username", expertUsername},
-                     {"acceptedAt", QDateTime::currentDateTime().toString(Qt::ISODate)}
+                     {"acceptedAt", QDateTime::currentDateTime().toString(Qt::ISODate)},
+                     {"status","in_progress"}
                  }}
     };
 

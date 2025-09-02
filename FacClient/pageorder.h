@@ -3,6 +3,10 @@
 
 #include <QWidget>
 #include<chatroom.h>
+#include<QJsonArray>
+#include"session.h"
+#include"ordersdetail.h"
+#include"senddetails.h"
 
 namespace Ui {
 class PageOrder;
@@ -19,9 +23,17 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void getInitialOrders(const QJsonArray &json_arr);
+
+    void onRowDoubleClicked(int row, int column);
+
+
 private:
     Ui::PageOrder *ui;
     ChatRoom *ch1;
+    QJsonArray j_arr;
+
+
 };
 
 #endif // PAGEORDER_H

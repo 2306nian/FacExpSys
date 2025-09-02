@@ -6,6 +6,7 @@
 #include <QTcpSocket>
 #include <QString>
 
+
 class Session : public QObject
 {
     Q_OBJECT
@@ -64,10 +65,15 @@ signals:
 
     void deviceDataArrayReceived(const QJsonArray &arr);
 
+    void sendInitialOrder(const QJsonArray &arr);
+
 private slots:
     void onReadyRead();
     void onDisconnected();
     void setTickedFromHandel(QString s1);
+
+public slots:
+    void startChatRoom();
 
 private:
     void handleMessage(const QByteArray &data);

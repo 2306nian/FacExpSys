@@ -19,11 +19,13 @@ SOURCES += \
     globaldatas.cpp \
     handlers.cpp \
     main.cpp \
+    ordersdetail.cpp \
     page_mine.cpp \
     pagedevice.cpp \
     pageorder.cpp \
     register.cpp \
     screenrecorder.cpp \
+    senddetails.cpp \
     session.cpp \
     videochat.cpp \
     videoplayer.cpp \
@@ -40,11 +42,13 @@ HEADERS += \
     filesender.h \
     globaldatas.h \
     handlers.h \
+    ordersdetail.h \
     page_mine.h \
     pagedevice.h \
     pageorder.h \
     register.h \
     screenrecorder.h \
+    senddetails.h \
     session.h \
     videochat.h \
     videoplayer.h \
@@ -55,10 +59,12 @@ FORMS += \
     chatroom.ui \
     clientcore.ui \
     controlcount.ui \
+    ordersdetail.ui \
     page_mine.ui \
     pagedevice.ui \
     pageorder.ui \
     register.ui \
+    senddetails.ui \
     videochat.ui \
     widget.ui
 

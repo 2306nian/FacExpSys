@@ -162,7 +162,7 @@ void ClientCore::connectPageSignals()
     connect(g_session,&Session::createChatRoom,this, &ClientCore::onChatroomShow);
     connect(wid, &Widget::loginSuccess, this, &ClientCore::onLoginSuccess);
     connect(wid, &Widget::registerRequest, this, &ClientCore::onRegisterRequest);
-
+    connect(ordersender,&ordersdetail::createChatByOrder,this,&ClientCore::onChatroomShow);
     //连接注册页面信号
     connect(reg, &Register::registerSuccess, this, &ClientCore::onRegisterSuccess);
     connect(reg, &Register::backToLogin, this, [this]() {
