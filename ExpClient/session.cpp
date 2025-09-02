@@ -50,6 +50,14 @@ QString Session::getTicketId(){
     return ticketId;
 }
 
+void Session::handleAcceptTicket(QJsonObject &data)
+{
+    sendMessage(QJsonDocument(data).toJson(QJsonDocument::Compact));
+}
+void Session::handleCompleteTicket(QJsonObject &data)
+{
+    sendMessage(QJsonDocument(data).toJson(QJsonDocument::Compact));
+}
 
 void Session::setTickedFromHandel(QString s1){
     setTickedId(s1);
@@ -89,14 +97,14 @@ void Session::handleMessage(const QByteArray &data)
         QJsonObject dataObj = doc["data"].toObject();
         emit loginResult(dataObj["success"].toBool());
     }
-    else if(doc["type"]=="work_orders"){
-        qDebug() << "收到工单创建完成请求";
-        // 正确获取data数组
-        QJsonArray dataArray = doc["data"].toArray();
-        // TODO:此处有问题
-        emit createChatRoom();
-        emit ticketCreateRecv(this, dataArray);
-    }
+    // else if(doc["type"]=="work_orders"){
+    //     qDebug() << "收到工单创建完成请求";
+    //     // 正确获取data数组
+    //     QJsonArray dataArray = doc["data"].toArray();
+    //     // TODO:此处有问题
+    //     emit createChatRoom();
+    //     emit ticketCreateRecv(this, dataArray);
+    // }
     else if(doc["type"]=="text_msg"){
         qDebug()<<"收到传来的消息";
         QJsonObject dataObj = doc["data"].toObject();
@@ -119,10 +127,26 @@ void Session::handleMessage(const QByteArray &data)
         QJsonObject json_obj=doc.object();
         emit fileDownloadStart(json_obj);
     }
-    else if(doc["type"]=="device_list"||doc["type"]=="device_realtime_update"){
-        // 正确获取devices数组，它位于data.devices中
-        QJsonArray deviceDataArray = doc["data"].toObject()["devices"].toArray();
-        emit deviceDataArrayReceived(deviceDataArray); // 发送信号，通知UI更新多个设备信息
+
+    else if(doc["type"]=="work_orders_initial_expert"){
+        qDebug()<<"初始化工单列表";
+        QJsonArray dataArray = doc["data"].toArray();
+        // TODO:此处有问题
+        qDebug()<<dataArray;
+        emit tableInitial(g_session,dataArray);
+    }
+    else if(doc["type"]=="ticket_pending"){
+        qDebug()<<"增量更新工单列表";
+        QJsonObject dataObj = doc["data"].toObject();
+        // TODO:此处有问题
+        qDebug()<<dataObj;
+        emit addTicket(g_session,dataObj);
+    }
+    else if(doc["type"]=="ticket_completed"){
+        qDebug()<<"结束工单";
+        QJsonObject dataObj = doc["data"].toObject();
+        QString ticketId = dataObj.value("ticket_id").toString();//获取结束的工单号发给mainwindow
+        emit confirmCompleted(ticketId);
     }
 
 

@@ -1,23 +1,14 @@
-#include "mainwindow.h"
-
 #include <QApplication>
-#include <QLocale>
-#include <QTranslator>
+#include<pageorder.h>
+#include<clientcore.h>
+#include<chatroom.h>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "ExpClient_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            a.installTranslator(&translator);
-            break;
-        }
-    }
-    MainWindow w;
-    w.show();
+    ClientCore core;
+    core.show();
+    // ChatRoom c1;
+    // c1.show();
     return a.exec();
 }

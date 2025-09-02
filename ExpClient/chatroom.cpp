@@ -23,7 +23,6 @@ ChatRoom::ChatRoom(QWidget *parent) :
     freceiver=new FileReceiver(this);
     // 设置窗口标题
     setWindowTitle("聊天室");
-
     connect(MessageHandler::instance(),&MessageHandler::sendMessageToChat,this,&ChatRoom::messageData);
     connect(g_session,&Session::textUpdate,this,&ChatRoom::messageUpdate);
     connect(FileHandler::instance(),&FileHandler::sendFileidToChat,this,&ChatRoom::getFileidFromhandle);

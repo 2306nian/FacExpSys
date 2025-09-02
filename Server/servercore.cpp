@@ -50,7 +50,7 @@ void ServerCore::broadcastDeviceData(const QJsonArray &devicesData)
 {
     QJsonObject msg{
         {"type", "device_realtime_update"},
-        {"data", devicesData}
+         {"data", QJsonObject{{"devices", devicesData}}}
     };
 
     QByteArray payload = QJsonDocument(msg).toJson(QJsonDocument::Compact);
@@ -61,8 +61,6 @@ void ServerCore::broadcastDeviceData(const QJsonArray &devicesData)
             client->sendMessage(payload);
         }
     }
-
-    qDebug() << "Broadcasted batch update for" << devicesData.size() << "devices.";
 }
 
 void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObject &info)

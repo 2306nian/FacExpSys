@@ -58,7 +58,7 @@ QJsonObject DeviceDAO::getDeviceRealtime(const QString &deviceId)
 {
     QSqlQuery query(Database::instance()->db());
     query.prepare(R"(
-        SELECT pressure, temperature, status, last_update
+        SELECT pressure, temperature, status, last_update, control_count
         FROM device_realtime
         WHERE device_id = ?
     )");
@@ -70,7 +70,8 @@ QJsonObject DeviceDAO::getDeviceRealtime(const QString &deviceId)
             {"pressure", query.value("pressure").toDouble()},
             {"temperature", query.value("temperature").toDouble()},
             {"status", query.value("status").toString()},
-            {"last_update", query.value("last_update").toDateTime().toString(Qt::ISODate)}
+            {"last_update", query.value("last_update").toDateTime().toString(Qt::ISODate)},
+            {"control_count", query.value("control_conut").toInt()},
         };
     }
     return QJsonObject(); // 空表示未找到
@@ -145,7 +146,8 @@ void DeviceDAO::sendDeviceListTo(ClientSession *client)
             {"online_status", dev.onlineStatus},
             {"pressure", realtime["pressure"]},
             {"temperature", realtime["temperature"]},
-            {"status", realtime["status"]}
+            {"status", realtime["status"]},
+            {"control_count",realtime["control_count"]}
         });
     }
 
