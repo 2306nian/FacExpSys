@@ -625,8 +625,6 @@ void ChatRoom::on_pushButton_4_clicked()
 {
 
 }
-<<<<<<< HEAD
-=======
 
 
 void ChatRoom::on_toolButton_2_clicked()
@@ -648,4 +646,3 @@ void ChatRoom::on_toolButton_share_clicked()
     m_cameraStreamer->startScreenStreaming(rtmpUrl);
 }
 
->>>>>>> 2f8dee52d7a5f1b2be3fe985e72875b9c32d93f1

@@ -289,11 +289,7 @@ QTextEdit:focus {
     <rect>
      <x>0</x>
      <y>0</y>
-<<<<<<< HEAD
-     <width>664</width>
-=======
      <width>585</width>
->>>>>>> 2f8dee52d7a5f1b2be3fe985e72875b9c32d93f1
      <height>27</height>
     </rect>
    </property>
