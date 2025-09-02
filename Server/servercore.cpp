@@ -69,11 +69,12 @@ void ServerCore::broadcastTicketPending(const QString &ticketId, const QJsonObje
         {"type", "ticket_pending"},
         {"data", info}
     };
-    QByteArray packet = packMessage(QJsonDocument(msg).toJson(QJsonDocument::Compact));
+    QByteArray packet = QJsonDocument(msg).toJson(QJsonDocument::Compact);
 
     for (ClientSession *client : qAsConst(m_clients)) {
         if (client) {
             client->sendMessage(packet);
+            qDebug()<<"服务端已经发送";
         }
     }
 }

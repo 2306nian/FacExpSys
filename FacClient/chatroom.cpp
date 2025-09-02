@@ -16,7 +16,7 @@
 ChatRoom::ChatRoom(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatRoom),
-    m_recorder(new ScreenRecorder(this)),
+    // m_recorder(new ScreenRecorder(this)),
     m_timer(new QTimer(this)),
     m_recordingTime(0)
 {
@@ -620,3 +620,9 @@ void ChatRoom::updateRecordingTime()
     m_recordingTime++;
     ui->TimeLabel->setText(QString("录制时间: %1秒").arg(m_recordingTime));
 }
+
+void ChatRoom::on_pushButton_4_clicked()
+{
+
+}
+

@@ -202,6 +202,13 @@ QTextEdit:focus {
           </spacer>
          </item>
          <item>
+          <widget class="QPushButton" name="pushButton_4">
+           <property name="text">
+            <string>控制设备</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pushButton_3">
            <property name="text">
             <string>保存路径选择</string>

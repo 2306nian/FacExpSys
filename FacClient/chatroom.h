@@ -102,6 +102,8 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void on_pushButton_4_clicked();
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
@@ -118,7 +120,7 @@ private:
     qint64 pendingFileSize;
     void appendMessage(const QString &text, bool isSelf);
     QMap<QString, QString> fileIdMap;
-    ScreenRecorder *m_recorder;
+    // ScreenRecorder *m_recorder;
     QTimer *m_timer;
     int m_recordingTime;
     // 初始化音频设备列表
