@@ -1,160 +1,163 @@
 #include "pagedevice.h"
 #include "ui_pagedevice.h"
-#include <QGridLayout>
+#include <QStandardItemModel>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
 PageDevice::PageDevice(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::PageDevice)
+    : QWidget(parent),
+    ui(new Ui::PageDevice)
 {
     ui->setupUi(this);
+    // 在创建PageDevice实例的代码处（如主窗口等）
+    connect(g_session, &Session::deviceDataArrayReceived, this, &PageDevice::updateDeviceData);
 
-    // 设置UI和图表
-    setupDeviceUI();
+    // 表格模型初始化
+    model = new QStandardItemModel(this);
+    model->setColumnCount(6);
+    model->setHeaderData(0, Qt::Horizontal, "Device ID");
+    model->setHeaderData(1, Qt::Horizontal, "Name");
+    model->setHeaderData(2, Qt::Horizontal, "Type");
+    model->setHeaderData(3, Qt::Horizontal, "Location");
+    model->setHeaderData(4, Qt::Horizontal, "Online Status");
+    model->setHeaderData(5, Qt::Horizontal, "Temperature");
+    ui->tableView->setModel(model);
+
+    // 设备颜色固定，假设三个设备ID分别为"dev1","dev2","dev3"，若不同根据实际替换
+    deviceColors["dev1"] = Qt::red;
+    deviceColors["dev2"] = Qt::green;
+    deviceColors["dev3"] = Qt::blue;
+
+    // 初始化chart和series
     setupCharts();
-    generateDemoData();
 }
 
-PageDevice::~PageDevice()
-{
+PageDevice::~PageDevice(){
     delete ui;
-}
-
-void PageDevice::setupDeviceUI()
-{
-    // 创建标签
-    temperatureLabel = new QLabel("温度:", this);
-    humidityLabel = new QLabel("湿度:", this);
-    pressureLabel = new QLabel("压力:", this);
-
-    // 创建值标签
-    temperatureValueLabel = new QLabel("25.3 °C", this);
-    humidityValueLabel = new QLabel("45 %", this);
-    pressureValueLabel = new QLabel("101.3 kPa", this);
-
-    // 创建图表视图
-    temperatureChartView = new QChartView(this);
-    pressureChartView = new QChartView(this);
-
-    // 设置图表视图大小策略
-    temperatureChartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    pressureChartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    // 设置防锯齿
-    temperatureChartView->setRenderHint(QPainter::Antialiasing);
-    pressureChartView->setRenderHint(QPainter::Antialiasing);
-
-    // 创建主布局
-    QGridLayout *mainLayout = new QGridLayout(this);
-
-    // 添加控件到布局
-    // 第一行：温度标签和值
-    mainLayout->addWidget(temperatureLabel, 0, 0);
-    mainLayout->addWidget(temperatureValueLabel, 0, 1);
-
-    // 第二行：温度图表
-    mainLayout->addWidget(temperatureChartView, 1, 0, 1, 2);
-
-    // 第三行：湿度标签和值
-    mainLayout->addWidget(humidityLabel, 2, 0);
-    mainLayout->addWidget(humidityValueLabel, 2, 1);
-
-    // 第四行：压力标签和值
-    mainLayout->addWidget(pressureLabel, 3, 0);
-    mainLayout->addWidget(pressureValueLabel, 3, 1);
-
-    // 第五行：压力图表
-    mainLayout->addWidget(pressureChartView, 4, 0, 1, 2);
-
-    // 设置列伸展因子
-    mainLayout->setColumnStretch(0, 1);
-    mainLayout->setColumnStretch(1, 2);
-
-    // 设置布局
-    setLayout(mainLayout);
 }
 
 void PageDevice::setupCharts()
 {
-    // 创建温度数据系列
-    temperatureSeries = new QLineSeries();
-    temperatureSeries->setName("温度 (°C)");
+    using namespace QtCharts;
 
-    // 创建压力数据系列
-    pressureSeries = new QLineSeries();
-    pressureSeries->setName("压力 (kPa)");
+    chart = new QChart();
+    chart->legend()->setVisible(true);
+    chart->setTitle("设备温度历史");
 
-    // 创建温度图表
-    QChart *temperatureChart = new QChart();
-    temperatureChart->addSeries(temperatureSeries);
-    temperatureChart->setTitle("温度历史记录");
-    temperatureChart->legend()->setVisible(true);
-    temperatureChart->legend()->setAlignment(Qt::AlignBottom);
+    seriesDevice1 = new QLineSeries();
+    seriesDevice1->setName("Device 1");
+    seriesDevice1->setColor(deviceColors.value("dev1", Qt::red));
 
-    // 创建压力图表
-    QChart *pressureChart = new QChart();
-    pressureChart->addSeries(pressureSeries);
-    pressureChart->setTitle("压力历史记录");
-    pressureChart->legend()->setVisible(true);
-    pressureChart->legend()->setAlignment(Qt::AlignBottom);
+    seriesDevice2 = new QLineSeries();
+    seriesDevice2->setName("Device 2");
+    seriesDevice2->setColor(deviceColors.value("dev2", Qt::green));
 
-    // 设置坐标轴
-    QValueAxis *axisX1 = new QValueAxis();
-    axisX1->setRange(0, 4);
-    axisX1->setTitleText("测量次数");
+    seriesDevice3 = new QLineSeries();
+    seriesDevice3->setName("Device 3");
+    seriesDevice3->setColor(deviceColors.value("dev3", Qt::blue));
 
-    QValueAxis *axisY1 = new QValueAxis();
-    axisY1->setTitleText("温度 (°C)");
+    chart->addSeries(seriesDevice1);
+    chart->addSeries(seriesDevice2);
+    chart->addSeries(seriesDevice3);
 
-    QValueAxis *axisX2 = new QValueAxis();
-    axisX2->setRange(0, 4);
-    axisX2->setTitleText("测量次数");
+    // 创建坐标轴
+    QValueAxis *axisX = new QValueAxis;
+    axisX->setRange(0, 9); // 最多显示10个点，索引0~9
+    axisX->setLabelFormat("%d");
+    axisX->setTitleText("采样序号");
 
-    QValueAxis *axisY2 = new QValueAxis();
-    axisY2->setTitleText("压力 (kPa)");
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setRange(0, 100); // 根据实际温度范围调整
+    axisY->setTitleText("温度");
 
-    // 添加坐标轴到图表
-    temperatureChart->addAxis(axisX1, Qt::AlignBottom);
-    temperatureChart->addAxis(axisY1, Qt::AlignLeft);
-    temperatureSeries->attachAxis(axisX1);
-    temperatureSeries->attachAxis(axisY1);
+    chart->setAxisX(axisX, seriesDevice1);
+    chart->setAxisY(axisY, seriesDevice1);
+    chart->setAxisX(axisX, seriesDevice2);
+    chart->setAxisY(axisY, seriesDevice2);
+    chart->setAxisX(axisX, seriesDevice3);
+    chart->setAxisY(axisY, seriesDevice3);
 
-    pressureChart->addAxis(axisX2, Qt::AlignBottom);
-    pressureChart->addAxis(axisY2, Qt::AlignLeft);
-    pressureSeries->attachAxis(axisX2);
-    pressureSeries->attachAxis(axisY2);
+    // 将chart放入widget中
+    QChartView *chartView = new QChartView(chart, ui->widget);
+    chartView->setRenderHint(QPainter::Antialiasing);
 
-    // 设置图表视图
-    temperatureChartView->setChart(temperatureChart);
-    pressureChartView->setChart(pressureChart);
+    // 布局
+    QVBoxLayout *layout = new QVBoxLayout(ui->widget);
+    layout->addWidget(chartView);
+    ui->widget->setLayout(layout);
 }
-
-void PageDevice::generateDemoData()
+void PageDevice::updateDeviceData(const QJsonArray &devices)
 {
-    // 清除现有数据
-    temperatureSeries->clear();
-    pressureSeries->clear();
+    model->removeRows(0, model->rowCount());  // 清空旧数据
+    qDebug()<<devices;
+    // 遍历设备数组填充表格，并更新温度历史
+    for (int i = 0; i < devices.size(); ++i) {
+        QJsonObject dev = devices[i].toObject();
+        QString deviceId = dev["device_id"].toString();
+        QString name = dev["name"].toString();
+        QString type = dev["timestamp"].toString();
+        QString location = dev["pressure"].toString();
+        QString onlineStatus = dev["status"].toString();
+        double temperature = dev["temperature"].toDouble();
 
-    // 温度模拟数据 (近5次)
-    temperatureSeries->append(0, 22.5);
-    temperatureSeries->append(1, 23.1);
-    temperatureSeries->append(2, 22.8);
-    temperatureSeries->append(3, 23.4);
-    temperatureSeries->append(4, 25.3); // 当前值
+        // 填表
+        QList<QStandardItem*> rowItems;
+        rowItems << new QStandardItem(deviceId)
+                 << new QStandardItem(name)
+                 << new QStandardItem(type)
+                 << new QStandardItem(location)
+                 << new QStandardItem(onlineStatus)
+                 << new QStandardItem(QString::number(temperature, 'f', 2));
+        model->appendRow(rowItems);
 
-    // 压力模拟数据 (近5次)
-    pressureSeries->append(0, 101.3);
-    pressureSeries->append(1, 101.5);
-    pressureSeries->append(2, 101.4);
-    pressureSeries->append(3, 101.2);
-    pressureSeries->append(4, 101.3); // 当前值
+        // 更新温度历史，最多保存10个
+        QVector<double> &history = temperatureHistory[deviceId];
+        history.append(temperature);
+        if (history.size() > 10)
+            history.removeFirst();
+    }
 
-    // 根据数据设置Y轴范围
-    temperatureChartView->chart()->axes(Qt::Vertical).first()->setRange(22, 26);
-    pressureChartView->chart()->axes(Qt::Vertical).first()->setRange(101, 102);
-
-    // 更新显示的当前值
-    temperatureValueLabel->setText(QString::number(25.3) + " °C");
-    humidityValueLabel->setText(QString::number(45) + " %");
-    pressureValueLabel->setText(QString::number(101.3) + " kPa");
+    updateChart();
 }
+
+void PageDevice::updateChart()
+{
+    // 设备列表，顺序与series匹配，需要保证deviceColors里顺序或键值稳定
+    QStringList keys = deviceColors.keys();
+
+    // Helper lambda更新单条曲线
+    auto updateSeries = [&](QtCharts::QLineSeries *series, const QString &devId) {
+        series->clear();
+        const auto &temps = temperatureHistory.value(devId);
+        for (int i = 0; i < temps.size(); ++i) {
+            series->append(i, temps[i]);
+        }
+    };
+
+    if(keys.size() >= 3) {
+        updateSeries(seriesDevice1, keys[0]);
+        updateSeries(seriesDevice2, keys[1]);
+        updateSeries(seriesDevice3, keys[2]);
+    }
+    // 自动调整Y轴范围以包容所有温度数据
+    double minTemp = 1000, maxTemp = -1000;
+    for(const QString &devId : keys.mid(0,3)) {
+        for(double temp : temperatureHistory[devId]){
+            if(temp < minTemp) minTemp = temp;
+            if(temp > maxTemp) maxTemp = temp;
+        }
+    }
+    if(minTemp >= maxTemp) {
+        minTemp = 0;
+        maxTemp = 100;
+    }
+    auto axisY = qobject_cast<QtCharts::QValueAxis*>(chart->axisY());
+    if(axisY){
+        axisY->setRange(minTemp - 5, maxTemp + 5);
+    }
+}
+
+
+
 

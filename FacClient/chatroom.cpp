@@ -522,3 +522,9 @@ void ChatRoom::appendFileMessage(const QString &fileName,
 }
 
 
+
+void ChatRoom::on_pushButton_clicked()
+{
+
+}
+

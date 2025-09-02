@@ -5,6 +5,18 @@
 #include <QtCharts>
 #include <QChartView>
 #include <QLineSeries>
+#include"session.h"
+#include <QJsonArray>
+#include <QStandardItemModel>
+#include "pagedevice.h"
+#include "ui_pagedevice.h"
+#include <QStandardItemModel>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
+#include <QVBoxLayout>  // 添加这个
+#include "globaldatas.h"     // 假设g_session定义在这里
+
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -22,27 +34,29 @@ public:
 
 private:
     Ui::PageDevice *ui;
+    QStandardItemModel *model;
 
-    // 标签控件 - 显示当前值
-    QLabel *temperatureLabel;
-    QLabel *humidityLabel;
-    QLabel *pressureLabel;
-    QLabel *temperatureValueLabel;
-    QLabel *humidityValueLabel;
-    QLabel *pressureValueLabel;
+    // 温度数据存储，key为device_id，value为最近10个温度，保持时间顺序
+    QMap<QString, QVector<double>> temperatureHistory;
 
-    // 图表控件
-    QChartView *temperatureChartView;
-    QChartView *pressureChartView;
-    QLineSeries *temperatureSeries;
-    QLineSeries *pressureSeries;
+    // 设备颜色映射，保证3设备颜色固定
+    QMap<QString, QColor> deviceColors;
 
-    // 初始化UI
+    // 图表相关
+    QtCharts::QChart *chart;
+    QtCharts::QLineSeries *seriesDevice1;
+    QtCharts::QLineSeries *seriesDevice2;
+    QtCharts::QLineSeries *seriesDevice3;
+
     void setupDeviceUI();
-    // 初始化图表
     void setupCharts();
-    // 生成模拟数据
-    void generateDemoData();
+    void updateChart();
+
+public slots:
+    void updateDeviceData(const QJsonArray &devices);
+
+
 };
+
 
 #endif // PAGEDEVICE_H

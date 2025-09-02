@@ -77,7 +77,7 @@ QTextEdit:focus {
        <string>...</string>
       </property>
       <property name="icon">
-       <iconset resource="icons.qrc">
+       <iconset>
         <normaloff>:/new/prefix1/imgs/x.png</normaloff>:/new/prefix1/imgs/x.png</iconset>
       </property>
      </widget>
@@ -113,7 +113,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset>
                <normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</normaloff>:/new/prefix1/imgs/a61f9036e72089fb21c888e21ad03967.jpg</iconset>
              </property>
              <property name="iconSize">
@@ -145,7 +145,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset>
                <normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</normaloff>:/new/prefix1/imgs/856fc6535b20b341d3bc7600799395f3.jpg</iconset>
              </property>
             </widget>
@@ -162,7 +162,7 @@ QTextEdit:focus {
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="icons.qrc">
+              <iconset>
                <normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</normaloff>:/new/prefix1/imgs/8302bcf5dbd2673ec4fea909024a2ef9.jpg</iconset>
              </property>
             </widget>
@@ -181,6 +181,13 @@ QTextEdit:focus {
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>录制</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButton_emission">
@@ -218,8 +225,6 @@ QTextEdit:focus {
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

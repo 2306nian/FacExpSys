@@ -64,6 +64,8 @@ signals:
 
     void fileDownloadStart(const QJsonObject &json);
 
+    void deviceDataArrayReceived(const QJsonArray &arr);
+
 private slots:
     void onReadyRead();
     void onDisconnected();

@@ -119,6 +119,14 @@ void Session::handleMessage(const QByteArray &data)
         QJsonObject json_obj=doc.object();
         emit fileDownloadStart(json_obj);
     }
+    else if(doc["type"]=="device_list"||doc["type"]=="device_realtime_update"){
+        qDebug()<<"收到设备列表数据"<<doc<<data;
+        // 正确获取devices数组，它位于data.devices中
+        QJsonArray deviceDataArray = doc["data"].toObject()["devices"].toArray();
+        qDebug()<<deviceDataArray;
+        emit deviceDataArrayReceived(deviceDataArray); // 发送信号，通知UI更新多个设备信息
+    }
+
 
     //TODO:RTMP处理
 }

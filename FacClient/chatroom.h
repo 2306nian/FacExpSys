@@ -88,6 +88,8 @@ private slots:
 
     void startDownload(const QJsonObject&json);
 
+    void on_pushButton_clicked();
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
