@@ -15,6 +15,7 @@
 #include<QTimer>
 #include<filereceiver.h>
 #include"videoplayer.h"
+#include "screenrecorder.h"
 
 namespace Ui {
 class ChatRoom;
@@ -120,7 +121,7 @@ private:
     qint64 pendingFileSize;
     void appendMessage(const QString &text, bool isSelf);
     QMap<QString, QString> fileIdMap;
-    // ScreenRecorder *m_recorder;
+    ScreenRecorder* m_recorder;
     QTimer *m_timer;
     int m_recordingTime;
     // 初始化音频设备列表

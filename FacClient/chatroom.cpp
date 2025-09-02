@@ -16,7 +16,7 @@
 ChatRoom::ChatRoom(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatRoom),
-    // m_recorder(new ScreenRecorder(this)),
+    m_recorder(new ScreenRecorder(this)),
     m_timer(new QTimer(this)),
     m_recordingTime(0)
 {
@@ -538,7 +538,7 @@ void ChatRoom::appendFileMessage(const QString &fileName,
 
 void ChatRoom::on_pushButton_clicked()
 {
-    QString filePath = ui->textEdit_chat->text();
+    QString filePath = video_filepath;
     if (filePath.isEmpty()) {
         QMessageBox::warning(this, "警告", "请选择保存文件路径");
         return;
@@ -575,14 +575,14 @@ void ChatRoom::on_toolButton_video_clicked()
 
 void ChatRoom::on_pushButton_3_clicked()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "选择保存文件",
+    QString fileName = QFileDialog::getExistingDirectory(this, "选择保存目录",
                                                     QDir::homePath(),
-                                                    "MP4 Files (*.mp4)");
+                                                    QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
     if (!fileName.isEmpty()) {
         if (!fileName.endsWith(".mp4", Qt::CaseInsensitive)) {
             fileName += ".mp4";
         }
-        ui->textEdit_chat->setText(fileName);
+        video_filepath=fileName;
     }
 }
 
