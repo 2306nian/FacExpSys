@@ -629,8 +629,20 @@ void ChatRoom::on_pushButton_4_clicked()
 
 void ChatRoom::on_toolButton_2_clicked()
 {
-    m_cameraStreamer = new CameraStreamer(g_session, true);
+    if (!m_cameraStreamer){
+        m_cameraStreamer = new CameraStreamer(g_session, true);
+    }
     QString rtmpUrl = "rtmp://localhost/live/" + g_username;
     m_cameraStreamer->startStreaming(rtmpUrl);
+}
+
+
+void ChatRoom::on_toolButton_share_clicked()
+{
+    if (!m_cameraStreamer){
+        m_cameraStreamer = new CameraStreamer(g_session, true);
+    }
+    QString rtmpUrl = "rtmp://localhost/live/" + g_username + "_screen";
+    m_cameraStreamer->startScreenStreaming(rtmpUrl);
 }
 

@@ -21,7 +21,9 @@ public:
     ~CameraStreamer();
 
     bool startStreaming(const QString &rtmpUrl);
+    void startScreenStreaming(const QString &rtmpUrl);
     void stopStreaming();
+    void stopCameraStreaming();
     bool isStreaming() const;
 
 signals:
@@ -35,9 +37,12 @@ private:
 
     Session* m_session;
     QString m_rtmpUrl;
+    QString m_screenRtmpUrl;
     bool m_isStreaming;
+    bool m_isScreenStreaming;
     bool m_viewfinder;
     QProcess *m_ffmpegProcess;
+    QProcess *m_ffmpegScreenProcess;
     QProcess *m_previewReceiver;
 
 };

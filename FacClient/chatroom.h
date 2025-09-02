@@ -108,6 +108,8 @@ private slots:
 
     void on_toolButton_2_clicked();
 
+    void on_toolButton_share_clicked();
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
