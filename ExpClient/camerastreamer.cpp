@@ -14,12 +14,19 @@ CameraStreamer::CameraStreamer(Session* session, bool viewfinder, QObject *paren
     , m_isStreaming(false)
     , m_viewfinder(viewfinder)
     , m_ffmpegProcess(new QProcess(this))
+    , m_ffmpegScreenProcess(new QProcess(this))
 {
     // 连接 FFmpeg 进程信号
     connect(m_ffmpegProcess, &QProcess::started, [this]() {
         m_isStreaming = true;
         emit streamingStarted();
         qDebug() << "FFmpeg streaming started";
+    });
+
+    connect(m_ffmpegScreenProcess, &QProcess::started, [this]() {
+        m_isScreenStreaming = true;
+        emit streamingStarted();
+        qDebug() << "FFmpeg Screen streaming started";
     });
 
     connect(m_ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -49,6 +56,56 @@ CameraStreamer::CameraStreamer(Session* session, bool viewfinder, QObject *paren
                 }
             });
     connect(m_ffmpegProcess, &QProcess::errorOccurred, [this](QProcess::ProcessError error) {
+        QString errorStr;
+        switch (error) {
+        case QProcess::FailedToStart:
+            errorStr = "FFmpeg failed to start";
+            break;
+        case QProcess::Crashed:
+            errorStr = "FFmpeg crashed";
+            break;
+        case QProcess::Timedout:
+            errorStr = "FFmpeg timeout";
+            break;
+        case QProcess::WriteError:
+            errorStr = "FFmpeg write error";
+            break;
+        case QProcess::ReadError:
+            errorStr = "FFmpeg read error";
+            break;
+        case QProcess::UnknownError:
+            errorStr = "FFmpeg unknown error";
+            break;
+        }
+        emit errorOccurred(errorStr);
+    });
+    connect(m_ffmpegScreenProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                m_isStreaming = false;
+                emit streamingStopped();
+
+                if (exitCode != 0) {
+                    // 获取标准错误输出
+                    QByteArray errorOutput = m_ffmpegScreenProcess->readAllStandardError();
+                    QString errorStr = QString::fromLocal8Bit(errorOutput);
+
+                    // 获取标准输出
+                    QByteArray standardOutput = m_ffmpegScreenProcess->readAllStandardOutput();
+                    QString outputStr = QString::fromLocal8Bit(standardOutput);
+
+                    qDebug() << "=== FFmpeg Error Details ===";
+                    qDebug() << "Exit code:" << exitCode;
+                    qDebug() << "Exit status:" << (exitStatus == QProcess::NormalExit ? "Normal" : "Crash");
+                    qDebug() << "Standard Error:" << errorStr;
+                    qDebug() << "Standard Output:" << outputStr;
+                    qDebug() << "==========================";
+
+                    emit errorOccurred(QString("FFmpeg failed (code %1): %2").arg(exitCode).arg(errorStr));
+                } else {
+                    qDebug() << "FFmpeg streaming finished successfully";
+                }
+            });
+    connect(m_ffmpegScreenProcess, &QProcess::errorOccurred, [this](QProcess::ProcessError error) {
         QString errorStr;
         switch (error) {
         case QProcess::FailedToStart:
@@ -210,6 +267,68 @@ void CameraStreamer::startFFmpegStreaming(const QString &rtmpUrl)
     qDebug() << "FFmpeg process started with PID:" << m_ffmpegProcess->processId();
 }
 
+void CameraStreamer::startScreenStreaming(const QString &rtmpUrl)
+{
+    QString display = getenv("DISPLAY");
+    QStringList arguments;
+    arguments << "-f" << "x11grab"                    // X11 屏幕捕获
+              << "-framerate" << "30"                 // 帧率
+              << "-video_size" << "1920x1080"         // 屏幕分辨率
+              << "-i" << display                      // 显示设备（默认显示器）
+              << "-f" << "pulse"                      // 音频输入（PulseAudio）
+              << "-i" << "default"                    // 默认音频设备
+
+              // 视频编码参数
+              << "-vcodec" << "libx264"               // H.264 编码
+              << "-preset" << "ultrafast"             // 超快速编码
+              << "-tune" << "zerolatency"             // 零延迟优化
+              << "-profile:v" << "baseline"           // 基础配置文件
+              << "-level" << "3.0"
+              << "-pix_fmt" << "yuv420p"
+              << "-s" << "1280x720"                   // 输出分辨率
+              << "-g" << "30"                         // GOP 大小
+              << "-b:v" << "2000k"                    // 视频码率
+              << "-maxrate" << "2000k"
+              << "-bufsize" << "2000k"
+
+              // 音频编码参数
+              << "-acodec" << "aac"
+              << "-ar" << "44100"
+              << "-ac" << "2"
+              << "-b:a" << "128k"
+
+              // 输出参数
+              << "-flvflags" << "no_duration_filesize"
+              << "-f" << "flv"
+              << rtmpUrl;
+    m_ffmpegScreenProcess->start("ffmpeg", arguments);
+    emit m_session->rtmpStreamStartSend(m_session, rtmpUrl);
+}
+
+void CameraStreamer::stopCameraStreaming(){
+    emit m_session->rtmpStreamStopSend(m_session, m_screenRtmpUrl);
+    // 确保 FFmpeg 进程被终止
+    if (m_ffmpegScreenProcess) {
+        if (m_ffmpegScreenProcess->state() == QProcess::Running) {
+            qDebug() << "Terminating FFmpeg process in destructor...";
+
+            // 先尝试正常终止
+            m_ffmpegScreenProcess->terminate();
+
+            // 等待进程退出（最多5秒）
+            if (!m_ffmpegScreenProcess->waitForFinished(5000)) {
+                qDebug() << "Force killing FFmpeg process...";
+                m_ffmpegScreenProcess->kill();
+
+                // 再等待强制终止完成
+                if (!m_ffmpegScreenProcess->waitForFinished(2000)) {
+                    qDebug() << "Warning: FFmpeg process may not have terminated properly";
+                }
+            }
+        }
+    }
+}
+
 bool CameraStreamer::startStreaming(const QString &rtmpUrl)
 {
     if (m_isStreaming) {
@@ -241,6 +360,7 @@ bool CameraStreamer::startStreaming(const QString &rtmpUrl)
     QProcess checkProcess;
     checkProcess.start("ffmpeg", QStringList() << "-version");
     if (!checkProcess.waitForFinished(3000) || checkProcess.exitCode() != 0) {
+        qDebug() << "FFmpeg not found. Please install FFmpeg and add it to PATH.";
         emit errorOccurred("FFmpeg not found. Please install FFmpeg and add it to PATH.");
         return false;
     }
@@ -249,6 +369,7 @@ bool CameraStreamer::startStreaming(const QString &rtmpUrl)
 #ifdef Q_OS_LINUX
     QFile videoDevice("/dev/video0");
     if (!videoDevice.exists()) {
+        qDebug() << "FFmpeg not found. Please install FFmpeg and add it to PATH.";
         emit errorOccurred("Camera device /dev/video0 not found");
         return false;
     }

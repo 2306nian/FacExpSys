@@ -360,6 +360,7 @@ bool CameraStreamer::startStreaming(const QString &rtmpUrl)
     QProcess checkProcess;
     checkProcess.start("ffmpeg", QStringList() << "-version");
     if (!checkProcess.waitForFinished(3000) || checkProcess.exitCode() != 0) {
+        qDebug() << "FFmpeg not found. Please install FFmpeg and add it to PATH.";
         emit errorOccurred("FFmpeg not found. Please install FFmpeg and add it to PATH.");
         return false;
     }
@@ -368,6 +369,7 @@ bool CameraStreamer::startStreaming(const QString &rtmpUrl)
 #ifdef Q_OS_LINUX
     QFile videoDevice("/dev/video0");
     if (!videoDevice.exists()) {
+        qDebug() << "FFmpeg not found. Please install FFmpeg and add it to PATH.";
         emit errorOccurred("Camera device /dev/video0 not found");
         return false;
     }

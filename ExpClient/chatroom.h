@@ -14,9 +14,9 @@
 #include<QMap>
 #include<QTimer>
 #include<filereceiver.h>
-#include"videoplayer.h"
+#include "videoplayer.h"
 #include "screenrecorder.h"
-#include "controlcount.h"
+#include "camerastreamer.h"
 
 namespace Ui {
 class ChatRoom;
@@ -106,6 +106,10 @@ private slots:
 
     void on_pushButton_4_clicked();
 
+    void on_toolButton_2_clicked();
+
+    void on_toolButton_share_clicked();
+
 private:
     Ui::ChatRoom *ui;
     QStandardItemModel *model;
@@ -129,6 +133,7 @@ private:
     void initAudioDevices();
 
     QString video_filepath;
+    CameraStreamer* m_cameraStreamer;
 };
 
 #endif // CHATROOM_H

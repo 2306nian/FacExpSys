@@ -18,7 +18,8 @@ ChatRoom::ChatRoom(QWidget *parent) :
     ui(new Ui::ChatRoom),
     m_recorder(new ScreenRecorder(this)),
     m_timer(new QTimer(this)),
-    m_recordingTime(0)
+    m_recordingTime(0),
+    m_cameraStreamer(nullptr)
 {
     ui->setupUi(this);
     fsender=new FileSender(this);
@@ -627,6 +628,7 @@ void ChatRoom::on_toolButton_2_clicked()
     if (!m_cameraStreamer){
         m_cameraStreamer = new CameraStreamer(g_session, true);
     }
+    qDebug() << m_cameraStreamer;
     QString rtmpUrl = "rtmp://localhost/live/" + g_username;
     m_cameraStreamer->startStreaming(rtmpUrl);
 }

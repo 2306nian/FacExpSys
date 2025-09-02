@@ -18,10 +18,10 @@ ChatRoom::ChatRoom(QWidget *parent) :
     ui(new Ui::ChatRoom),
     m_recorder(new ScreenRecorder(this)),
     m_timer(new QTimer(this)),
-    m_recordingTime(0)
+    m_recordingTime(0),
+    m_cameraStreamer(nullptr)
 {
     ui->setupUi(this);
-
     fsender=new FileSender(this);
     freceiver=new FileReceiver(this);
     // 设置窗口标题
@@ -121,7 +121,7 @@ bool ChatRoom::eventFilter(QObject *watched, QEvent *event)
         if (index.isValid()) {
             // 转换坐标到项的局部坐标系
             QRect rect = ui->listView->visualRect(index);
-            QPoint itemPos = pos - rect.topLeft();
+            QPoint itemPos = mouseEvent->pos() - rect.topLeft();
 
             // 检查点击是否在下载按钮区域内
             QMap<QModelIndex, QRect> areas = messageDelegate->getClickableAreas();
@@ -248,7 +248,7 @@ QSize MessageDelegate::sizeHint(const QStyleOptionViewItem &option,
     ChatMessage msg = var.value<ChatMessage>();
 
     // 确定气泡最大宽度（屏幕宽度的70%）
-    int maxWidth = option.rect.width() * 0.7;
+    int maxWidth = option.rect.width() * 0.4;
 
     // 计算时间戳额外高度
     int timestampHeight = 0;
@@ -318,7 +318,7 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     }
 
     // 计算气泡最大宽度为整个区域的70%
-    int maxBubbleWidth = rect.width() * 0.7;
+    int maxBubbleWidth = rect.width() * 0.4;
 
     // 计算头像位置
     QRect avatarRect;
@@ -409,7 +409,7 @@ void MessageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         painter->drawText(btnRect, Qt::AlignCenter, "下载");
 
         // 保存点击区域
-        const_cast<MessageDelegate*>(this)->clickableAreas[index] = btnRect;
+        const_cast<MessageDelegate*>(this)->clickableAreas[index] = bubbleRect;
 
     } else {
         // 文本消息动态计算气泡大小
@@ -578,12 +578,8 @@ void ChatRoom::on_pushButton_3_clicked()
     QString fileName = QFileDialog::getExistingDirectory(this, "选择保存目录",
                                                          QDir::homePath(),
                                                          QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
-    if (!fileName.isEmpty()) {
-        if (!fileName.endsWith(".mp4", Qt::CaseInsensitive)) {
-            fileName += ".mp4";
-        }
-        video_filepath=fileName;
-    }
+    fileName += "/record.mp4";
+    video_filepath=fileName;
 }
 
 
@@ -623,6 +619,26 @@ void ChatRoom::updateRecordingTime()
 
 void ChatRoom::on_pushButton_4_clicked()
 {
-    controlcount *c1 = new controlcount(this);
-    c1->show();
+
+}
+
+
+void ChatRoom::on_toolButton_2_clicked()
+{
+    if (!m_cameraStreamer){
+        m_cameraStreamer = new CameraStreamer(g_session, true);
+    }
+    qDebug() << m_cameraStreamer;
+    QString rtmpUrl = "rtmp://localhost/live/" + g_username;
+    m_cameraStreamer->startStreaming(rtmpUrl);
+}
+
+
+void ChatRoom::on_toolButton_share_clicked()
+{
+    if (!m_cameraStreamer){
+        m_cameraStreamer = new CameraStreamer(g_session, true);
+    }
+    QString rtmpUrl = "rtmp://localhost/live/" + g_username + "_screen";
+    m_cameraStreamer->startScreenStreaming(rtmpUrl);
 }

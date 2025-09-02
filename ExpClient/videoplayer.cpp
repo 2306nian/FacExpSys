@@ -92,13 +92,14 @@ void VideoPlayer::startFFmpegPlayer(const QString &rtmpUrl)
               << "-vcodec" << "rawvideo"              // 输出原始视频
               << "-pix_fmt" << "rgb24"                // RGB24格式
               << "-f" << "rawvideo"                   // 原始视频格式
-              << "-"                                 // 输出到标准输出
-              // 音频输出到默认设备
-              << "-acodec" << "pcm_s16le"
-              << "-ar" << "44100"
-              << "-ac" << "2"
-              << "-f" << "s16le"
-              << "pipe:2";                          // 输出到标准错误（或使用 ALSA 设备）
+              << "-";                                 // 输出到标准输出
+    // // 音频处理（让 FFmpeg 自动处理）
+    // << "-map" << "0:a:0?"                   // 可选映射音频流
+    // << "-acodec" << "pcm_s16le"
+    // << "-ar" << "44100"
+    // << "-ac" << "2"
+    // << "-f" << "alsa"
+    // << "default";
     qDebug() << "Starting FFmpeg with arguments:" << arguments;
 
     m_ffmpegPlayer->start("ffmpeg", arguments);
